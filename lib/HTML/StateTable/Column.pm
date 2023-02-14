@@ -3,12 +3,13 @@ package HTML::StateTable::Column;
 use namespace::autoclean;
 
 use HTML::StateTable::Column::Meta;
-use HTML::StateTable::Constants qw( COLUMN_ALIAS COLUMN_META_ATTR
-                                    COLUMN_META_CONFIG FALSE TRUE );
+use HTML::StateTable::Constants qw( COLUMN_ALIAS COLUMN_META
+                                    COLUMN_META_CONFIG FALSE SPC TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Bool CodeRef HashRef
                                     NonEmptySimpleStr Options PositiveInt
                                     ScalarRef Str );
 use Ref::Util                   qw( is_coderef );
+use Type::Utils                 qw( class_type );
 use Scalar::Util                qw( blessed );
 use Sub::Install                qw( install_sub );
 use Moo;
@@ -35,6 +36,19 @@ has 'cell_traits' => is => 'ro', isa => ArrayRef[Str], default => sub { [] };
 has 'displayed' => is => 'rw', isa => Bool, default => TRUE;
 
 has 'hidden' => is => 'ro', isa => CodeRef|Bool, reader => '_get_hidden';
+
+has 'link' =>
+   is        => 'ro',
+   isa       => class_type('URI')|CodeRef|Str,
+   predicate => 'has_link';
+
+has 'label' => is => 'lazy', isa => Str, default => sub {
+   my $self = shift;
+
+   return 'ID' if $self->name eq 'id';
+
+   return join SPC, map { ucfirst } split m{ [\s]+ }mx, $self->name;
+};
 
 has 'name' => is => 'ro', isa => NonEmptySimpleStr, required => TRUE;
 
@@ -69,11 +83,18 @@ has 'value' =>
    isa     => CodeRef|ScalarRef|Str,
    default => sub { shift->name };
 
+has '_boolean_options' =>
+   is          => 'ro',
+   isa         => HashRef,
+   handles_via => 'Hash',
+   handles     => { is_boolean_option => 'exists' },
+   default     => sub { { check_all => TRUE } };
+
 sub import {
    my ($class, @args) = @_;
 
    my $target = __PACKAGE__;
-   my $attr   = COLUMN_META_ATTR;
+   my $attr   = COLUMN_META;
 
    return if $target->can($attr);
 
@@ -106,7 +127,7 @@ sub create_cell {
 sub _get_meta {
    my $self  = shift;
    my $class = blessed $self || $self;
-   my $attr  = COLUMN_META_ATTR;
+   my $attr  = COLUMN_META;
 
    return $class->$attr;
 }

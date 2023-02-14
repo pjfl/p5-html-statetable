@@ -2,13 +2,15 @@ package HTML::StateTable::Renderer::EmptyDiv;
 
 use namespace::autoclean;
 
-use HTML::StateTable::Constants qw( QUERY_KEY SERIALISE_COLUMN_ATTR
+use HTML::StateTable::Constants qw( FALSE QUERY_KEY SERIALISE_COLUMN_ATTR
                                     TRIGGER_CLASS TRUE );
-use HTML::StateTable::Result::Dummy;
 use HTML::StateTable::Types     qw( HashRef NonEmptySimpleStr );
+use HTML::StateTable::Util      qw( json_bool );
 use JSON                        qw( encode_json );
 use Ref::Util                   qw( is_coderef is_hashref );
+use HTML::StateTable::Result::Dummy;
 use Moo;
+use MooX::HandlesVia;
 
 extends qw( HTML::StateTable::Renderer );
 
@@ -32,11 +34,6 @@ has '+data' => default => sub {
 has 'query_key' => is => 'lazy', isa => NonEmptySimpleStr, default => QUERY_KEY;
 
 # Private attributes
-has '_boolean_column_options' =>
-   is      => 'ro',
-   isa     => HashRef,
-   default => sub { { check_all => 1 } };
-
 has '_tags' =>
    is      => 'lazy',
    isa     => HashRef,
@@ -52,10 +49,6 @@ has '_tags' =>
    };
 
 # Private functions
-sub _json_bool ($) {
-   return (shift) ? JSON::true : JSON::false;
-}
-
 sub _trait_names ($$$) {
    my ($dummy_row, $column, $trait) = @_;
 
@@ -74,21 +67,24 @@ sub _boolify {
 
    my $attr_meta = $column->_get_meta->find_attribute_by_name($attribute);
    my $type      = $attr_meta->isa if defined $attr_meta;
-   my $is_bool   = defined $type && $type->name =~ m{Bool}mx ? 1 : 0;
+   my $is_bool   = defined $type && $type->name =~ m{ Bool }mx ? TRUE : FALSE;
 
-   if ($is_bool) {
-      return _json_bool $value;
-   }
+   if ($is_bool) { $value = json_bool $value }
    elsif (is_hashref $value) {
-      $value = { %{$value} };
+      $value = {
+         map  { $_ => _boolify_if_option($column, $attribute, $_, $value->{$_})}
+         grep { !is_coderef $value->{$_} } keys %{$value}
+      };
+   }
 
-      for my $k (keys %{$value}) {
-         if (is_coderef $value->{$k}) { delete $value->{$k} }
-         elsif ($attribute eq 'options'
-               && exists $self->_boolean_column_options->{$k}) {
-            $value->{$k} = _json_bool $value->{$k};
-         }
-      }
+   return $value;
+}
+
+sub _boolify_if_option {
+   my ($column, $attribute, $key, $value) = @_;
+
+   if ($attribute eq 'options' && $column->is_boolean_option($key)) {
+      $value = json_bool $value;
    }
 
    return $value;
@@ -112,7 +108,7 @@ sub _serialise_columns {
       next if $column->append_to;
 
       my $displayed  = $table->is_displayable_column($column->name);
-      my %attributes = ( displayed => _json_bool $displayed );
+      my %attributes = ( displayed => json_bool $displayed );
 
       for my $attribute (SERIALISE_COLUMN_ATTR()) {
          next unless $column->can($attribute);
@@ -131,7 +127,7 @@ sub _serialise_columns {
                @{ delete $attributes{cell_traits} }
       ];
 
-      $attributes{has_tags} = _json_bool TRUE
+      $attributes{has_tags} = json_bool TRUE
          if exists $self->_tags->{$column->name};
 
       push @columns, \%attributes;
@@ -149,12 +145,12 @@ sub _serialise_properties {
 
    my $data = {
       'data-url'        => $uri->as_string,
-      'enable-paging'   => _json_bool $table->paging,
+      'enable-paging'   => json_bool $table->paging,
       'no-data-message' => $table->empty_text,
       'max-page-size'   => $table->max_page_size,
    };
 
-   if ($table->no_count) { $data->{'no-count'} = _json_bool TRUE }
+   if ($table->no_count) { $data->{'no-count'} = json_bool TRUE }
    else { $data->{'total-records'} = $table->row_count }
 
    return $data;

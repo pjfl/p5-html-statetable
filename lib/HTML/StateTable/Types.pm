@@ -15,14 +15,14 @@ use namespace::clean -except => 'meta';
 BEGIN { extends q(File::DataClass::Types) };
 
 class_type Column,             { class => 'HTML::StateTable::Column' };
-class_type Context,            { class => 'Catalyst' };
 class_type DBIxClass,          { class => 'DBIx::Class' };
 class_type DBIxClassResultSet, { class => 'DBIx::Class::ResultSet' };
-class_type Element,            { class => 'HTML::Element' };
 class_type Renderer,           { class => 'HTML::StateTable::Renderer' };
-class_type Request,            { class => 'Catalyst::Request' };
 class_type Row                 { class => 'HTML::StateTable::Row' };
 class_type Table,              { class => 'HTML::StateTable' };
+
+subtype Context => as Object;
+subtype Request => as Object;
 
 subtype Iterable => as Object, where {
       $_->can('next')

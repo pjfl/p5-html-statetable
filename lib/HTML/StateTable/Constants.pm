@@ -4,21 +4,23 @@ use strictures;
 
 use Sub::Exporter -setup => {
 	exports => [
-      qw( COLUMN_ALIAS COLUMN_META_ATTR COLUMN_META_CONFIG ENCODE_ENTITIES
-          EXCEPTION_CLASS EXTENSION_TYPE FALSE INDENT_CHARS
-          ITERATOR_DOWNLOAD_KEY QUERY_KEY SERIALISE_COLUMN_ATTR
-          SERIALISE_TABLE_KEY SERIALISE_TABLE_VIEW TABLE_META_ATTR
-          TABLE_META_CONFIG TRIGGER_CLASS TRUE TYPE_EXTENSION )
-   ],
+      qw( COL_INFO_TYPE_ATTR COLUMN_ALIAS COLUMN_META COLUMN_META_CONFIG
+          ENCODE_ENTITIES EXCEPTION_CLASS EXTENSION_TYPE FALSE INDENT_CHARS
+          ITERATOR_DOWNLOAD_KEY QUERY_KEY RENDERER_CLASS RENDERER_PREFIX
+          SERIALISE_COLUMN_ATTR SERIALISE_TABLE_KEY SERIALISE_TABLE_VIEW
+          SPC TABLE_META TABLE_META_CONFIG TRIGGER_CLASS TRUE TYPE_EXTENSION )
+      ],
 };
+
+sub COL_INFO_TYPE_ATTR () { 'data_type' }
 
 sub COLUMN_ALIAS () { 'hst_' }
 
-sub COLUMN_META_ATTR () { '_html_statetable_column_meta' }
+sub COLUMN_META () { '_html_statetable_column_meta' }
 
 sub COLUMN_META_CONFIG () { () }
 
-sub ENCODE_ENTITIES () { q(<>&) }
+sub ENCODE_ENTITIES () { q(<>&") }
 
 my $exception_class = 'File::DataClass::Exception';
 
@@ -71,6 +73,10 @@ sub ITERATOR_DOWNLOAD_KEY () { '_iterator_download' }
 
 sub QUERY_KEY () { 'table_name' }
 
+sub RENDERER_CLASS () { 'EmptyDiv' }
+
+sub RENDERER_PREFIX () { 'HTML::StateTable::Renderer' }
+
 sub SERIALISE_COLUMN_ATTR () {
    return qw( cell_traits css_class filterable label
               name options searchable sort_column sortable width );
@@ -80,7 +86,9 @@ sub SERIALISE_TABLE_KEY () { '_serialise_table' }
 
 sub SERIALISE_TABLE_VIEW () { 'SerialiseTable' }
 
-sub TABLE_META_ATTR () { '_html_statetable_meta' }
+sub SPC () { q( ) }
+
+sub TABLE_META () { '_html_statetable_meta' }
 
 sub TABLE_META_CONFIG () { () }
 

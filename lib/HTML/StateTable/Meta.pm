@@ -21,7 +21,16 @@ has 'columns' =>
       has_column    => 'count',
    };
 
-has 'default_options' => is => 'rwp', isa => HashRef, default => sub { {} };
+has 'default_options' =>
+   is          => 'rwp',
+   isa         => HashRef,
+   handles_via => 'Hash',
+   handles     => {
+      default_exists => 'exists',
+      get_default    => 'get',
+      set_default    => 'set',
+   },
+   default     => sub { {} };
 
 has 'filters' =>
    is          => 'rw',

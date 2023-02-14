@@ -3,7 +3,7 @@ package HTML::StateTable::Column::Meta;
 use mro;
 use namespace::autoclean;
 
-use HTML::StateTable::Constants qw( COLUMN_META_ATTR FALSE TRUE );
+use HTML::StateTable::Constants qw( COLUMN_META FALSE TRUE );
 use HTML::StateTable::Moo::Attribute;
 use HTML::StateTable::Types     qw( Str );
 use HTML::StateTable::Util      qw( throw );
@@ -14,7 +14,7 @@ has 'target' => is => 'ro', isa => Str, required => TRUE;
 sub find_attribute_by_name {
    my ($self, $attr_name) = @_;
 
-   my $attr = COLUMN_META_ATTR;
+   my $attr = COLUMN_META;
 
    for my $class ($self->linearised_isa) {
       next unless $class->can($attr);

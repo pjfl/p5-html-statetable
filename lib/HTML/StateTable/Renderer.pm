@@ -1,31 +1,38 @@
 package HTML::StateTable::Renderer;
 
-use namespace::autoclean;
-
-use HTML::StateTable::Constants qw( ENCODE_ENTITIES INDENT_CHARS TRUE );
-use HTML::StateTable::Types     qw( Element HashRef Str Table );
-use HTML::Element;
+use HTML::StateTable::Constants qw( TRUE );
+use HTML::StateTable::Types     qw( ArrayRef HashRef Str Table );
+use Type::Utils                 qw( class_type );
+use HTML::Tiny;
 use Moo;
 
 has 'container_tag' => is => 'ro', isa => Str, default => 'table';
 
 has 'container' =>
    is      => 'lazy',
-   isa     => Element,
+   isa     => Str,
    default => sub {
       my $self = shift;
+      my $tag  = $self->container_tag;
 
-      return HTML::Element->new_from_lol([$self->container_tag, $self->data]);
+      return $self->_html->$tag($self->data, $self->rows);
    };
 
 has 'data' => is => 'lazy', isa => HashRef, default => sub { {} };
 
+has 'rows' => is => 'lazy', isa => ArrayRef, default => sub { [] };
+
 has 'table' => is => 'ro', isa => Table, required => TRUE, weak_ref => TRUE;
 
-sub render {
-   my $self = shift;
+has '_html' =>
+   is      => 'ro',
+   isa     => class_type('HTML::Tiny'),
+   default => sub { HTML::Tiny->new };
 
-	return $self->container->as_HTML(ENCODE_ENTITIES, INDENT_CHARS);
+sub render {
+   my $self = shift;	return $self->container;
 }
+
+use namespace::autoclean;
 
 1;

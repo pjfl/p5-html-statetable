@@ -2,11 +2,14 @@ package HTML::StateTable::Manager;
 
 use namespace::autoclean;
 
-use HTML::StateTable::Constants qw( QUERY_KEY SERIALISE_TABLE_KEY
-                                    SERIALISE_TABLE_VIEW TRUE );
+use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE QUERY_KEY
+                                    SERIALISE_TABLE_KEY SERIALISE_TABLE_VIEW
+                                    TRUE );
 use HTML::StateTable::Types     qw( Str );
 use HTML::StateTable::Util      qw( throw );
 use File::DataClass::Functions  qw( ensure_class_loaded );
+use Unexpected::Functions       qw( Unspecified );
+
 use Moo;
 
 has 'meta_key' => is => 'ro', isa => Str, default => 'table_meta';
@@ -14,6 +17,11 @@ has 'meta_key' => is => 'ro', isa => Str, default => 'table_meta';
 has 'namespace' => is => 'ro', isa => Str, required => TRUE;
 
 has 'query_key' => is => 'ro', isa => Str, predicate => 'has_query_key';
+
+has 'renderer_class' =>
+   is        => 'ro',
+   isa       => Str,
+   predicate => 'has_renderer_class';
 
 has 'stash_key' =>
    is      => 'ro',
@@ -41,6 +49,10 @@ sub table {
    return $table;
 }
 
+sub new_with_context {
+   my ($self, $name, $options) = @_; return $self->table($name, $options);
+}
+
 sub _get_class {
    my ($self, $name) = @_;
 
@@ -52,43 +64,50 @@ sub _get_class {
 }
 
 sub _is_data_call {
-   my ($self, $c) = @_;
+   my ($self, $context) = @_;
 
-   my $requested_with = $c->request->header('X-Requested-With');
+   throw Unspecified, ['context'] unless $context;
 
-   return $requested_with && $requested_with eq 'XMLHttpRequest' ? 1 : 0;
+   my $requested_with = $context->request->header('X-Requested-With')
+      || $context->request->header('x-requested-with');
+
+   return $requested_with && $requested_with eq 'XMLHttpRequest' ? TRUE : FALSE;
 }
 
 sub _renderer_class {
-   my ($self, $c) = @_;
+   my ($self, $context) = @_;
 
-   my $params = $c->request->query_parameters;
+   if ($context) {
+      my $params = $context->request->query_parameters;
 
-   return exists $params->{renderer_class} ? $params->{renderer_class} : undef;
+      return $params->{renderer_class} if exists $params->{renderer_class};
+   }
+
+   return $self->renderer_class if $self->has_renderer_class;
+
+   return;
 }
 
 sub _setup_view {
    my ($self, $table) = @_;
 
-   my $c = $table->context;
+   my $context = $table->context;
 
    throw 'Undefined view [_1]', [$self->view_name]
-      unless $c->view($self->view_name);
+      unless $context->view($self->view_name);
 
    my $params = $table->request->query_parameters;
    my $key    = $params->{$self->query_key} // q();
 
    if ($key eq $table->name) {
-      $c->stash->{current_view} = $self->view_name;
+      $context->stash->{current_view} = $self->view_name;
 
-      $c->stash->{$self->stash_key} = {
+      $context->stash->{$self->stash_key} = {
          format          => 'json',
-         no_filename     => 1,
+         no_filename     => TRUE,
          serialiser_args => {
-            disable_paging       => 0,
-            serialise_as_hashref => 1,
-            serialise_meta       => $params->{$self->meta_key} ? 1 : 0,
-            serialise_record_key => 'name',
+            disable_paging => FALSE,
+            serialise_meta => $params->{$self->meta_key} ? TRUE : FALSE,
          },
          table           => $table,
       };

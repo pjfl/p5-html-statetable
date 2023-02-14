@@ -4,14 +4,13 @@ use 5.010001;
 use namespace::autoclean;
 use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 2 $ =~ /\d+/gmx );
 
-use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE TABLE_META_ATTR
-                                    TRUE );
+use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE RENDERER_CLASS
+                                    RENDERER_PREFIX TABLE_META TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Bool ClassName Column Context
                                     HashRef LoadableClass NonEmptySimpleStr
                                     NonZeroPositiveInt Object Renderer
                                     Request ResultSet SimpleStr );
 use HTML::StateTable::Util      qw( foreign_sort throw );
-use Class::Null;
 use File::DataClass::Functions  qw( ensure_class_loaded );
 use List::Util                  qw( first );
 use Ref::Util                   qw( is_arrayref is_coderef is_hashref );
@@ -21,6 +20,12 @@ use Moo;
 use MooX::HandlesVia;
 
 # Public attributes
+has 'cell_class' =>
+   is      => 'lazy',
+   isa     => LoadableClass,
+   coerce  => TRUE,
+   default => 'HTML::StateTable::Cell';
+
 has 'columns' =>
    is          => 'rwp',
    isa         => ArrayRef[Column],
@@ -37,8 +42,7 @@ has 'columns' =>
 has 'context' =>
    is        => 'ro',
    isa       => Context,
-   predicate => 'has_context',
-   weak_ref  => TRUE;
+   predicate => 'has_context';
 
 has 'displayable_columns' =>
    is          => 'lazy',
@@ -61,7 +65,7 @@ has 'max_page_size' => is => 'ro', isa => NonZeroPositiveInt, default => 20;
 has 'name' =>
    is      => 'lazy',
    isa     => NonEmptySimpleStr,
-   default => sub {
+   builder => sub {
       my $self = shift;
       my $meta = $self->_get_meta;
 
@@ -112,7 +116,7 @@ has 'renderer_args' =>
 has 'renderer_class' =>
    is      => 'lazy',
    isa     => LoadableClass,
-   default => 'HTML::StateTable::Renderer::EmptyDiv';
+   default => sub { RENDERER_PREFIX . '::' . RENDERER_CLASS };
 
 has 'request' =>
    is      => 'lazy',
@@ -120,7 +124,9 @@ has 'request' =>
    default => sub {
       my $self = shift;
 
-      return $self->has_context ? $self->context->request : Class::Null->new;
+      throw Unspecified, ['context'] unless $self->has_context;
+
+      return $self->context->request;
    };
 
 has 'resultset' =>
@@ -197,9 +203,11 @@ has 'visible_columns' =>
 
 # Private attributes
 has '_column_name_map' =>
-   is      => 'lazy',
-   isa     => HashRef[Column],
-   default => sub {
+   is          => 'lazy',
+   isa         => HashRef[Column],
+   handles_via => 'Hash',
+   handles     => { get_column => 'get' },
+   default     => sub {
       my $self = shift;
 
       return { map { $_->name => $_ } $self->all_columns };
@@ -227,7 +235,7 @@ around 'BUILDARGS' => sub {
          $args->{renderer_class} = substr $args->{renderer_class}, 1;
       }
       else {
-         $args->{renderer_class} = 'HTML::StateTable::Renderer::'
+         $args->{renderer_class} = RENDERER_PREFIX . '::'
             . $args->{renderer_class};
       }
    }
@@ -238,14 +246,17 @@ around 'BUILDARGS' => sub {
 sub BUILD {}
 
 # Public methods
-sub get_column {
-   my ($self, $column_name) = @_;
-
-   return $self->_column_name_map->{$column_name};
-}
-
 sub next_result {
    return shift->prepared_resultset->next;
+}
+
+sub next_row {
+   my $self   = shift;
+   my $result = $self->next_result;
+ 
+   return unless defined $result;
+
+   return $self->row_class->new( result => $result, table => $self );
 }
 
 sub reset_resultset {
@@ -342,17 +353,15 @@ sub _default {
 
    my $meta = $self->_get_meta;
 
-   return $default unless $meta->can('default_options');
+   return $default unless $meta->default_exists($option);
 
-   my $options = $meta->default_options;
-
-   return exists $options->{$option} ? $options->{$option} : $default;
+   return $meta->get_default($option);
 }
 
 sub _get_meta {
    my $self  = shift;
    my $class = blessed $self || $self;
-   my $attr  = TABLE_META_ATTR;
+   my $attr  = TABLE_META;
 
    return $class->$attr;
 }

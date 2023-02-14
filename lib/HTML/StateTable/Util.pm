@@ -2,14 +2,28 @@ package HTML::StateTable::Util;
 
 use strictures;
 
-use HTML::StateTable::Constants qw( EXCEPTION_CLASS );
+use HTML::Entities              qw( encode_entities );
+use HTML::StateTable::Constants qw( COL_INFO_TYPE_ATTR EXCEPTION_CLASS );
+use JSON qw();
 
 use Sub::Exporter -setup => {
    exports => [
-      qw( foreign_sort quote_column_name quote_double quote_single quote_string
-          throw unquote_string )
+      qw( encode_only_entities foreign_sort json_bool quote_column_name
+          quote_double quote_single quote_string throw unquote_string )
    ],
 };
+
+sub encode_only_entities {
+   my $html = shift;
+
+   # Encode control chars and high bit chars, but leave '<', '&', '>', ''' and
+   # '"'. Encode as decimal rather than hex, to keep Lotus Notes happy.
+   $html =~ s{([^<>&"'\n\r\t !\#\$%\(-;=?-~])}{ #"emacs
+      $HTML::Entities::char2entity{$1} || '&#' . ord($1) . ';'
+   }ge;
+
+   return $html;
+}
 
 sub foreign_sort ($$$) {
    my ($resultset, $sorting, $reverse) = @_;
@@ -21,8 +35,7 @@ sub foreign_sort ($$$) {
 
       return $resultset unless $column;
 
-      my $order_desc    = $reverse ? !$sort->{desc} : !!$sort->{desc};
-      my @relations     = split m{\.}, $column;
+      my @relations     = split m{ \. }mx, $column;
       my $order_column  = pop @relations;
       my $join_relation = $relations[-1];
       my $source        = $resultset->result_source;
@@ -39,30 +52,51 @@ sub foreign_sort ($$$) {
          $source = $relation_class;
       }
 
-      my $column_info = eval { $source->column_info($order_column) }
-         || { data_type => 'INTEGER' };
+      my $column_info = _get_column_info($source, $order_column);
+      my $join_column = $join_relation || $resultset->current_source_alias;
+      my $order_by    = _get_order($column_info, $join_column, $order_column);
+      my $order_desc  = $reverse ? !$sort->{desc} : !!$sort->{desc};
+      my $direction   = $order_desc ? '-desc' : '-asc';
+
+      push @order, { $direction => $order_by };
 
       for my $relation (reverse @relations) {
          $join = defined $join ? { $relation => $join } : $relation;
       }
-
-      my $join_column = $join_relation || $resultset->current_source_alias;
-
-      $order_column = quote_column_name($join_column, $order_column);
-
-      my $direction = $order_desc ? '-desc' : '-asc';
-      my $type      = $column_info->{data_type};
-      my $order_by  = $type && $type eq 'TEXT'
-         ? \"LOWER($order_column)" #"
-         : \$order_column;
-
-      push @order, { $direction => $order_by };
    }
 
    return $resultset->search(undef, { join => $join, order_by => \@order });
 }
 
-sub quote_column_name {
+sub _get_column_info {
+   my ($source, $order_column) = @_;
+
+   my $info = eval { $source->column_info($order_column) };
+   my $attr = COL_INFO_TYPE_ATTR;
+
+   return { $attr => 'INTEGER' } unless $info;
+
+   return $info;
+}
+
+sub _get_order {
+   my ($column_info, $join_column, $order_column) = @_;
+
+   my $attr = COL_INFO_TYPE_ATTR;
+   my $type = $column_info->{$attr} // q();
+
+   $order_column = quote_column_name($join_column, $order_column);
+
+   return \$order_column unless $type =~ m{ \A text \z }imx;
+
+   return \"LOWER($order_column)"; #"
+}
+
+sub json_bool ($) {
+   return (shift) ? JSON::true : JSON::false;
+}
+
+sub quote_column_name (;@) {
    my @parts = @_;
 
    for my $part (@parts) {
@@ -99,9 +133,9 @@ sub quote_string ($$) {
    $end_quote //= $start_quote;
 
    $string =~ s{
-      ( \\                  # backslash
-        |  \Q$start_quote\E # start quote
-        |  \Q$end_quote\E   # end quote
+      ( \\                 # backslash
+        | \Q$start_quote\E # start quote
+        | \Q$end_quote\E   # end quote
       )
    }{\\$1}gmsx;
 
@@ -117,17 +151,16 @@ sub unquote_string ($) {
 
    return unless defined $string;
 
-   $string =~ s{\A.}{}msx;
-   $string =~ s{.\z}{}msx;
+   $string =~ s{\A.}{}msx; $string =~ s{.\z}{}msx;
 
    $string =~ s{
       \G
       (?:
          ( [^\\]+ )  # Not a backslash
          | \\(.)     # A backslash-escaped character
-         | \\\z      # A single backslash at the end of the string (edge case)
+         | \\ \z     # A single backslash at the end of the string (edge case)
       )
-   }{defined $1 ? $1 : $2 || q()}gemsx;
+   }{defined $1 ? $1 : $2 || q()}egmsx;
 
    return $string;
 }

@@ -3,48 +3,44 @@ package HTML::StateTable::Moo;
 use mro;
 use strictures;
 
-use HTML::StateTable::Constants qw( FALSE TABLE_META_ATTR
-                                    TABLE_META_CONFIG TRUE );
-use HTML::StateTable::Column;
-use HTML::StateTable::Meta;
+use HTML::StateTable::Constants qw( FALSE TABLE_META TABLE_META_CONFIG TRUE );
 use HTML::StateTable::Util      qw( throw );
 use Ref::Util                   qw( is_arrayref );
 use Sub::Install                qw( install_sub );
+use HTML::StateTable::Column;
+use HTML::StateTable::Meta;
 
-my @banished_keywords = qw( TABLE_META_ATTR has_column table_name );
-my $column_class      = 'HTML::StateTable::Column';
-my @required_symbols  = qw( has );
+my @banished_keywords = qw( TABLE_META );
+my $column_class = 'HTML::StateTable::Column';
 
 sub import {
    my ($class, @args) = @_;
 
    my $target = caller;
-
-   for my $want (grep { not $target->can($_) } @required_symbols) {
-      throw 'Symbol [_1] not found in class [_2]', [$want, $target];
-   }
-
    my @target_isa  = @{ mro::get_linear_isa($target) };
-   my $meta_config = { TABLE_META_CONFIG, target => $target, @args };
-   my $meta_attr   = TABLE_META_ATTR;
+   my $method   = TABLE_META;
    my $meta;
 
    if (@target_isa) {
       # Don't add this to a role. The ISA of a role is always empty!
-      if ($target->can($meta_attr)) { $meta = $target->$meta_attr }
+      if ($target->can($method)) { $meta = $target->$method }
       else {
-         $meta = HTML::StateTable::Meta->new($meta_config);
-         install_sub { as => $meta_attr, into => $target, code => sub {$meta} };
+         my $attr = { TABLE_META_CONFIG, target => $target, @args };
+
+         $meta = HTML::StateTable::Meta->new($attr);
+         install_sub { as => $method, into => $target, code => sub {
+            return $meta;
+         }, };
       }
    }
    else {
-      $target->can($meta_attr) or throw 'No meta object';
-      $meta = $target->$meta_attr;
+      throw 'No meta object' unless $target->can($method);
+
+      $meta = $target->$method;
    }
 
-   my $has  = $target->can('has');
+   my $rt_info_key = 'non_methods';
    my $info = $Role::Tiny::INFO{$target};
-
    my $has_column = sub ($;%) {
       my ($name, %attributes) = @_;
       my $names = is_arrayref $name ? $name : [$name];
@@ -53,9 +49,6 @@ sub import {
          _assert_no_banished_keywords($target, $name);
 
          my $column_attr = [ $column_class->_get_meta->get_all_attributes ];
-
-         $has->($name => _filter_out_column_attr($column_attr, %attributes));
-
          my $column = $column_class->new({
             name => $name,
             _validate_and_filter_column_attr($column_attr, %attributes)
@@ -67,31 +60,31 @@ sub import {
       return;
    };
 
-   $info->{not_methods}{$has_column} = $has_column if $info;
+   $info->{$rt_info_key}{$has_column} = $has_column if $info;
 
    install_sub { as => 'has_column', into => $target, code => $has_column };
 
    my $has_filter = sub ($) { $meta->add_filter(@_) };
 
-   $info->{not_methods}{$has_filter} = $has_filter if $info;
+   $info->{$rt_info_key}{$has_filter} = $has_filter if $info;
 
    install_sub { as => 'has_filter', into => $target, code => $has_filter };
 
    my $defaults = sub ($) { $meta->_set_default_options(shift) };
 
-   $info->{not_methods}{$defaults} = $defaults if $info;
+   $info->{$rt_info_key}{$defaults} = $defaults if $info;
 
    install_sub { as => 'set_defaults', into => $target, code => $defaults };
 
    my $table_name = sub ($) { $meta->_set_table_name(shift) };
 
-   $info->{not_methods}{$table_name} = $table_name if $info;
+   $info->{$rt_info_key}{$table_name} = $table_name if $info;
 
    install_sub { as => 'set_table_name', into => $target, code => $table_name };
 
    my $resultset = sub ($) { $meta->_set_resultset_callback(shift) };
 
-   $info->{not_methods}{$resultset} = $resultset if $info;
+   $info->{$rt_info_key}{$resultset} = $resultset if $info;
 
    install_sub { as => 'setup_resultset', into => $target, code => $resultset };
 
@@ -106,17 +99,6 @@ sub _assert_no_banished_keywords {
    }
 
    return;
-}
-
-sub _filter_out_column_attr {
-   my ($column_attr, %attributes) = @_;
-
-   my %filter_key = map { $_ => 1 } @{$column_attr};
-
-   $attributes{is} //= 'ro';
-
-   return map { ( $_ => $attributes{$_} ) }
-         grep { not exists $filter_key{$_} } keys %attributes;
 }
 
 sub _validate_and_filter_column_attr {
