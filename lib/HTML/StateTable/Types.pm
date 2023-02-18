@@ -3,7 +3,7 @@ package HTML::StateTable::Types;
 use strictures;
 
 use Type::Library             -base, -declare =>
-                          qw( Column Context DBIxClass DBIxClassResultSet
+                          qw( Column Context Date DBIxClass DBIxClassResultSet
                               Element Iterable Options Renderer Request
                               ResultObject ResultRole ResultSet Row Table );
 use Type::Utils           qw( as class_type coerce extends from
@@ -15,6 +15,7 @@ use namespace::clean -except => 'meta';
 BEGIN { extends q(File::DataClass::Types) };
 
 class_type Column,             { class => 'HTML::StateTable::Column' };
+class_type Date,               { class => 'DateTime' };
 class_type DBIxClass,          { class => 'DBIx::Class' };
 class_type DBIxClassResultSet, { class => 'DBIx::Class::ResultSet' };
 class_type Renderer,           { class => 'HTML::StateTable::Renderer' };

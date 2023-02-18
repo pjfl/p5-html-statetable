@@ -2,9 +2,9 @@ package HTML::StateTable::Cell;
 
 use namespace::autoclean;
 
-use HTML::StateTable::Constants qw( TRUE );
-use HTML::StateTable::Types     qw( Column Row Undef);
-use Ref::Util                   qw( is_coderef );
+use HTML::StateTable::Constants qw( NUL TRUE );
+use HTML::StateTable::Types     qw( Column Date Row Str Undef );
+use Ref::Util                   qw( is_coderef is_scalarref );
 use Type::Utils                 qw( class_type );
 use Moo;
 
@@ -25,8 +25,30 @@ has 'link' => is => 'lazy', isa => class_type('URI')|Undef, builder => sub {
 
 has 'row' => is => 'ro', isa => Row, required => TRUE, weak_ref => TRUE;
 
+has 'value' => is => 'lazy', isa => Date|Str|Undef, builder => sub {
+   my $self  = shift;
+   my $value = $self->column->value;
+
+   return $value->($self) if is_coderef $value;
+
+   return ${$value} if is_scalarref $value;
+
+   return $self->row->result->get_column($self->column->as)
+      if $self->column->is_generated;
+
+   return $self->row->compound_method($value) if !ref $value;
+
+   return;
+};
+
 sub has_link {
    return defined shift->link;
+}
+
+sub render_value {
+   my $self = shift;
+
+   return defined $self->value ? $self->value : NUL;
 }
 
 sub result {

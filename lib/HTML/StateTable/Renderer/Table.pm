@@ -1,5 +1,6 @@
 package HTML::StateTable::Renderer::Table;
 
+use Scalar::Util qw( blessed );
 use Moo;
 
 extends 'HTML::StateTable::Renderer';
@@ -26,16 +27,15 @@ sub _header_row {
 sub _row {
    my ($self, $row) = @_;
 
-   my @cols = (map { $self->_col($_) } @{$row->cell_list});
+   my @cols = (map { $self->_cell($_) } @{$row->cell_list});
 
    return [ $self->_html->td(@cols) ];
 }
 
-sub _col {
+sub _cell {
    my ($self, $cell) = @_;
 
-   my $name  = $cell->column->name;
-   my $value = $cell->row->result->$name;
+   my $value = $cell->render_value;
 
    $value = $self->_html->a({ href => $cell->link->as_string }, $value)
       if $cell->has_link;

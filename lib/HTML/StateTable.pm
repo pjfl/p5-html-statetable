@@ -2,7 +2,7 @@ package HTML::StateTable;
 
 use 5.010001;
 use namespace::autoclean;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 2 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 3 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );

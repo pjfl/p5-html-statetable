@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Added method to dereference compound column references
           - Wrote Table renderer under protest
           - Serialises empty div. Needs resultset
 

@@ -45,4 +45,24 @@ sub columns {
    my $self = shift; return $self->table->columns;
 }
 
+sub compound_method {
+   my ($self, $methods, @args) = @_;
+
+   my @methods = split m{ \. }mx, $methods;
+   my $result  = $self->result;
+
+   while (my $method = shift @methods) {
+      return unless defined $result;
+
+      die "Object ${result} has no ${method} method"
+         unless $result->can($method);
+
+      my @method_args = @args unless scalar @methods;
+
+      $result = $result->$method(@method_args);
+   }
+
+   return $result;
+}
+
 1;
