@@ -1,10 +1,9 @@
 package HTML::StateTable::Column;
 
-use namespace::autoclean;
-
 use HTML::StateTable::Column::Meta;
 use HTML::StateTable::Constants qw( COLUMN_ALIAS COLUMN_META
-                                    COLUMN_META_CONFIG FALSE SPC TRUE );
+                                    COLUMN_META_CONFIG COLUMN_TRAIT_PREFIX
+                                    FALSE SPC TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Bool CodeRef HashRef
                                     NonEmptySimpleStr Options PositiveInt
                                     ScalarRef Str );
@@ -31,11 +30,15 @@ has 'as' =>
 
 has 'bind_values' => is => 'ro', isa => CodeRef;
 
-has 'cell_traits' => is => 'ro', isa => ArrayRef[Str], default => sub { [] };
+has 'traits' => is => 'ro', isa => ArrayRef[Str], default => sub { [] };
 
 has 'displayed' => is => 'rw', isa => Bool, default => TRUE;
 
-has 'hidden' => is => 'ro', isa => CodeRef|Bool, reader => '_get_hidden';
+has 'hidden' =>
+   is        => 'ro',
+   isa       => CodeRef|Bool,
+   predicate => 'has_hidden',
+   reader    => '_get_hidden';
 
 has 'link' =>
    is        => 'ro',
@@ -118,8 +121,13 @@ sub create_cell {
    my $cell_class = $row->table->cell_class;
    my $cell = $cell_class->new(column => $self, row => $row);
 
-   Role::Tiny->apply_roles_to_object($cell, @{$self->cell_traits})
-      if scalar @{$self->cell_traits};
+   if (scalar @{$self->traits}) {
+      my @traits = map {
+         ('+' eq substr $_, 0, 1) ? substr $_, 1 : COLUMN_TRAIT_PREFIX . "::${_}";
+      } @{$self->traits};
+
+      Role::Tiny->apply_roles_to_object($cell, @traits);
+   }
 
    return $cell;
 }
@@ -131,5 +139,7 @@ sub _get_meta {
 
    return $class->$attr;
 }
+
+use namespace::autoclean;
 
 1;

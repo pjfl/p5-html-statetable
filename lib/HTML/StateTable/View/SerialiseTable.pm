@@ -1,7 +1,5 @@
 package HTML::StateTable::View::SerialiseTable;
 
-use namespace::autoclean;
-
 use HTML::StateTable::Constants qw( ITERATOR_DOWNLOAD_KEY SERIALISE_TABLE_KEY );
 use HTML::StateTable::Util      qw( throw );
 use Encode                      qw( encode_utf8 );
@@ -10,19 +8,17 @@ use Moo;
 
 extends qw( HTML::StateTable::View::IteratorDownload );
 
-__PACKAGE__->config(
-   serialisers => {
-      csv      => 'CSV',
-      csv_fast => 'CSVInflateHashRef',
-      json     => 'JSON',
-   }
-);
+my $serialisers = {
+   csv      => 'CSV',
+   csv_fast => 'CSVInflateHashRef',
+   json     => 'JSON',
+};
 
 sub process {
-   my ($self, $c) = @_;
+   my ($self, $context) = @_;
 
    my $key     = SERIALISE_TABLE_KEY;
-   my $stashed = $c->stash->{$key};
+   my $stashed = $context->stash->{$key};
 
    throw 'No config hashref in the [_1] stash key', [$key] unless $stashed;
 
@@ -30,11 +26,12 @@ sub process {
    my $format = $stashed->{format};
    my $args   = $stashed->{serialiser_args};
 
-   my $serialiser_class = __PACKAGE__->config->{serialisers}->{$format};
+   my $serialiser_class = $serialisers->{$format};
 
    throw 'Unknown serialiser [_1]', [$format] unless $serialiser_class;
 
-   my $writer     = _mk_writer($c->response);
+   my $response   = $context->response;
+   my $writer     = sub { $response->write(encode_utf8(join q(), @_)) };
    my $serialiser = $table->serialiser($serialiser_class, $writer, $args);
    my $filename   = $stashed->{no_filename}
       ? q() : $stashed->{filename} || $table->download_filename;
@@ -47,9 +44,9 @@ sub process {
    $config->{mime_type} = $serialiser->mime_type if $serialiser->has_mime_type;
    $config->{extension} = $serialiser->extension if $serialiser->has_extension;
 
-   $c->stash->{ITERATOR_DOWNLOAD_KEY()} = $config; # Belt
+   $context->stash->{ITERATOR_DOWNLOAD_KEY()} = $config; # Belt
 
-   return $self->next::method($c, $config); # and braces
+   return $self->next::method($context, $config); # and braces
 }
 
 sub guess_object_type {
@@ -62,15 +59,11 @@ sub guess_object_type {
 }
 
 sub output_statetable {
-   my ($self, $c, $serialiser) = @_;
+   my ($self, $context, $serialiser) = @_;
 
-   $serialiser->serialise;
+   return $serialiser->serialise;
 }
 
-sub _mk_writer {
-   my ($res) = @_;
-
-   return sub { $res->write(encode_utf8(join q(), @_)) };
-}
+use namespace::autoclean;
 
 1;

@@ -1,7 +1,5 @@
 package HTML::StateTable::Renderer::EmptyDiv;
 
-use namespace::autoclean;
-
 use HTML::StateTable::Constants qw( FALSE QUERY_KEY SERIALISE_COLUMN_ATTR
                                     TRIGGER_CLASS TRUE );
 use HTML::StateTable::Types     qw( HashRef NonEmptySimpleStr );
@@ -10,7 +8,6 @@ use JSON                        qw( encode_json );
 use Ref::Util                   qw( is_coderef is_hashref );
 use HTML::StateTable::Result::Dummy;
 use Moo;
-use MooX::HandlesVia;
 
 extends qw( HTML::StateTable::Renderer );
 
@@ -19,16 +16,16 @@ has '+container_tag' => default => 'div';
 
 has '+data' => default => sub {
    my $self = shift;
-   my $data = {
-      'data-c'          => TRIGGER_CLASS,
-      'data-columns'    => encode_json($self->_serialise_columns),
-      'data-name'       => $self->table->name,
-      'data-properties' => encode_json($self->_serialise_properties),
+
+   return {
+      'class' => TRIGGER_CLASS,
+      'data-table-config' => encode_json({
+         columns    => $self->_serialise_columns,
+         name       => $self->table->name,
+         properties => $self->_serialise_properties,
+         roles      => $self->_serialise_roles,
+      }),
    };
-
-   $self->_serialise_roles($data);
-
-   return $data;
 };
 
 has 'query_key' => is => 'lazy', isa => NonEmptySimpleStr, default => QUERY_KEY;
@@ -124,7 +121,7 @@ sub _serialise_columns {
 
       $attributes{traits} = [
          map { @{ _trait_names $dummy_row, $column, $_ } }
-               @{ delete $attributes{cell_traits} }
+               @{ delete $attributes{traits} }
       ];
 
       $attributes{has_tags} = json_bool TRUE
@@ -157,9 +154,9 @@ sub _serialise_properties {
 }
 
 sub _serialise_roles {
-   my ($self, $data) = @_;
-
+   my $self  = shift;
    my $table = $self->table;
+   my $roles = {};
 
    for my $role_name ($table->all_roles) {
       next unless $table->does($table->get_role($role_name));
@@ -167,11 +164,13 @@ sub _serialise_roles {
       my $method = "serialise_${role_name}";
 
       if (defined(my $value = $table->$method)) {
-         $data->{"data-role-${role_name}"} = encode_json($value);
+         $roles->{$role_name} = $value;
       }
    }
 
-   return;
+   return $roles;
 }
+
+use namespace::autoclean;
 
 1;

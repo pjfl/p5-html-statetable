@@ -1,42 +1,46 @@
-package HTML::StateTable::Serialise::JSON;
-
-use namespace::autoclean;
+package HTML::StateTable::Serialiser::JSON;
 
 use HTML::StateTable::Constants qw( FALSE TRUE );
 use HTML::StateTable::Types     qw( Bool HashRef Object Str );
 use HTML::StateTable::Util      qw( json_bool );
+use Ref::Util                   qw( is_hashref );
 use JSON::MaybeXS;
 use Moo;
 
 extends qw( HTML::StateTable::Serialiser::Base );
 
+has '+mime_type' => default => 'application/json';
+
 has 'serialise_as_hashref' => is => 'ro', isa => Bool, default => TRUE;
 
 has 'serialise_record_key' => is => 'ro', isa => Str, default => 'name';
 
-has '_json' => is => 'ro', isa => Object, default => sub { JSON::MaybeXS->new };
+has '_json' => is => 'ro', isa => Object, default => sub {
+   return JSON::MaybeXS->new( convert_blessed => TRUE );
+};
 
 has '_tags' =>
    is      => 'rwp',
    isa     => HashRef,
+   writer  => '_set_tags',
    default => sub { {} };
 
 around 'serialise' => sub {
    my ($orig, $self) = @_;
 
    if ($self->serialise_as_hashref) {
-      my $total = $self->table->no_count ? q() : $self->table->row_count;
+      my $total = $self->table->no_count ? q() : $self->table->row_count // q();
 
-      $self->writer('{"total-records":"' . $total . '","records":');
+      $self->writer->('{"total-records":"' . $total . '","records":');
    }
 
-   $self->writer('[');
+   $self->writer->('[');
 
    my $index = $orig->($self);
 
-   $self->writer(']');
+   $self->writer->(']');
 
-   $self->writer('}') if $self->serialise_as_hashref;
+   $self->writer->('}') if $self->serialise_as_hashref;
 
    return $index;
 };
@@ -64,7 +68,7 @@ around 'serialise_row' => sub {
 sub skip_serialise_cell {
    my ($self, $cell) = @_;
 
-   return $cell->column->append_to || $self->column->hidden($self->table);
+   return $cell->column->append_to || $cell->column->hidden($self->table);
 }
 
 sub serialise_cell {
@@ -95,7 +99,7 @@ sub _extract_tags {
       my $column = $cell->column;
 
       $tags{$column->append_to} = [ split m{ \| }mx, $cell->unfiltered_value ]
-         if $column->append_to && $displayable->columns->{$column->name};
+         if $column->append_to && $displayable_columns->{$column->name};
    }
 
    return \%tags;
@@ -109,5 +113,7 @@ sub _store_value_as_hash {
 
    return $store;
 }
+
+use namespace::autoclean;
 
 1;

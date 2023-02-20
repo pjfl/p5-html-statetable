@@ -2,7 +2,7 @@ package HTML::StateTable;
 
 use 5.010001;
 use namespace::autoclean;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 3 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 4 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -60,7 +60,7 @@ has 'empty_text' =>
    isa     => NonEmptySimpleStr,
    default => 'No data to display';
 
-has 'max_page_size' => is => 'ro', isa => NonZeroPositiveInt, default => 20;
+has 'max_page_size' => is => 'ro', isa => NonZeroPositiveInt, default => 100;
 
 has 'name' =>
    is      => 'lazy',
@@ -253,7 +253,7 @@ sub next_result {
 sub next_row {
    my $self   = shift;
    my $result = $self->next_result;
- 
+
    return unless defined $result;
 
    return $self->row_class->new( result => $result, table => $self );

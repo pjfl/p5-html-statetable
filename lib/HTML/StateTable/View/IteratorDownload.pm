@@ -1,7 +1,5 @@
 package HTML::StateTable::View::IteratorDownload;
 
-use namespace::autoclean;
-
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS EXTENSION_TYPE
                                     ITERATOR_DOWNLOAD_KEY TYPE_EXTENSION );
 use HTML::StateTable::Util      qw( quote_double throw );
@@ -11,14 +9,12 @@ use Scalar::Util                qw( blessed );
 use Unexpected::Functions       qw( Unspecified );
 use Moo;
 
-extends qw( Catalyst::View );
-
 sub process {
-   my ($self, $c, $config) = @_;
+   my ($self, $context, $config) = @_;
 
    my $key = ITERATOR_DOWNLOAD_KEY;
 
-   $config //= $c->stash->{$key};
+   $config //= $context->stash->{$key};
 
    throw 'No config hashref in the [_1] stash key', [$key]
       unless defined $config && is_hashref $config;
@@ -31,8 +27,8 @@ sub process {
 
    throw 'No mime type specified or inferrable' unless $mime_type;
 
-   my $object        = $config->{object} || throw Unspecified, ['object'];
-   my $object_type   = $config->{type}
+   my $object = $config->{object} || throw Unspecified, ['object'];
+   my $object_type = $config->{type}
       || $self->guess_object_type($object)
       || throw 'Unidentifiable object [_1]', [$object];
    my $output_method = "output_${object_type}";
@@ -43,9 +39,9 @@ sub process {
    throw 'Can only use line_ending option with iterators'
       if $output_method ne 'output_iterator' && defined $config->{line_ending};
 
-   $self->_set_response_headers($c, $mime_type, $filename);
+   $self->_set_response_headers($context, $mime_type, $filename);
 
-   $self->$output_method($c, $object, $config);
+   $self->$output_method($context, $object, $config);
 
    return 1;
 }
@@ -67,16 +63,16 @@ sub guess_object_type {
 }
 
 sub output_filehandle {
-   my ($self, $c, $fh) = @_;
+   my ($self, $context, $fh) = @_;
 
    throw 'File handle provided to iterator download view is not a glob'
       unless $fh->isa('GLOB');
 
-   $c->res->body($fh);
+   $context->res->body($fh);
 }
 
 sub output_iterator {
-   my ($self, $c, $iter, $config) = @_;
+   my ($self, $context, $iter, $config) = @_;
 
    throw "Iterator provided to download view does not have a 'next' method"
       unless $iter->can('next');
@@ -86,22 +82,22 @@ sub output_iterator {
    while (defined(my $chunk = $iter->next)) {
       $chunk .= $ending if defined $ending;
 
-      $c->res->write(encode_utf8($chunk));
+      $context->res->write(encode_utf8($chunk));
    }
 }
 
 sub output_string {
-   my ($self, $c, $string) = @_;
+   my ($self, $context, $string) = @_;
 
    $string = ${$string} if is_scalarref($string) && !blessed($string);
 
-   $c->res->write(encode_utf8($string));
+   $context->res->write(encode_utf8($string));
 }
 
 sub output_coderef {
-   my ($self, $c, $code) = @_;
+   my ($self, $context, $code) = @_;
 
-   $code->($self, $c);
+   $code->($self, $context);
 }
 
 sub _get_mime_type {
@@ -131,7 +127,7 @@ sub _get_mime_type {
 }
 
 sub _set_response_headers {
-   my ($self, $c, $mime_type, $filename) = @_;
+   my ($self, $context, $mime_type, $filename) = @_;
 
    my @headers = (Content_Type => "${mime_type}; charset=utf-8");
 
@@ -141,7 +137,9 @@ sub _set_response_headers {
          'attachment; filename=' . quote_double $filename;
    }
 
-   $c->res->header(@headers);
+   $context->res->header(@headers);
 }
+
+use namespace::autoclean;
 
 1;

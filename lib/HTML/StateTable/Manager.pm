@@ -16,7 +16,7 @@ has 'meta_key' => is => 'ro', isa => Str, default => 'table_meta';
 
 has 'namespace' => is => 'ro', isa => Str, required => TRUE;
 
-has 'query_key' => is => 'ro', isa => Str, predicate => 'has_query_key';
+has 'query_key' => is => 'ro', isa => Str, default => 'table_name';
 
 has 'renderer_class' =>
    is        => 'ro',
@@ -39,8 +39,7 @@ sub table {
    my $class = $self->_renderer_class($options->{context});
 
    $options->{renderer_class} = $class if $class;
-   $options->{renderer_args}->{query_key} = $self->query_key
-      if $self->has_query_key;
+   $options->{renderer_args}->{query_key} = $self->query_key;
 
    my $table = $self->_get_class($name)->new($options);
 
@@ -100,7 +99,7 @@ sub _setup_view {
    my $key    = $params->{$self->query_key} // q();
 
    if ($key eq $table->name) {
-      $context->stash->{current_view} = $self->view_name;
+      $context->stash->{view} = $self->view_name;
 
       $context->stash->{$self->stash_key} = {
          format          => 'json',

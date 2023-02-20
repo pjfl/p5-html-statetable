@@ -3,13 +3,14 @@ package HTML::StateTable::Constants;
 use strictures;
 
 use Sub::Exporter -setup => {
-	exports => [
+   exports => [
       qw( COL_INFO_TYPE_ATTR COLUMN_ALIAS COLUMN_META COLUMN_META_CONFIG
-          ENCODE_ENTITIES EXCEPTION_CLASS EXTENSION_TYPE FALSE INDENT_CHARS
-          ITERATOR_DOWNLOAD_KEY NUL QUERY_KEY RENDERER_CLASS RENDERER_PREFIX
-          SERIALISE_COLUMN_ATTR SERIALISE_TABLE_KEY SERIALISE_TABLE_VIEW
-          SPC TABLE_META TABLE_META_CONFIG TRIGGER_CLASS TRUE TYPE_EXTENSION )
-      ],
+          COLUMN_TRAIT_PREFIX ENCODE_ENTITIES EXCEPTION_CLASS EXTENSION_TYPE
+          FALSE INDENT_CHARS ITERATOR_DOWNLOAD_KEY NUL QUERY_KEY RENDERER_CLASS
+          RENDERER_PREFIX SERIALISE_COLUMN_ATTR SERIALISE_TABLE_KEY
+          SERIALISE_TABLE_VIEW SPC TABLE_META TABLE_META_CONFIG TRIGGER_CLASS
+          TRUE TYPE_EXTENSION )
+   ]
 };
 
 sub COL_INFO_TYPE_ATTR () { 'data_type' }
@@ -19,6 +20,8 @@ sub COLUMN_ALIAS () { 'hst_' }
 sub COLUMN_META () { '_html_statetable_column_meta' }
 
 sub COLUMN_META_CONFIG () { () }
+
+sub COLUMN_TRAIT_PREFIX () { 'HTML::StateTable::Column::Trait' }
 
 sub ENCODE_ENTITIES () { q(<>&") }
 
@@ -80,13 +83,13 @@ sub RENDERER_CLASS () { 'EmptyDiv' }
 sub RENDERER_PREFIX () { 'HTML::StateTable::Renderer' }
 
 sub SERIALISE_COLUMN_ATTR () {
-   return qw( cell_traits css_class filterable label
-              name options searchable sort_column sortable width );
+   return qw( css_class filterable label name options
+              searchable sort_column sortable traits width );
 }
 
 sub SERIALISE_TABLE_KEY () { '_serialise_table' }
 
-sub SERIALISE_TABLE_VIEW () { 'SerialiseTable' }
+sub SERIALISE_TABLE_VIEW () { 'serialise_table' }
 
 sub SPC () { q( ) }
 
