@@ -13,6 +13,8 @@ has '+mime_type' => default => 'application/json';
 
 has 'serialise_as_hashref' => is => 'ro', isa => Bool, default => TRUE;
 
+has 'serialise_meta' => is => 'ro', isa => Bool, default => FALSE;
+
 has 'serialise_record_key' => is => 'ro', isa => Str, default => 'name';
 
 has '_json' => is => 'ro', isa => Object, default => sub {
@@ -28,8 +30,12 @@ has '_tags' =>
 around 'serialise' => sub {
    my ($orig, $self) = @_;
 
+   my $table = $self->table;
+
+   return $self->_serialise_meta($table) if $self->serialise_meta;
+
    if ($self->serialise_as_hashref) {
-      my $total = $self->table->no_count ? q() : $self->table->row_count // q();
+      my $total = $table->no_count ? q() : $table->row_count // q();
 
       $self->writer->('{"total-records":"' . $total . '","records":');
    }
@@ -103,6 +109,17 @@ sub _extract_tags {
    }
 
    return \%tags;
+}
+
+sub _serialise_meta {
+   my ($self, $table) = @_;
+
+   $self->writer->($self->_json->encode({
+      displayable  => $table->displayable_columns,
+      serialisable => $table->serialisable_columns,
+   }));
+
+   return TRUE;
 }
 
 sub _store_value_as_hash {

@@ -23,12 +23,15 @@ HStateTable.Renderer = (function() {
    const triggerClass = 'state-table';
    const columnTraits = HStateTable.Column.Trait;
    const controls = { // A role applied to the table control elements
-      controlElement(element, text) {
+      controlElement(element, text, handler, event) {
          const anchor = document.createElement('a');
          anchor.textContent = text;
-         anchor.addEventListener('click', function(event) {
-            this.clickHandler(event, text);
-         }.bind(this));
+         handler ||= 'clickHandler';
+         if (handler != 'none') {
+            event ||= 'click';
+            const func = function(ev) { this[handler](ev, text); };
+            anchor.addEventListener(event, func.bind(this));
+         }
          const item = document.createElement(element);
          item.append(anchor);
          return item;
@@ -66,12 +69,14 @@ HStateTable.Renderer = (function() {
       }
    };
    class Column {
-      constructor(config) {
+      constructor(table, config) {
          this.displayed = config['displayed'];
          this.label = config['label'];
          this.name = config['name'];
          this.options = config['options'] || {};
          this.sortable = config['sortable'];
+         this.sortDesc = table.state('sortDesc');
+         this.table = table;
          this.traits = config['traits'] || [];
       }
       applyTraits(cell) {
@@ -90,11 +95,25 @@ HStateTable.Renderer = (function() {
          return cell;
       }
       render() {
-         const cell = document.createElement('th');
-         cell.append(document.createTextNode(this.label || this.name ));
+         const label   = this.label || this.name;
+         const handler = this.sortable ? 'sortHandler' : 'none';
+         const cell    = this.controlElement('th', label, handler);
+         if (this.sortable && this.table.state('sortColumn') == this.name) {
+            const symbol = this.sortDesc ? '▾' : '▴';
+            cell.append(document.createTextNode(symbol));
+         }
          return cell;
       }
+      sortHandler(event, text) {
+         event.preventDefault();
+         this.sortDesc = !this.sortDesc;
+         this.table.resultset.search({}, {
+            sortColumn: this.name, sortDesc: this.sortDesc
+         });
+         this.table.redraw();
+      }
    };
+   Object.assign(Column.prototype, controls);
    class PageControl {
       constructor(table) {
          this.container = table.container;
@@ -108,7 +127,7 @@ HStateTable.Renderer = (function() {
          if (text == 'prev' && page > 1) { page -= 1 }
          else if (text == 'next') { page += 1 }
          this.table.resultset.search({}, { page: page });
-         this.table.renderRows();
+         this.table.redraw();
       }
       render() {
          for (const text of ['prev', 'next']) {
@@ -129,7 +148,7 @@ HStateTable.Renderer = (function() {
       clickHandler(event, size) {
          event.preventDefault();
          this.table.resultset.search({}, { pageSize: size });
-         this.table.renderRows();
+         this.table.redraw();
       }
       render() {
          for (const size of [10, 20, 50, 100]) {
@@ -171,17 +190,6 @@ HStateTable.Renderer = (function() {
       prepareURL() {
          const url = new URL(this.dataURL);
          const state = this.table.state.bind(this.table);
-         if (this.enablePaging) {
-            url.searchParams.set('page', state('page'));
-            url.searchParams.set('page_size', state('pageSize'));
-         }
-         else {
-            url.searchParams.delete('page');
-            url.searchParams.delete('page_size');
-         }
-         const sortColumn = state('sortColumn');
-         if (sortColumn) url.searchParams.set('sort_column', sortColumn);
-         else url.searchParams.delete('sort_column');
          const filterColumn = state('filterColumn');
          const filterValue = state('filterValue');
          if (filterColumn && filterValue) {
@@ -192,6 +200,20 @@ HStateTable.Renderer = (function() {
             url.searchParams.delete('filter_column');
             url.searchParams.delete('filter_value');
          }
+         if (this.enablePaging) {
+            url.searchParams.set('page', state('page'));
+            url.searchParams.set('page_size', state('pageSize'));
+         }
+         else {
+            url.searchParams.delete('page');
+            url.searchParams.delete('page_size');
+         }
+         const sortColumn = state('sortColumn');
+         if (sortColumn) url.searchParams.set('sort', sortColumn);
+         else url.searchParams.delete('sort');
+         const sortDesc = state('sortDesc');
+         if (sortColumn && sortDesc) url.searchParams.set('desc', sortDesc);
+         else url.searchParams.delete('desc');
          return url;
       }
       reset() {
@@ -215,9 +237,9 @@ HStateTable.Renderer = (function() {
    class Row {
       constructor(table, result) {
          this.cells = [];
+         this.columns = table.columns;
          this.result = result;
          this.table = table;
-         this.columns = table.columns;
 
          for (const column of this.columns) {
             this.cells.push(column.createCell(this));
@@ -231,11 +253,13 @@ HStateTable.Renderer = (function() {
    };
    class State {
       constructor() {
-         this.page = 1;
-         this.pageSize = 20;
-         this.sortColumn = null;
          this.filterColumn = null;
          this.filterValue = null;
+         this.page = 1;
+         this.pageSize = 20;
+         this.search = null;
+         this.sortColumn = null;
+         this.sortDesc = false;
       }
    }
    class Table {
@@ -244,6 +268,7 @@ HStateTable.Renderer = (function() {
          this.body = document.createElement('tbody');
          this.columns = [];
          this.container = container;
+         this.header = document.createElement('thead');
          this.name = config['name'];
          this.properties = config['properties'];
          this.resultset = new Resultset(this, config);
@@ -254,8 +279,12 @@ HStateTable.Renderer = (function() {
          this.pageSizeControl = new PageSizeControl(this);
 
          for (const column of (config['columns'] || [])) {
-            this.columns.push(new Column(column));
+            this.columns.push(new Column(this, column));
          }
+
+         this.container.append(this.table);
+         this.table.append(this.header);
+         this.table.append(this.body);
       }
       async nextResult() {
          return await this.resultset.next();
@@ -264,20 +293,22 @@ HStateTable.Renderer = (function() {
          const result = await this.nextResult()
          return result ? new Row(this, result) : undefined;
       }
-      render() {
-         this.container.append(this.table);
+      redraw() {
          this.renderHeader();
-         this.table.append(this.body);
          this.renderRows();
+      }
+      render() {
+         this.redraw();
          this.pageControl.render();
          this.pageSizeControl.render();
       }
       renderHeader() {
          const row = document.createElement('tr');
          for (const column of this.columns) { row.append(column.render()); }
-         const header = document.createElement('thead');
-         header.append(row);
-         this.table.append(header);
+         const thead = document.createElement('thead');
+         thead.append(row);
+         this.table.replaceChild(thead, this.header);
+         this.header = thead;
       }
       renderNoData() {
          const cell = document.createElement('td');
@@ -295,10 +326,12 @@ HStateTable.Renderer = (function() {
          const tbody = document.createElement('tbody');
          if (!this.rows[0]) { tbody.append(this.renderNoData()); }
          else { for (row of this.rows) { tbody.append(row.render()); } }
-         this.body.replaceWith(tbody);
+         this.table.replaceChild(tbody, this.body);
+         this.body = tbody;
       }
       state(key, value) {
-         if (value) this._state[key] = value;
+         if (!this._state.hasOwnProperty(key)) return;
+         if (typeof value !== 'undefined') this._state[key] = value;
          return this._state[key];
       }
    };

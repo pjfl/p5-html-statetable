@@ -2,7 +2,7 @@ package HTML::StateTable;
 
 use 5.010001;
 use namespace::autoclean;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 4 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 5 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -243,7 +243,12 @@ around 'BUILDARGS' => sub {
    return $args;
 };
 
-sub BUILD {}
+sub BUILD {
+   my $self = shift;
+
+   $self->_apply_params if $self->has_context;
+   return;
+}
 
 # Public methods
 sub next_result {
@@ -327,6 +332,32 @@ sub _apply_pageing {
    });
 }
 
+sub _apply_params {
+   my $self = shift;
+
+   throw 'Applying parameters needs a context object' unless $self->has_context;
+
+   my $sort = $self->_param_value('sort');
+
+   $self->sort_column_name($sort) if $sort;
+
+   my $sort_desc = $self->_param_value('desc');
+
+   $self->sort_desc(!!$sort_desc) if $sort;
+
+   my $page = $self->_param_value('page');
+
+   $self->page($page) if defined $page && $page =~ m{ \A [0-9]+ \z }mx;
+
+   if (my $page_size = $self->_param_value('page_size')) {
+      $page_size = 1 if $page_size < 1;
+      $page_size = $self->max_page_size if $page_size > $self->max_page_size;
+      $self->page_size($page_size);
+   }
+
+   return;
+}
+
 sub _apply_sorting {
    my ($self, $resultset) = @_;
 
@@ -377,7 +408,7 @@ sub _param_value {
 
    return unless $self->has_context;
 
-   my $params = $self->request->params;
+   my $params = $self->request->query_parameters;
    my $value;
 
    if ($self->name) {
@@ -386,7 +417,7 @@ sub _param_value {
       $value = $params->{$param_key} if exists $params->{$param_key};
    }
 
-   $value = $params->{$name} if not defined $value and exists $params->{$name};
+   $value = $params->{$name} if !defined $value and exists $params->{$name};
 
    return $value;
 }

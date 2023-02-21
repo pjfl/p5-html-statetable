@@ -1,7 +1,5 @@
 package HTML::StateTable::Role::Downloadable;
 
-use namespace::autoclean;
-
 use HTML::StateTable::Constants qw( SERIALISE_TABLE_KEY SERIALISE_TABLE_VIEW
                                     TRUE );
 use HTML::StateTable::Types     qw( Bool Str );
@@ -50,6 +48,7 @@ after 'BUILD' => sub {
    }
 };
 
+# Called by serialise_roles in EmptyDiv renderer
 sub serialise_downloadable {
    my $self = shift;
 
@@ -59,5 +58,7 @@ sub serialise_downloadable {
       download_method   => $self->download_method,
    } : undef;
 }
+
+use namespace::autoclean;
 
 1;

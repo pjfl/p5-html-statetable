@@ -128,10 +128,9 @@ sub quote_string ($$) {
             . 'characters', [$quote // q()]);
    }
 
-   my ($start_quote, $end_quote) = split //, $quote;
+   my ($start_quote, $end_quote) = split m{}mx, $quote;
 
-   $end_quote //= $start_quote;
-
+   $end_quote ||= $start_quote;
    $string =~ s{
       ( \\                 # backslash
         | \Q$start_quote\E # start quote

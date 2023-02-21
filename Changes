@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Handles paging and sorting
           - Added date column trait and working empty div js rendered tables
           - Added method to dereference compound column references
           - Wrote Table renderer under protest
