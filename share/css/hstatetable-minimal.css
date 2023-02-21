@@ -3,9 +3,24 @@ div.state-table .page-control li,
 div.state-table .page-size-control li {
    display: inline-block;
 }
+div.state-table .page-control {
+   color: gray; float: left; font-size: small; padding-left: 0; margin-top: 0;
+}
+div.state-table .page-control li.disabled {
+   text-decoration: line-through;
+}
+div.state-table .page-control li::first-letter {
+   text-transform:capitalize;
+}
 div.state-table .page-size-control {
    color: gray; float: right; font-size: small; margin-top: 0;
 }
-div.state-table .page-control {
-   color: gray; float: left; font-size: small; padding-left: 0; margin-top: 0;
+div.state-table .page-size-control li.selected-page-size {
+   text-decoration: underline;
+}
+div.state-table table td.number {
+   text-align: right;
+}
+div.state-table table tr.odd {
+   background: linen;
 }

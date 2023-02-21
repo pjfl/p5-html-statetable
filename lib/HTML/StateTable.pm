@@ -2,7 +2,7 @@ package HTML::StateTable;
 
 use 5.010001;
 use namespace::autoclean;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 6 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 7 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -87,6 +87,8 @@ has 'page_size' =>
    trigger => \&clear_prepared_resultset,
    default => sub { shift->_default('page_size', 20) };
 
+has 'pager' => is => 'lazy', default => sub { shift->prepared_resultset->pager};
+
 has 'paging' => is => 'rw', isa => Bool, default => TRUE;
 
 has 'prepared_resultset' =>
@@ -151,7 +153,16 @@ has 'row_class' =>
    isa     => LoadableClass,
    default => 'HTML::StateTable::Row';
 
-has 'row_count' => is => 'ro', isa => NonZeroPositiveInt;
+has 'row_count' =>
+   is       => 'lazy',
+   isa      => NonZeroPositiveInt,
+   init_arg => undef,
+   default  => sub {
+      my $self = shift;
+
+      return $self->paging
+         ? $self->pager->total_entries : $self->prepared_resultset->count;
+   };
 
 has 'sort_column_name' =>
    is      => 'rw',

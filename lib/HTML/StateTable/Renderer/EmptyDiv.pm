@@ -143,6 +143,7 @@ sub _serialise_properties {
    my $data = {
       'data-url'        => $uri->as_string,
       'enable-paging'   => json_bool $table->paging,
+      'no-count'        => json_bool $table->no_count,
       'no-data-message' => $table->empty_text,
       'max-page-size'   => $table->max_page_size,
    };

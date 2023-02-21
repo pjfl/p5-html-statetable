@@ -1,6 +1,11 @@
 // Package HStateTable.Util
 if (!window.HStateTable) window.HStateTable = {};
 HStateTable.Util = (function () {
+   const appendValue = function(object, key, newValue) {
+      let existingValue = object[key] || '';
+      if (existingValue) existingValue += ' ';
+      return existingValue + newValue;
+   };
    const onReady = function(callback) {
       if (document.readyState != 'loading') callback();
       else if (document.addEventListener)
@@ -11,7 +16,8 @@ HStateTable.Util = (function () {
    };
 
    return {
-      onReady: onReady,
+      appendValue: appendValue,
+      onReady: onReady
    };
 })();
 // Package HStateTable.Renderer
@@ -43,28 +49,23 @@ HStateTable.Renderer = (function() {
          this.row = row;
          this.wrappableMethods = ['getValue'];
       }
-      createElementByType(value) {
-         const type = typeof(value);
-         if (type == 'number' || type == 'string') {
-            return document.createTextNode(value);
-         }
-         else if (type == 'object') {
-            const node = document.createTextNode(value.value);
-            if (value.link) {
-               const link = document.createElement('a');
-               link.href = value.link;
-               link.append(node)
-               return link;
-            }
-            return node;
-         }
-      }
       getValue() {
-         return this.row.result[this.column.name];
+         const value = this.row.result[this.column.name];
+         if (typeof value == 'object') return value;
+         return { value: value };
       }
       render() {
          const cell = document.createElement('td');
-         cell.append(this.createElementByType(this.getValue()));
+         const value = this.getValue();
+         if (value.wrapperClass) { cell.className = value.wrapperClass; }
+         const node = document.createTextNode(value.value);
+         if (value.link) {
+            const link = document.createElement('a');
+            link.href = value.link;
+            link.append(node)
+            cell.append(link);
+         }
+         else { cell.append(node); }
          return cell;
       }
    };
@@ -115,34 +116,106 @@ HStateTable.Renderer = (function() {
    };
    Object.assign(Column.prototype, controls);
    class PageControl {
-      constructor(table) {
+      constructor(table, list) {
+         this.className = 'page-control';
          this.container = table.container;
-         this.list = document.createElement('ul');
-         this.list.className = 'page-control';
+         this.enablePaging = table.properties['enable-paging'];
+         this.list = list;
+         this.list.className = this.className;
+         this.pagingText = 'Page %current_page of %last_page';
          this.table = table;
       }
       clickHandler(event, text) {
          event.preventDefault();
          let page = this.table.state('page');
-         if (text == 'prev' && page > 1) { page -= 1 }
-         else if (text == 'next') { page += 1 }
+         const lastPage = this.lastPage();
+         if (text == 'first') { page = this.firstPage() }
+         else if (text == 'prev' && page > 1) { page -= 1 }
+         else if (text == 'next' && page < lastPage) { page += 1 }
+         else if (text == 'last') { page = lastPage }
          this.table.resultset.search({}, { page: page });
          this.table.redraw();
       }
+      firstPage() {
+         return 1;
+      }
+      interpolatePageText() {
+         let text = this.pagingText;
+         text = text.replace(/\%current_page/, this.table.state('page'));
+         text = text.replace(/\%last_page/, this.lastPage());
+         return text;
+      }
+      lastPage() {
+         let pages = this.totalRecords() / this.table.state('pageSize');
+         let lastPage;
+         if (pages == Math.floor(pages)) { lastPage = pages; }
+         else { lastPage = 1 + Math.floor(pages) }
+         if (lastPage < 1) lastPage = 1;
+         return lastPage;
+      }
       render() {
-         for (const text of ['prev', 'next']) {
-            this.list.append(this.controlElement('li', text));
-            this.list.append(document.createTextNode(' '));
+         if (!this.enablePaging) return;
+         if (!this.table.properties['no-count']) { this.renderPageControl(); }
+         else { this.renderPageControlNoCount(); }
+      }
+      renderPageControl() {
+         const currentPage = this.table.state('page');
+         const atFirst = !!(currentPage <= this.firstPage());
+         const atLast  = !!(currentPage >= this.lastPage());
+         const list = document.createElement('ul');
+         list.className = this.className;
+         for (const text of ['first', 'prev', 'page', 'next', 'last']) {
+            let elem;
+            if (text == 'page') {
+               elem = document.createTextNode(this.interpolatePageText());
+            }
+            else if (((text == 'first' || text == 'prev') && atFirst)
+                     ||((text == 'next' || text == 'last') && atLast)) {
+               elem = this.controlElement('li', text, 'none');
+               elem.className = 'disabled';
+            }
+            else { elem = this.controlElement('li', text); }
+            list.append(elem);
+            list.append(document.createTextNode('\xA0'));
          }
-         this.container.append(this.list);
+         this.container.replaceChild(list, this.list);
+         this.list = list;
+      }
+      renderPageControlNoCount() {
+         const currentPage = this.table.state('page');
+         const atFirst = !!(currentPage <= this.firstPage());
+         const atLast  = !!(currentPage >= this.table.rowCount);
+         const list = document.createElement('ul');
+         list.className = this.className;
+         for (const text of ['first', 'prev', 'page', 'next']) {
+            let elem;
+            if (text == 'page') {
+               elem = document.createTextNode('Page\xA0' + currentPage);
+            }
+            else if (((text == 'first' || text == 'prev') && atFirst)
+                     || (text == 'next' && atLast)) {
+               elem = this.controlElement('li', text, 'none');
+               elem.className = 'disabled';
+            }
+            else { elem = this.controlElement('li', text); }
+            list.append(elem);
+            list.append(document.createTextNode('\xA0'));
+         }
+         this.container.replaceChild(list, this.list);
+         this.list = list;
+      }
+      totalRecords() {
+         return this.table.properties['total-records'];
       }
    }
    Object.assign(PageControl.prototype, controls);
    class PageSizeControl {
-      constructor(table) {
+      constructor(table, list) {
+         this.className = 'page-size-control';
          this.container = table.container;
-         this.list = document.createElement('ul');
-         this.list.className = 'page-size-control';
+         this.enablePaging = table.properties['enable-paging'];
+         this.list = list
+         this.list.className = this.className;
          this.table = table;
       }
       clickHandler(event, size) {
@@ -151,21 +224,32 @@ HStateTable.Renderer = (function() {
          this.table.redraw();
       }
       render() {
-         for (const size of [10, 20, 50, 100]) {
-            if (size > 10) this.list.append(document.createTextNode(', '));
-            this.list.append(this.controlElement('li', size));
+         if (!this.enablePaging) return;
+         const sizes = [10, 20, 50, 100];
+         const maxPageSize = this.table.properties['max-page-size'] || 0;
+         if (maxPageSize > 100) sizes.push(maxPageSize);
+         const list = document.createElement('ul');
+         list.className = this.className;
+         list.append(this.controlElement('li','Showing up to\xA0','none'));
+         for (const size of sizes) {
+            if (size > 10) list.append(document.createTextNode(',\xA0'));
+            const item = this.controlElement('li', size);
+            if (size == this.table.state('pageSize'))
+               item.className = 'selected-page-size'
+            list.append(item);
          }
-         this.container.append(this.list);
+         list.append(this.controlElement('li', '\xA0rows', 'none'));
+         this.container.replaceChild(list, this.list);
+         this.list = list;
       }
    }
    Object.assign(PageSizeControl.prototype, controls);
    class Resultset {
-      constructor(table, config) {
-         const properties = config['properties'];
-         this.dataURL = properties['data-url'];
-         this.enablePaging = properties['enable-paging'];
+      constructor(table) {
+         this.dataURL = table.properties['data-url'];
+         this.enablePaging = table.properties['enable-paging'];
          this.index = 0;
-         this.maxPageSize = properties['max-page-size'] || null;
+         this.maxPageSize = table.properties['max-page-size'] || null;
          this.records = [];
          this.table = table;
          this.totalRecords = 0;
@@ -271,20 +355,28 @@ HStateTable.Renderer = (function() {
          this.header = document.createElement('thead');
          this.name = config['name'];
          this.properties = config['properties'];
-         this.resultset = new Resultset(this, config);
+         this.resultset = new Resultset(this);
          this.rows = [];
+         this.rowCount = 0;
          this.table = document.createElement('table');
 
-         this.pageControl = new PageControl(this);
-         this.pageSizeControl = new PageSizeControl(this);
+         this.table.id = this.name;
 
          for (const column of (config['columns'] || [])) {
             this.columns.push(new Column(this, column));
          }
 
+         this.pageControlList = document.createElement('ul');
+         this.pageControl = new PageControl(this, this.pageControlList);
+
+         this.pageSizeControlList = document.createElement('ul');
+         this.pageSizeControl = new PageSizeControl(this, this.pageSizeControlList);
+
          this.container.append(this.table);
          this.table.append(this.header);
          this.table.append(this.body);
+         this.container.append(this.pageControlList);
+         this.container.append(this.pageSizeControlList);
       }
       async nextResult() {
          return await this.resultset.next();
@@ -296,11 +388,11 @@ HStateTable.Renderer = (function() {
       redraw() {
          this.renderHeader();
          this.renderRows();
+         this.pageControl.render();
+         this.pageSizeControl.render();
       }
       render() {
          this.redraw();
-         this.pageControl.render();
-         this.pageSizeControl.render();
       }
       renderHeader() {
          const row = document.createElement('tr');
@@ -321,22 +413,34 @@ HStateTable.Renderer = (function() {
       }
       async renderRows() {
          this.rows = [];
+         this.rowCount = 0;
          let row;
          while (row = await this.nextRow()) { this.rows.push(row); }
+         this.rowCount = this.rows.length;
          const tbody = document.createElement('tbody');
-         if (!this.rows[0]) { tbody.append(this.renderNoData()); }
-         else { for (row of this.rows) { tbody.append(row.render()); } }
+         if (this.rowCount) {
+            let className = 'odd';
+            for (row of this.rows) {
+               const rendered = row.render();
+               rendered.className = className;
+               className = (className == 'odd') ? 'even' : 'odd';
+               tbody.append(rendered);
+            }
+         }
+         else { tbody.append(this.renderNoData()); }
          this.table.replaceChild(tbody, this.body);
          this.body = tbody;
       }
       state(key, value) {
          if (!this._state.hasOwnProperty(key)) return;
-         if (typeof value !== 'undefined') this._state[key] = value;
+         if (typeof value !== 'undefined') {
+            this._state[key] = value;
+            if (key == 'pageSize') this._state['page'] = 1;
+         }
          return this._state[key];
       }
    };
    const tables = {};
-   let tableCreation = true;
    const createTables = function(els) {
       for (const el of els) {
          const table = new Table(el, JSON.parse(el.dataset[dsName]));
@@ -344,6 +448,7 @@ HStateTable.Renderer = (function() {
          table.render();
       }
    };
+   let tableCreation = true;
 
    return {
       initialise: function() {
@@ -358,29 +463,42 @@ HStateTable.Renderer.initialise();
 // Package HStateTable.Column.Trait.Date
 HStateTable.Column.Trait.Date = (function() {
    return {
-      getValue: function(value) {
-         return new Date(value).toLocaleDateString();
+      getValue: function(cell) {
+         cell.value = new Date(cell.value).toLocaleDateString();
+         return cell;
+      }
+   };
+})();
+// Package HStateTable.Column.Trait.Number
+HStateTable.Column.Trait.Number = (function() {
+   const appendValue = HStateTable.Util.appendValue;
+   return {
+      getValue: function(cell) {
+         cell.wrapperClass = appendValue(cell, 'wrapperClass', 'number');
+         return cell;
       }
    };
 })();
 // Package HStateTable.Column.Trait.Time
 HStateTable.Column.Trait.Time = (function() {
    return {
-      getValue: function(value) {
+      getValue: function(cell) {
          const options = { hour: "2-digit", minute: "2-digit" };
-         return new Date(value).toLocaleTimeString([], options);
+         cell.value = new Date(cell.value).toLocaleTimeString([], options);
+         return cell;
       }
    };
 })();
 // Package HStateTable.Column.Trait.DateTime
 HStateTable.Column.Trait.DateTime = (function() {
    return {
-      getValue: function(value) {
-         const datetime = new Date(value);
+      getValue: function(cell) {
+         const datetime = new Date(cell.value);
          const date = datetime.toLocaleDateString();
          const options = { hour: "2-digit", minute: "2-digit" };
          const time = datetime.toLocaleTimeString([], options);
-         return  date + ' ' + time;
+         cell.value = date + ' ' + time;
+         return cell;
       }
    };
 })();

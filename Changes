@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Adds number trait
           - Dropped Table renderer
           - Handles paging and sorting
           - Added date column trait and working empty div js rendered tables
