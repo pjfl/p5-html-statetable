@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Adds searchable table role
           - Adds number trait
           - Dropped Table renderer
           - Handles paging and sorting

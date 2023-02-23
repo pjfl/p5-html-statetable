@@ -3,8 +3,9 @@ div.state-table .page-control li,
 div.state-table .page-size-control li {
    display: inline-block;
 }
-div.state-table .page-control {
-   color: gray; float: left; font-size: small; padding-left: 0; margin-top: 0;
+div.state-table .page-control,
+div.state-table .page-size-control {
+   color: gray; font-size: small; margin-top: 0; padding-left: 0;
 }
 div.state-table .page-control li.disabled {
    text-decoration: line-through;
@@ -12,11 +13,26 @@ div.state-table .page-control li.disabled {
 div.state-table .page-control li::first-letter {
    text-transform:capitalize;
 }
-div.state-table .page-size-control {
-   color: gray; float: right; font-size: small; margin-top: 0;
-}
 div.state-table .page-size-control li.selected-page-size {
    text-decoration: underline;
+}
+div.state-table .status-messages {
+   background: khaki; border-radius: 3px; margin-top: 5px;
+   padding: 3px 5px; text-align: center;
+}
+div.state-table .status-messages a {
+   margin-left: 5px; text-decoration: underline;
+}
+div.state-table table {
+   display: block;
+}
+div.state-table .top-left-control,
+div.state-table .bottom-left-control {
+   display: inline-block; float: left;
+}
+div.state-table .top-right-control,
+div.state-table .bottom-right-control {
+   display: inline-block; float: right;
 }
 div.state-table table td.number {
    text-align: right;
@@ -24,3 +40,4 @@ div.state-table table td.number {
 div.state-table table tr.odd {
    background: linen;
 }
+

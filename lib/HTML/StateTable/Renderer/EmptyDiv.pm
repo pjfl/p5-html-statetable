@@ -64,7 +64,7 @@ sub _boolify {
 
    my $attr_meta = $column->_get_meta->find_attribute_by_name($attribute);
    my $type      = $attr_meta->isa if defined $attr_meta;
-   my $is_bool   = defined $type && $type->name =~ m{ Bool }mx ? TRUE : FALSE;
+   my $is_bool   = defined $type && $type =~ m{ Bool }mx ? TRUE : FALSE;
 
    if ($is_bool) { $value = json_bool $value }
    elsif (is_hashref $value) {
@@ -119,9 +119,9 @@ sub _serialise_columns {
             = $self->_boolify($column, $attribute, $value);
       }
 
-      $attributes{traits} = [
+      $attributes{cell_traits} = [
          map { @{ _trait_names $dummy_row, $column, $_ } }
-               @{ delete $attributes{traits} }
+               @{ delete $attributes{cell_traits} }
       ];
 
       $attributes{has_tags} = json_bool TRUE

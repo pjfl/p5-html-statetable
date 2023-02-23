@@ -3,15 +3,20 @@ package HTML::StateTable::Moo;
 use mro;
 use strictures;
 
-use HTML::StateTable::Constants qw( FALSE TABLE_META TABLE_META_CONFIG TRUE );
+use HTML::StateTable::Constants qw( COLUMN_TRAIT_PREFIX FALSE TABLE_META
+                                    TABLE_META_CONFIG TRUE );
 use HTML::StateTable::Util      qw( throw );
 use Ref::Util                   qw( is_arrayref );
 use Sub::Install                qw( install_sub );
 use HTML::StateTable::Column;
 use HTML::StateTable::Meta;
 
-my @banished_keywords = qw( TABLE_META );
-my $column_class = 'HTML::StateTable::Column';
+my $auto_column_traits = {
+   filterable => 'Filterable',
+   searchable => 'Searchable',
+};
+my @banished_keywords  = qw( TABLE_META );
+my $column_class       = 'HTML::StateTable::Column';
 
 sub import {
    my ($class, @args) = @_;
@@ -43,16 +48,23 @@ sub import {
    my $info = $Role::Tiny::INFO{$target};
    my $has_column = sub ($;%) {
       my ($name, %attributes) = @_;
-      my $names = is_arrayref $name ? $name : [$name];
+
+      my $names  = is_arrayref $name ? $name : [$name];
+      my $traits = delete $attributes{traits} // [];
+
+      for my $key (keys %{$auto_column_traits}) {
+         push @{$traits}, COLUMN_TRAIT_PREFIX.'::'.$auto_column_traits->{$key}
+            if exists $attributes{$key};
+      }
 
       for my $name (@{$names}) {
          _assert_no_banished_keywords($target, $name);
 
-         my $column_attr = [ $column_class->_get_meta->get_all_attributes ];
-         my $column = $column_class->new({
-            name => $name,
-            _validate_and_filter_column_attr($column_attr, %attributes)
-         });
+         my $column = $column_class->new_with_traits(
+            name   => $name,
+            traits => $traits,
+            %attributes
+         );
 
          $meta->add_column($column);
       }
@@ -101,13 +113,12 @@ sub _assert_no_banished_keywords {
    return;
 }
 
-sub _validate_and_filter_column_attr {
+sub _remaining_attr {
    my ($column_attr, %attributes) = @_;
 
-   my %filtered = map { ($_ => $attributes{$_}) }
-                 grep { exists $attributes{$_} } @{$column_attr};
+   for my $attr (@{$column_attr}) { delete $attributes{$attr} }
 
-   return %filtered;
+   return %attributes;
 }
 
 1;

@@ -9,7 +9,7 @@ use JSON qw();
 use Sub::Exporter -setup => {
    exports => [
       qw( encode_only_entities foreign_sort json_bool quote_column_name
-          quote_double quote_single quote_string throw unquote_string )
+          quote_double quote_single quote_string throw trim unquote_string )
    ],
 };
 
@@ -143,6 +143,14 @@ sub quote_string ($$) {
 
 sub throw (;@) {
    EXCEPTION_CLASS->throw(@_);
+}
+
+sub trim (;$) {
+   my $string = shift // q();
+
+   $string =~ s{ \A [ \t]+ }{}mx; $string =~ s{ [ \t]+ \z }{}mx;
+
+   return $string;
 }
 
 sub unquote_string ($) {

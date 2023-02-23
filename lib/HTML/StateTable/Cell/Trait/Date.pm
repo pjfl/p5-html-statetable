@@ -1,4 +1,4 @@
-package HTML::StateTable::Column::Trait::Date;
+package HTML::StateTable::Cell::Trait::Date;
 
 use Moo::Role;
 
@@ -14,7 +14,7 @@ __END__
 
 =head1 Name
 
-HTML::StateTable::Column::Trait::Date - One-line description of the modules purpose
+HTML::StateTable::Cell::Trait::Date - One-line description of the modules purpose
 
 =head1 Synopsis
 

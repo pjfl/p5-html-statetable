@@ -1,4 +1,4 @@
-package HTML::StateTable::Column::Trait::Time;
+package HTML::StateTable::Cell::Trait::Time;
 
 use Moo::Role;
 

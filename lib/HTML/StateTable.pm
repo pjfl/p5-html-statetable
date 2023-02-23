@@ -2,15 +2,15 @@ package HTML::StateTable;
 
 use 5.010001;
 use namespace::autoclean;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 7 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 8 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Bool ClassName Column Context
                                     HashRef LoadableClass NonEmptySimpleStr
-                                    NonZeroPositiveInt Object Renderer
-                                    Request ResultSet SimpleStr );
-use HTML::StateTable::Util      qw( foreign_sort throw );
+                                    NonZeroPositiveInt Object PositiveInt
+                                    Renderer Request ResultSet SimpleStr );
+use HTML::StateTable::Util      qw( foreign_sort throw trim );
 use File::DataClass::Functions  qw( ensure_class_loaded );
 use List::Util                  qw( first );
 use Ref::Util                   qw( is_arrayref is_coderef is_hashref );
@@ -60,6 +60,8 @@ has 'empty_text' =>
    isa     => NonEmptySimpleStr,
    default => 'No data to display';
 
+has 'is_filtered' => is => 'rw', isa => Bool, default => FALSE;
+
 has 'max_page_size' => is => 'ro', isa => NonZeroPositiveInt, default => 100;
 
 has 'name' =>
@@ -94,7 +96,7 @@ has 'paging' => is => 'rw', isa => Bool, default => TRUE;
 has 'prepared_resultset' =>
    is        => 'lazy',
    isa       => ResultSet,
-   builder   => '_prepare_resultset',
+   builder   => 'build_prepared_resultset',
    clearer   => 'clear_prepared_resultset',
    predicate => 'has_prepared_resultset',
    required  => TRUE;
@@ -155,7 +157,7 @@ has 'row_class' =>
 
 has 'row_count' =>
    is       => 'lazy',
-   isa      => NonZeroPositiveInt,
+   isa      => PositiveInt,
    init_arg => undef,
    default  => sub {
       my $self = shift;
@@ -262,6 +264,33 @@ sub BUILD {
 }
 
 # Public methods
+sub build_prepared_resultset {
+   my $self      = shift;
+   my $resultset = $self->resultset;
+
+   for my $column ($self->all_visible_columns) {
+      next if ref $column->value or $column->get_option('no_prefetch');
+
+      my @relations = split m{ \. }mx, $column->value; pop @relations;
+
+      next unless scalar @relations;
+
+      my $join;
+
+      for my $relation (reverse @relations) {
+         $join = defined $join ? { $relation => $join } : $relation;
+      }
+
+      $resultset = $resultset->search(undef, { prefetch => $join });
+   }
+
+   $resultset = $self->_apply_column_sql($resultset);
+   $resultset = $self->_apply_pageing($resultset) if $self->paging;
+   $resultset = $self->_apply_sorting($resultset) if $self->sortable;
+
+   return $resultset;
+}
+
 sub next_result {
    return shift->prepared_resultset->next;
 }
@@ -273,6 +302,25 @@ sub next_row {
    return unless defined $result;
 
    return $self->row_class->new( result => $result, table => $self );
+}
+
+sub param_value {
+   my ($self, $name) = @_;
+
+   return unless $self->has_context;
+
+   my $params = $self->request->query_parameters;
+   my $value;
+
+   if ($self->name) {
+      my $param_key = $self->_param_key($name);
+
+      $value = $params->{$param_key} if exists $params->{$param_key};
+   }
+
+   $value = $params->{$name} if !defined $value and exists $params->{$name};
+
+   return $value;
 }
 
 sub reset_resultset {
@@ -348,19 +396,19 @@ sub _apply_params {
 
    throw 'Applying parameters needs a context object' unless $self->has_context;
 
-   my $sort = $self->_param_value('sort');
+   my $sort = trim $self->param_value('sort');
 
    $self->sort_column_name($sort) if $sort;
 
-   my $sort_desc = $self->_param_value('desc');
+   my $sort_desc = trim $self->param_value('desc');
 
    $self->sort_desc(!!$sort_desc) if $sort;
 
-   my $page = $self->_param_value('page');
+   my $page = trim $self->param_value('page');
 
    $self->page($page) if defined $page && $page =~ m{ \A [0-9]+ \z }mx;
 
-   if (my $page_size = $self->_param_value('page_size')) {
+   if (my $page_size = trim $self->param_value('page_size')) {
       $page_size = 1 if $page_size < 1;
       $page_size = $self->max_page_size if $page_size > $self->max_page_size;
       $self->page_size($page_size);
@@ -412,52 +460,6 @@ sub _param_key {
    my ($self, $param_name) = @_;
 
    return $self->name ? $self->name . "_${param_name}" : $param_name;
-}
-
-sub _param_value {
-   my ($self, $name) = @_;
-
-   return unless $self->has_context;
-
-   my $params = $self->request->query_parameters;
-   my $value;
-
-   if ($self->name) {
-      my $param_key = $self->_param_key($name);
-
-      $value = $params->{$param_key} if exists $params->{$param_key};
-   }
-
-   $value = $params->{$name} if !defined $value and exists $params->{$name};
-
-   return $value;
-}
-
-sub _prepare_resultset {
-   my $self      = shift;
-   my $resultset = $self->resultset;
-
-   for my $column ($self->all_visible_columns) {
-      next if ref $column->value or $column->get_option('no_prefetch');
-
-      my @relations = split m{ \. }mx, $column->value; pop @relations;
-
-      next unless scalar @relations;
-
-      my $join;
-
-      for my $relation (reverse @relations) {
-         $join = defined $join ? { $relation => $join } : $relation;
-      }
-
-      $resultset = $resultset->search(undef, { prefetch => $join });
-   }
-
-   $resultset = $self->_apply_column_sql($resultset);
-   $resultset = $self->_apply_pageing($resultset) if $self->paging;
-   $resultset = $self->_apply_sorting($resultset) if $self->sortable;
-
-   return $resultset;
 }
 
 1;

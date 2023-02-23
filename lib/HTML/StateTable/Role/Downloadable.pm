@@ -37,7 +37,7 @@ after 'BUILD' => sub {
    throw 'Undefined view [_1]', [$self->download_view_name]
       unless $self->context->view($self->download_view_name);
 
-   if (my $format = $self->_param_value('download')) {
+   if (my $format = $self->param_value('download')) {
       $self->context->stash->{current_view} = $self->download_view_name;
 
       $self->context->stash->{$self->download_stash_key} = {
