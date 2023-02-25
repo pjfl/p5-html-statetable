@@ -2,7 +2,7 @@ package HTML::StateTable;
 
 use 5.010001;
 use namespace::autoclean;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 8 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 9 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -50,9 +50,7 @@ has 'displayable_columns' =>
    handles_via => 'Hash',
    handles     => { is_displayable_column => 'get' },
    default     => sub {
-      my $self = shift;
-
-      return { map { $_->name => $_->displayed } $self->all_columns };
+      return { map { $_->name => $_->displayed } shift->all_columns };
    };
 
 has 'empty_text' =>
@@ -164,6 +162,15 @@ has 'row_count' =>
 
       return $self->paging
          ? $self->pager->total_entries : $self->prepared_resultset->count;
+   };
+
+has 'serialisable_columns' =>
+   is          => 'lazy',
+   isa         => HashRef[Bool],
+   handles_via => 'Hash',
+   handles     => { is_serialisable_column => 'get' },
+   default     => sub {
+      return { map { $_->name => $_->serialised } shift->all_columns };
    };
 
 has 'sort_column_name' =>
@@ -289,6 +296,22 @@ sub build_prepared_resultset {
    $resultset = $self->_apply_sorting($resultset) if $self->sortable;
 
    return $resultset;
+}
+
+sub get_displayable_columns {
+   my $self = shift;
+
+   return [ grep { $self->displayable_columns->{$_->name} }
+            @{$self->visible_columns}
+   ];
+}
+
+sub get_serialisable_columns {
+   my $self = shift;
+
+   return [ grep { $self->serialisable_columns->{$_->name} }
+            @{$self->visible_columns}
+   ];
 }
 
 sub next_result {

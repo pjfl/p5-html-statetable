@@ -1,12 +1,13 @@
 package HTML::StateTable::View::SerialiseTable;
 
-use HTML::StateTable::Constants qw( ITERATOR_DOWNLOAD_KEY SERIALISE_TABLE_KEY );
+use HTML::StateTable::Constants qw( FALSE ITERATOR_DOWNLOAD_KEY
+                                    NUL SERIALISE_TABLE_KEY );
 use HTML::StateTable::Util      qw( throw );
 use Encode                      qw( encode_utf8 );
 use Scalar::Util                qw( blessed );
 use Moo;
 
-extends qw( HTML::StateTable::View::IteratorDownload );
+extends 'HTML::StateTable::View::IteratorDownload';
 
 my $serialisers = {
    csv      => 'CSV',
@@ -31,13 +32,13 @@ sub process {
    throw 'Unknown serialiser [_1]', [$format] unless $serialiser_class;
 
    my $response   = $context->response;
-   my $writer     = sub { $response->write(encode_utf8(join q(), @_)) };
+   my $writer     = sub { $response->write(encode_utf8(join NUL, @_)) };
    my $serialiser = $table->serialiser($serialiser_class, $writer, $args);
    my $filename   = $stashed->{no_filename}
-      ? q() : $stashed->{filename} || $table->download_filename;
+      ? NUL : $stashed->{filename} || $table->download_filename;
    my $config     = {
       filename    => $filename,
-      no_filename => $stashed->{no_filename},
+      no_filename => $stashed->{no_filename} // FALSE,
       object      => $serialiser,
    };
 

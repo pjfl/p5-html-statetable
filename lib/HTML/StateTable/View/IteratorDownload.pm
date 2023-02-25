@@ -1,7 +1,7 @@
 package HTML::StateTable::View::IteratorDownload;
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS EXTENSION_TYPE
-                                    ITERATOR_DOWNLOAD_KEY TYPE_EXTENSION );
+                                    ITERATOR_DOWNLOAD_KEY TRUE TYPE_EXTENSION );
 use HTML::StateTable::Util      qw( quote_double throw );
 use Ref::Util                   qw( is_coderef is_hashref is_globref is_ref
                                     is_scalarref );
@@ -43,7 +43,7 @@ sub process {
 
    $self->$output_method($context, $object, $config);
 
-   return 1;
+   return TRUE;
 }
 
 sub guess_object_type {
@@ -68,7 +68,7 @@ sub output_filehandle {
    throw 'File handle provided to iterator download view is not a glob'
       unless $fh->isa('GLOB');
 
-   $context->res->body($fh);
+   $context->response->body($fh);
 }
 
 sub output_iterator {
@@ -82,7 +82,7 @@ sub output_iterator {
    while (defined(my $chunk = $iter->next)) {
       $chunk .= $ending if defined $ending;
 
-      $context->res->write(encode_utf8($chunk));
+      $context->response->write(encode_utf8($chunk));
    }
 }
 
@@ -91,7 +91,7 @@ sub output_string {
 
    $string = ${$string} if is_scalarref($string) && !blessed($string);
 
-   $context->res->write(encode_utf8($string));
+   $context->response->write(encode_utf8($string));
 }
 
 sub output_coderef {
@@ -129,15 +129,15 @@ sub _get_mime_type {
 sub _set_response_headers {
    my ($self, $context, $mime_type, $filename) = @_;
 
-   my @headers = (Content_Type => "${mime_type}; charset=utf-8");
+   my @headers = ('Content-Type' => "${mime_type}; charset=utf-8");
 
    if ($filename) {
       push @headers,
-         'Content_Disposition',
+         'Content-Disposition',
          'attachment; filename=' . quote_double $filename;
    }
 
-   $context->res->header(@headers);
+   $context->response->header(@headers);
 }
 
 use namespace::autoclean;

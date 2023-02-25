@@ -10,6 +10,22 @@ use Moo;
 
 has 'column' => is => 'ro', isa => Column, required => TRUE, weak_ref => TRUE;
 
+has 'filtered_value' =>
+   is      => 'lazy',
+   reader  => 'value',
+   builder => sub {
+      my $self  = shift;
+      my $value = $self->unfiltered_value;
+
+      if ($self->column->has_filter){
+         $value = $self->column->filter->($value, $self);
+      }
+
+      return unless defined $value;
+
+      return "${value}";
+   };
+
 has 'hidden' => is => 'lazy', isa => Bool, builder => sub {
    my $self   = shift;
    my $column = $self->column;
@@ -59,7 +75,7 @@ sub has_link {
 sub render_value {
    my $self = shift;
 
-   return defined $self->unfiltered_value ? $self->unfiltered_value : NUL;
+   return defined $self->value ? $self->value : NUL;
 }
 
 sub result {
@@ -68,7 +84,7 @@ sub result {
 
 sub serialise_value {
    my $self  = shift;
-   my $value = $self->unfiltered_value;
+   my $value = $self->value;
    my $res   = { value => $value };
 
    $self->serialise_value_hash($value, $res);

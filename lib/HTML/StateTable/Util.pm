@@ -8,8 +8,9 @@ use JSON qw();
 
 use Sub::Exporter -setup => {
    exports => [
-      qw( encode_only_entities foreign_sort json_bool quote_column_name
-          quote_double quote_single quote_string throw trim unquote_string )
+      qw( encode_only_entities escape_formula foreign_sort json_bool
+          quote_column_name quote_double quote_single quote_string throw trim
+          unquote_string )
    ],
 };
 
@@ -23,6 +24,14 @@ sub encode_only_entities {
    }ge;
 
    return $html;
+}
+
+sub escape_formula (@) {
+   my @args = @_;
+
+   return
+      map { my $s = $_; $s =~ s{ \A ( [+\-=\@] ) }{\t$1}mx if defined $s; $s }
+      @args;
 }
 
 sub foreign_sort ($$$) {

@@ -35,6 +35,8 @@ has 'cell_traits' => is => 'ro', isa => ArrayRef[Str], default => sub { [] };
 
 has 'displayed' => is => 'rw', isa => Bool, default => TRUE;
 
+has 'filter' => is => 'ro', isa => CodeRef, predicate => 'has_filter';
+
 has 'hidden' =>
    is        => 'ro',
    isa       => CodeRef|Bool,
@@ -69,6 +71,8 @@ has 'options' =>
    default     => sub { {} };
 
 has 'position' => is => 'ro', isa => PositiveInt, default => 0;
+
+has 'serialised' => is => 'ro', isa => Bool, default => TRUE;
 
 has 'sort_column' =>
    is        => 'ro',

@@ -1,31 +1,9 @@
 // -*- coding: utf-8; -*-
-// Package HStateTable.Util
-if (!window.HStateTable) window.HStateTable = {};
-HStateTable.Util = (function () {
-   const appendValue = function(object, key, newValue) {
-      let existingValue = object[key] || '';
-      if (existingValue) existingValue += ' ';
-      return existingValue + newValue;
-   };
-   const onReady = function(callback) {
-      if (document.readyState != 'loading') callback();
-      else if (document.addEventListener)
-         document.addEventListener('DOMContentLoaded', callback);
-      else document.attachEvent('onreadystatechange', function() {
-         if (document.readyState == 'complete') callback();
-      });
-   };
-
-   return {
-      appendValue: appendValue,
-      onReady: onReady
-   };
-})();
 // Package HStateTable.Renderer
 if (!window.HStateTable) window.HStateTable = {};
-if (!HStateTable.Role) HStateTable.Role = {};
 if (!HStateTable.CellTrait) HStateTable.CellTrait = {};
 if (!HStateTable.ColumnTrait) HStateTable.ColumnTrait = {};
+if (!HStateTable.Role) HStateTable.Role = {};
 HStateTable.Renderer = (function() {
    const dsName = 'tableConfig';
    const triggerClass = 'state-table';
@@ -113,7 +91,7 @@ HStateTable.Renderer = (function() {
       sortHandler(event, text) {
          event.preventDefault();
          this.sortDesc = !this.sortDesc;
-         this.table.resultset.search({}, {
+         this.table.resultset.search({
             sortColumn: this.name, sortDesc: this.sortDesc
          });
          this.table.redraw();
@@ -137,7 +115,7 @@ HStateTable.Renderer = (function() {
          else if (text == 'prev' && page > 1) { page -= 1 }
          else if (text == 'next' && page < lastPage) { page += 1 }
          else if (text == 'last') { page = lastPage }
-         this.table.resultset.search({}, { page: page });
+         this.table.resultset.search({ page: page });
          this.table.redraw();
       }
       firstPage() {
@@ -225,7 +203,7 @@ HStateTable.Renderer = (function() {
       }
       clickHandler(event, size) {
          event.preventDefault();
-         this.table.resultset.search({}, { pageSize: size });
+         this.table.resultset.search({ pageSize: size });
          this.table.redraw();
       }
       render(container) {
@@ -277,6 +255,7 @@ HStateTable.Renderer = (function() {
          this.totalRecords = 0;
       }
       async sucks(url) {
+         // TODO: Set request application/json and loose this
          const headers = new Headers();
          headers.set('X-Requested-With', 'XMLHttpRequest');
          const options = { headers: headers, method: 'GET' };
@@ -299,6 +278,9 @@ HStateTable.Renderer = (function() {
          const nameMap = this.table.parameterMap.nameMap.bind(
             this.table.parameterMap
          );
+         const download = state('download');
+         if (download) url.searchParams.set(nameMap('download'), download);
+         else url.searchParams.delete(nameMap('download'));
          const filterColumn = state('filterColumn');
          const filterValue = state('filterValue');
          if (filterColumn && filterValue) {
@@ -309,9 +291,12 @@ HStateTable.Renderer = (function() {
             url.searchParams.delete(nameMap('filterColumn'));
             url.searchParams.delete(nameMap('filterValue'));
          }
-         if (this.enablePaging) {
+         if (this.enablePaging && !download) {
             url.searchParams.set(nameMap('page'), state('page'));
-            url.searchParams.set(nameMap('pageSize'), state('pageSize'));
+            const pageSize = this.maxPageSize
+                  && state('pageSize') > this.maxPageSize
+                  ? this.maxPageSize : state('pageSize');
+            url.searchParams.set(nameMap('pageSize'), pageSize);
          }
          else {
             url.searchParams.delete(nameMap('page'));
@@ -340,17 +325,9 @@ HStateTable.Renderer = (function() {
          this.index = 0;
          return this;
       }
-      search(where, options) {
-         const column = Object.keys(where)[0] || null;
-         const value  = column ? (where[column] || null) : null;
+      search(options) {
          const state  = this.table.state.bind(this.table);
-         if (column && value) {
-            state('filterColumn', column);
-            state('filterValue', value);
-         }
          for (const [k, v] of Object.entries(options)) { state(k, v) }
-         if (this.maxPageSize && state('pageSize') > this.maxPageSize)
-            state('pageSize', this.maxPageSize);
          return this.reset();
       }
    };
@@ -373,6 +350,7 @@ HStateTable.Renderer = (function() {
    };
    class State {
       constructor(table) {
+         this.download;
          this.filterColumn;
          this.filterValue;
          this.page = 1;
@@ -395,32 +373,32 @@ HStateTable.Renderer = (function() {
          this.container = container;
          this.header = document.createElement('thead');
          this.name = config['name'];
-         this.parameterMap = new ParameterMap();
          this.properties = config['properties'];
-         this.resultset = new Resultset(this);
          this.roles = config['roles'];
          this.rows = [];
          this.rowCount = 0;
          this.table = document.createElement('table');
-         this.wrappableMethods = [ 'renderBottomLeftControl',
-                                   'renderBottomRightControl',
-                                   'renderTopLeftControl',
-                                   'renderTopRightControl',
-                                   'renderStatusMessages' ];
-
+         this.wrappableMethods = [
+            'renderBottomLeftControl', 'renderBottomRightControl',
+            'renderCreditControl',     'renderTitleControl',
+            'renderTopLeftControl',    'renderTopRightControl',
+         ];
+         this.parameterMap = new ParameterMap();
+         this.resultset = new Resultset(this);
          this._state = new State(this);
 
          for (const column of (config['columns'] || [])) {
             this.columns.push(new Column(this, column));
          }
 
-         this.table.id = this.name;
          this.applyRoles();
+         this.table.id = this.name;
          this.table.append(this.header);
          this.table.append(this.body);
 
-         this.statusMessages = document.createElement('div');
-         this.container.append(this.statusMessages);
+         this.titleControl = document.createElement('div');
+         this.titleControl.className = 'title-control';
+         this.container.append(this.titleControl);
          this.topLeftControl = document.createElement('div');
          this.topLeftControl.className = 'top-left-control';
          this.container.append(this.topLeftControl);
@@ -436,6 +414,9 @@ HStateTable.Renderer = (function() {
          this.bottomRightControl = document.createElement('div');
          this.bottomRightControl.className = 'bottom-right-control';
          this.container.append(this.bottomRightControl);
+         this.creditControl = document.createElement('div');
+         this.creditControl.className = 'credit-control';
+         this.container.append(this.creditControl);
 
          this.pageControl = new PageControl(this);
          this.bottomLeftControl.append(this.pageControl.list);
@@ -446,7 +427,7 @@ HStateTable.Renderer = (function() {
          for (const [roleName, config] of Object.entries(this.roles)) {
             const traitName = config['trait_name'] || roleName;
             const initialiser = tableRoles[traitName]['initialise'];
-            if (initialiser) initialiser.bind(this)();
+            if (initialiser) initialiser(this);
             for (const method of this.wrappableMethods) {
                if (!tableRoles[traitName][method]) continue;
                const around = tableRoles[traitName][method].bind(this);
@@ -463,13 +444,14 @@ HStateTable.Renderer = (function() {
          return result ? new Row(this, result) : undefined;
       }
       redraw() {
-         this.renderStatusMessages();
+         this.renderTitleControl();
          this.renderTopLeftControl();
          this.renderTopRightControl();
          this.renderHeader();
          this.renderRows();
          this.renderBottomLeftControl();
          this.renderBottomRightControl();
+         this.renderCreditControl();
       }
       render() {
          this.redraw();
@@ -489,6 +471,9 @@ HStateTable.Renderer = (function() {
       renderBottomRightControl() {
          this.pageSizeControl.render(this.bottomRightControl);
          return this.bottomRightControl;
+      }
+      renderCreditControl() {
+         return this.creditControl;
       }
       renderNoData() {
          const cell = document.createElement('td');
@@ -519,8 +504,8 @@ HStateTable.Renderer = (function() {
          this.table.replaceChild(tbody, this.body);
          this.body = tbody;
       }
-      renderStatusMessages() {
-         return this.statusMessages;
+      renderTitleControl() {
+         return this.titleControl;
       }
       renderTopLeftControl() {
          return this.topLeftControl;
@@ -545,7 +530,6 @@ HStateTable.Renderer = (function() {
       }
    };
    let tableCreation = true;
-
    return {
       initialise: function() {
          HStateTable.Util.onReady(function() {
@@ -556,202 +540,3 @@ HStateTable.Renderer = (function() {
    };
 })();
 HStateTable.Renderer.initialise();
-// Package HStateTable.CellTrait.Date
-HStateTable.CellTrait.Date = (function() {
-   return {
-      getValue: function(orig) {
-         const cell = orig();
-         cell.value = new Date(cell.value).toLocaleDateString();
-         return cell;
-      }
-   };
-})();
-// Package HStateTable.CellTrait.Numeric
-HStateTable.CellTrait.Numeric = (function() {
-   const appendValue = HStateTable.Util.appendValue;
-   return {
-      getValue: function(orig) {
-         const cell = orig();
-         cell.wrapperClass = appendValue(cell, 'wrapperClass', 'number');
-         return cell;
-      }
-   };
-})();
-// Package HStateTable.CellTrait.Time
-HStateTable.CellTrait.Time = (function() {
-   return {
-      getValue: function(orig) {
-         const cell = orig();
-         const options = { hour: "2-digit", minute: "2-digit" };
-         cell.value = new Date(cell.value).toLocaleTimeString([], options);
-         return cell;
-      }
-   };
-})();
-// Package HStateTable.CellTrait.DateTime
-HStateTable.CellTrait.DateTime = (function() {
-   return {
-      getValue: function(orig) {
-         const cell = orig();
-         const datetime = new Date(cell.value);
-         const date = datetime.toLocaleDateString();
-         const options = { hour: "2-digit", minute: "2-digit" };
-         const time = datetime.toLocaleTimeString([], options);
-         cell.value = date + ' ' + time;
-         return cell;
-      }
-   };
-})();
-// Package HStateTable.Role.Downloadable
-HStateTable.Role.Downloadable = (function() {
-
-})();
-// Package HStateTable.Role.Searchable
-HStateTable.Role.Searchable = (function() {
-   const searchableColumns = [];
-   const searchAction = function(text) {
-      const action = document.createElement('span');
-      action.className = 'search-button';
-      const button = document.createElement('button');
-      button.type = 'submit';
-      button.append(document.createTextNode(text));
-      action.append(button);
-      return action;
-   };
-   const searchHidden = function(selectElements) {
-      const hidden = document.createElement('span');
-      hidden.className = 'search-hidden';
-      for (const select of selectElements) { hidden.append(select) }
-      return hidden;
-   };
-   const searchInput = function() {
-      const searchValue = this.state('searchValue') || null;
-      const input = document.createElement('input');
-      input.className = 'search-field';
-      input.name = this.parameterMap.nameMap('searchValue');
-      input.placeholder = 'Search table...';
-      input.type = 'text';
-      input.value = searchValue;
-      return input;
-   };
-   const searchSelect = function(selectElements) {
-      if (!searchableColumns.length) return;
-      const options = [];
-      const searchColumn = this.state('searchColumn') || null;
-      let selectPrefix = 'All';
-      for (const column of searchableColumns) {
-         let selected = false;
-         if (searchColumn && searchColumn == column.name) {
-            selected = true;
-            selectPrefix = column.label;
-         }
-         const option = document.createElement('option');
-         option.className = 'search-select';
-         option.value = column.name;
-         if (selected) option.selected = 'selected';
-         option.append(document.createTextNode(column.label));
-         options.push(option);
-      }
-      const searchDisplay = document.createElement('span');
-      searchDisplay.className = 'search-display';
-      searchDisplay.append(document.createTextNode(selectPrefix));
-      selectElements.push(searchDisplay);
-      const searchArrow = document.createElement('span');
-      searchArrow.className = 'search-arrow';
-      selectElements.push(searchArrow);
-      const allOption = document.createElement('option');
-      allOption.className = 'search-select';
-      allOption.value = '';
-      allOption.append(document.createTextNode('All'));
-      const select = document.createElement('select');
-      select.className = 'search-select';
-      select.name = this.parameterMap.nameMap('searchColumn');
-      select.type = 'Select';
-      select.append(allOption);
-      for (const anOption of options) { select.append(anOption) }
-      selectElements.push(select);
-      return select;
-   };
-   let searchControl;
-   let statusMessages;
-   return {
-      initialise: function() {
-         this.parameterMap.nameMap('searchColumn', 'search_column');
-         this.parameterMap.nameMap('searchValue', 'search');
-         const config = this.roles['searchable'];
-         for (const columnName of config['searchable_columns']) {
-            for (const column of this.columns) {
-               if (column.name == columnName) {
-                  searchableColumns.push(column);
-                  break;
-               }
-            }
-         }
-      },
-      renderTopLeftControl: function(orig) {
-         const container = orig();
-         const selectElements = [];
-         const select = searchSelect.bind(this)(selectElements);
-         const wrapper = document.createElement('span');
-         wrapper.className = 'search-wrapper';
-         wrapper.append(searchHidden.bind(this)(selectElements));
-         const input = searchInput.bind(this)();
-         wrapper.append(input);
-         wrapper.append(searchAction.bind(this)('Search'));
-         const control = document.createElement('form');
-         control.className = 'search-box';
-         control.method = 'get';
-         control.append(wrapper);
-         control.addEventListener('submit', function(event) {
-            event.preventDefault();
-            this.resultset.search({}, {
-               'searchColumn': select ? select.value : null,
-               'searchValue': input.value
-            });
-            this.redraw();
-         }.bind(this));
-         if (searchControl && container.contains(searchControl)) {
-            container.replaceChild(control, searchControl);
-         }
-         else { container.append(control) }
-         searchControl = control;
-         return container;
-      },
-      renderStatusMessages: function(orig) {
-         const container = orig();
-         const messages = document.createElement('div');
-         const column = this.state('searchColumn');
-         const value = this.state('searchValue');
-         if (column && value) {
-            messages.className = 'status-messages';
-            const searchMessage = document.createElement('span');
-            searchMessage.className = 'search-message';
-            messages.append(searchMessage);
-            searchMessage.append(document.createTextNode('Searching for '));
-            const searchValue = document.createElement('strong');
-            searchValue.append(document.createTextNode('"' + value + '"'));
-            searchMessage.append(searchValue);
-            searchMessage.append(document.createTextNode(' in '));
-            const searchColumn = document.createElement('strong');
-            searchColumn.append(document.createTextNode('"' + column + '"'));
-            searchMessage.append(searchColumn);
-            const showAll = document.createElement('a');
-            showAll.append(document.createTextNode('Show all'));
-            searchMessage.append(showAll);
-            showAll.addEventListener('click', function(event) {
-               event.preventDefault();
-               this.resultset.search({}, {
-                  searchColumn: null, searchValue: null
-               });
-               this.redraw();
-            }.bind(this));
-         }
-         if (statusMessages && container.contains(statusMessages)) {
-            container.replaceChild(messages, statusMessages);
-         }
-         else { container.append(messages) }
-         statusMessages = messages;
-         return container;
-      }
-   };
-})();

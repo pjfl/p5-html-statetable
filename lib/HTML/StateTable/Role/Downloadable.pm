@@ -38,7 +38,7 @@ after 'BUILD' => sub {
       unless $self->context->view($self->download_view_name);
 
    if (my $format = $self->param_value('download')) {
-      $self->context->stash->{current_view} = $self->download_view_name;
+      $self->context->stash->{view} = $self->download_view_name;
 
       $self->context->stash->{$self->download_stash_key} = {
          filename => $self->download_filename,
@@ -56,6 +56,7 @@ sub serialise_downloadable {
       download_filename => $self->download_filename,
       download_label    => $self->download_label,
       download_method   => $self->download_method,
+      trait_name        => 'Downloadable',
    } : undef;
 }
 

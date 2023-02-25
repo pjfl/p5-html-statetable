@@ -16,7 +16,7 @@ has 'meta_key' => is => 'ro', isa => Str, default => 'table_meta';
 
 has 'namespace' => is => 'ro', isa => Str, required => TRUE;
 
-has 'query_key' => is => 'ro', isa => Str, default => 'table_name';
+has 'query_key' => is => 'ro', isa => Str, default => QUERY_KEY;
 
 has 'renderer_class' =>
    is        => 'ro',
@@ -98,7 +98,7 @@ sub _setup_view {
    my $params = $table->request->query_parameters;
    my $key    = $params->{$self->query_key} // q();
 
-   if ($key eq $table->name) {
+   if (!exists $context->stash->{$self->stash_key} && $key eq $table->name) {
       $context->stash->{view} = $self->view_name;
 
       $context->stash->{$self->stash_key} = {
