@@ -1,8 +1,8 @@
-package HTML::StateTable::View::IteratorDownload;
+package HTML::StateTable::View::Download;
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS EXTENSION_TYPE
                                     ITERATOR_DOWNLOAD_KEY TRUE TYPE_EXTENSION );
-use HTML::StateTable::Util      qw( quote_double throw );
+use HTML::StateTable::Util      qw( dquote throw );
 use Ref::Util                   qw( is_coderef is_hashref is_globref is_ref
                                     is_scalarref );
 use Scalar::Util                qw( blessed );
@@ -65,8 +65,7 @@ sub guess_object_type {
 sub output_filehandle {
    my ($self, $context, $fh) = @_;
 
-   throw 'File handle provided to iterator download view is not a glob'
-      unless $fh->isa('GLOB');
+   throw 'File handle is not a glob' unless $fh->isa('GLOB');
 
    $context->response->body($fh);
 }
@@ -74,8 +73,7 @@ sub output_filehandle {
 sub output_iterator {
    my ($self, $context, $iter, $config) = @_;
 
-   throw "Iterator provided to download view does not have a 'next' method"
-      unless $iter->can('next');
+   throw "Iterator does not have a 'next' method" unless $iter->can('next');
 
    my $ending = $config->{line_ending};
 
@@ -133,8 +131,7 @@ sub _set_response_headers {
 
    if ($filename) {
       push @headers,
-         'Content-Disposition',
-         'attachment; filename=' . quote_double $filename;
+         'Content-Disposition', 'attachment; filename=' . dquote $filename;
    }
 
    $context->response->header(@headers);

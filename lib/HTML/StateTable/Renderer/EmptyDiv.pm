@@ -9,7 +9,7 @@ use Ref::Util                   qw( is_coderef is_hashref );
 use HTML::StateTable::Result::Dummy;
 use Moo;
 
-extends qw( HTML::StateTable::Renderer );
+extends 'HTML::StateTable::Renderer';
 
 # Public attributes
 has '+container_tag' => default => 'div';

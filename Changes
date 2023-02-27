@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Poor mans HTML::Tiny in utils JS
           - Adds downloadable table role
           - Adds searchable table role
           - Adds number trait

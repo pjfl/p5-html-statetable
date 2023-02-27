@@ -1,4 +1,4 @@
-package HTML::StateTable::View::SerialiseTable;
+package HTML::StateTable::View::Serialise;
 
 use HTML::StateTable::Constants qw( FALSE ITERATOR_DOWNLOAD_KEY
                                     NUL SERIALISE_TABLE_KEY );
@@ -7,13 +7,9 @@ use Encode                      qw( encode_utf8 );
 use Scalar::Util                qw( blessed );
 use Moo;
 
-extends 'HTML::StateTable::View::IteratorDownload';
+extends 'HTML::StateTable::View::Download';
 
-my $serialisers = {
-   csv      => 'CSV',
-   csv_fast => 'CSVInflateHashRef',
-   json     => 'JSON',
-};
+my $serialisers = { csv => 'CSV', json => 'JSON' };
 
 sub process {
    my ($self, $context) = @_;

@@ -1,7 +1,5 @@
 package HTML::StateTable::Serialiser;
 
-use namespace::autoclean;
-
 use HTML::StateTable::Constants qw( FALSE TRUE );
 use HTML::StateTable::Types     qw( Bool CodeRef Str Table );
 use HTML::StateTable::Util      qw( throw );
@@ -38,5 +36,7 @@ sub serialise {
 sub serialise_row {
    throw 'Should have been overridden in a subclass';
 }
+
+use namespace::autoclean;
 
 1;

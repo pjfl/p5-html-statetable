@@ -113,12 +113,4 @@ sub _assert_no_banished_keywords {
    return;
 }
 
-sub _remaining_attr {
-   my ($column_attr, %attributes) = @_;
-
-   for my $attr (@{$column_attr}) { delete $attributes{$attr} }
-
-   return %attributes;
-}
-
 1;

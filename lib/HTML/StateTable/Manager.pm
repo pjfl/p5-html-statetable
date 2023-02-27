@@ -1,7 +1,5 @@
 package HTML::StateTable::Manager;
 
-use namespace::autoclean;
-
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE QUERY_KEY
                                     SERIALISE_TABLE_KEY SERIALISE_TABLE_VIEW
                                     TRUE );
@@ -9,7 +7,6 @@ use HTML::StateTable::Types     qw( Str );
 use HTML::StateTable::Util      qw( throw );
 use File::DataClass::Functions  qw( ensure_class_loaded );
 use Unexpected::Functions       qw( Unspecified );
-
 use Moo;
 
 has 'meta_key' => is => 'ro', isa => Str, default => 'table_meta';
@@ -67,6 +64,7 @@ sub _is_data_call {
 
    throw Unspecified, ['context'] unless $context;
 
+   # TODO: Can do this with json in request accept header?
    my $requested_with = $context->request->header('X-Requested-With')
       || $context->request->header('x-requested-with');
 
@@ -112,5 +110,7 @@ sub _setup_view {
       };
    }
 }
+
+use namespace::autoclean;
 
 1;

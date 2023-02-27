@@ -1,8 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use namespace::autoclean;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 9 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 10 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -39,10 +38,7 @@ has 'columns' =>
       return [ sort { $a->position <=> $b->position } @columns ];
    };
 
-has 'context' =>
-   is        => 'ro',
-   isa       => Context,
-   predicate => 'has_context';
+has 'context' => is => 'ro', isa => Context, predicate => 'has_context';
 
 has 'displayable_columns' =>
    is          => 'lazy',
@@ -110,10 +106,7 @@ has 'renderer' =>
       return $self->renderer_class->new($args);
    };
 
-has 'renderer_args' =>
-   is      => 'lazy',
-   isa     => HashRef,
-   default => sub { {} };
+has 'renderer_args' => is => 'lazy', isa => HashRef, default => sub { {} };
 
 has 'renderer_class' =>
    is      => 'lazy',
@@ -204,9 +197,7 @@ has 'sortable_columns' =>
    isa      => ArrayRef[Column],
    init_arg => undef,
    default  => sub {
-      my $self = shift;
-
-      return [ grep { $_->sortable && !ref $_->value } $self->all_columns ];
+      return [ grep { $_->sortable && !ref $_->value } shift->all_columns ];
    };
 
 has 'visible_columns' =>
@@ -343,7 +334,7 @@ sub param_value {
 
    $value = $params->{$name} if !defined $value and exists $params->{$name};
 
-   return $value;
+   return trim $value;
 }
 
 sub reset_resultset {
@@ -358,7 +349,7 @@ sub serialiser {
    throw Unspecified, ['writer callback function']
       unless $writer && is_coderef $writer;
 
-   throw 'If supplied, args must be a hashref' unless $args && is_hashref $args;
+   throw 'Serialiser args must be a hashref' unless $args && is_hashref $args;
 
    $args->{table}  = $self;
    $args->{writer} = $writer;
@@ -419,19 +410,19 @@ sub _apply_params {
 
    throw 'Applying parameters needs a context object' unless $self->has_context;
 
-   my $sort = trim $self->param_value('sort');
+   my $sort = $self->param_value('sort');
 
    $self->sort_column_name($sort) if $sort;
 
-   my $sort_desc = trim $self->param_value('desc');
+   my $sort_desc = $self->param_value('desc');
 
    $self->sort_desc(!!$sort_desc) if $sort;
 
-   my $page = trim $self->param_value('page');
+   my $page = $self->param_value('page');
 
    $self->page($page) if defined $page && $page =~ m{ \A [0-9]+ \z }mx;
 
-   if (my $page_size = trim $self->param_value('page_size')) {
+   if (my $page_size = $self->param_value('page_size')) {
       $page_size = 1 if $page_size < 1;
       $page_size = $self->max_page_size if $page_size > $self->max_page_size;
       $self->page_size($page_size);
@@ -484,6 +475,8 @@ sub _param_key {
 
    return $self->name ? $self->name . "_${param_name}" : $param_name;
 }
+
+use namespace::autoclean;
 
 1;
 

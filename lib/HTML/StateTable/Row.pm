@@ -65,4 +65,6 @@ sub compound_method {
    return $result;
 }
 
+use namespace::autoclean;
+
 1;

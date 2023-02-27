@@ -1,6 +1,5 @@
 package HTML::StateTable::Column;
 
-use HTML::StateTable::Column::Meta;
 use HTML::StateTable::Constants qw( COLUMN_ALIAS COLUMN_META
                                     COLUMN_META_CONFIG CELL_TRAIT_PREFIX
                                     FALSE SPC TRUE );
@@ -11,6 +10,7 @@ use Ref::Util                   qw( is_blessed_ref is_coderef );
 use Type::Utils                 qw( class_type );
 use Scalar::Util                qw( blessed );
 use Sub::Install                qw( install_sub );
+use HTML::StateTable::Column::Meta;
 use Moo::Role ();
 use Moo;
 use MooX::HandlesVia;

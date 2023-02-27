@@ -1,11 +1,9 @@
 package HTML::StateTable::Serialiser::Base;
 
-use namespace::autoclean;
-
 use HTML::StateTable::Constants qw( FALSE TRUE );
 use Moo;
 
-extends qw( HTML::StateTable::Serialiser );
+extends 'HTML::StateTable::Serialiser';
 
 sub serialise_row {
    my ($self, $row, $index) = @_;
@@ -38,5 +36,7 @@ sub serialise_cell {
 
    return;
 }
+
+use namespace::autoclean;
 
 1;

@@ -10,7 +10,7 @@ div.state-table .page-size-control {
 div.state-table .page-control li.disabled {
    text-decoration: line-through;
 }
-div.state-table .page-control li::first-letter {
+div.state-table .page-control li:first-letter {
    text-transform:capitalize;
 }
 div.state-table .page-size-control li.selected-page-size {
@@ -23,21 +23,28 @@ div.state-table .status-messages {
 div.state-table .status-messages a {
    margin-left: 5px; text-decoration: underline;
 }
-div.state-table table {
-   display: block;
-}
 div.state-table .top-left-control,
 div.state-table .bottom-left-control {
-   display: inline-block; float: left;
+   display: inline-block;
 }
 div.state-table .top-right-control,
 div.state-table .bottom-right-control {
-   display: inline-block; float: right;
+   display: inline-block;
 }
-div.state-table table td.number {
-   text-align: right;
+div.state-table table {
+   border-collapse: collapse; display: block; width: 100%;
+}
+div.state-table table th {
+   background: bisque; border-right: 1px gray solid; padding-left: 5px;
+   padding-right: 5px;
+}
+div.state-table table th:last-child {
+   border-right: 0px;
 }
 div.state-table table tr.odd {
    background: linen;
+}
+div.state-table table td.number {
+   text-align: right;
 }
 

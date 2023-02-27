@@ -4,18 +4,19 @@ HStateTable.Role.Downloadable = (function() {
       constructor() {
          this.textFile = null;
       }
-      async sucks(url) {
+      async fetchBlob(url) {
          const response = await fetch(url);
          if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
          }
          const headers = response.headers;
-         const filename = headers.get('content-disposition').split('filename=')[1];
+         const filename
+               = headers.get('content-disposition').split('filename=')[1];
          const blob = await response.blob();
          return { blob: blob, filename: filename };
       }
       async createLink(url, defaultFilename) {
-         const { blob, filename } = await this.sucks(url)
+         const { blob, filename } = await this.fetchBlob(url)
          if (this.textFile !== null) window.URL.revokeObjectURL(this.textFile);
          this.textFile = window.URL.createObjectURL(blob);
          const link = document.createElement('a');
@@ -37,15 +38,22 @@ HStateTable.Role.Downloadable = (function() {
       }
    }
    class DownloadControl {
-      constructor(table) {
+      constructor(table, methods) {
          const config = table.roles['downloadable'];
          this.control;
          this.downloader = new Downloader();
-         this.filename = config['download_filename'];
-         this.label = config['download_label'];
-         this.method = config['download_method'];
+         this.filename = config['filename'];
+         this.label = config['label'];
+         this.location = config['location'];
+         this.method = config['method'];
          this.table = table;
          table.parameterMap.nameMap('download', 'download');
+         const name = 'render' + this.location['download'] + 'Control';
+         methods[name] = function(orig) {
+            const container = orig();
+            this.downloadControl.render(container);
+            return container;
+         };
       }
       render(container) {
          const control = document.createElement('a');
@@ -68,22 +76,20 @@ HStateTable.Role.Downloadable = (function() {
          this.control = control;
       }
    }
-   let downloadControl;
+   const modifiedMethods = {};
    return {
-      initialise: function(table) {
-         downloadControl = new DownloadControl(table);
+      initialise: function() {
+         this.downloadControl = new DownloadControl(this, modifiedMethods);
       },
-      renderTopRightControl: function(orig) {
-         const container = orig();
-         downloadControl.render(container);
-         return container;
-      }
+      around: modifiedMethods
    };
 })();
 // Package HStateTable.Role.Searchable
 HStateTable.Role.Searchable = (function() {
    class SearchControl {
-      constructor(table) {
+      constructor(table, methods) {
+         const config = table.roles['searchable'];
+         this.location = config['location'];
          this.messages;
          this.nameMap = table.parameterMap.nameMap.bind(table.parameterMap);
          this.searchControl;
@@ -94,7 +100,6 @@ HStateTable.Role.Searchable = (function() {
          this.nameMap('searchColumn', 'search_column');
          this.nameMap('searchValue', 'search');
 
-         const config = this.table.roles['searchable'];
          for (const columnName of config['searchable_columns']) {
             for (const column of this.table.columns) {
                if (column.name == columnName) {
@@ -103,6 +108,19 @@ HStateTable.Role.Searchable = (function() {
                }
             }
          }
+
+         const messages = 'render' + this.location['messages'] + 'Control';
+         methods[messages] = function(orig) {
+            const container = orig();
+            this.searchControl.renderMessages(container);
+            return container;
+         };
+         const search = 'render' + this.location['search'] + 'Control';
+         methods[search] = function(orig) {
+            const container = orig();
+            this.searchControl.renderSearch(container);
+            return container;
+         };
       }
       searchAction(text) {
          const action = document.createElement('span');
@@ -149,7 +167,7 @@ HStateTable.Role.Searchable = (function() {
          }
          const searchDisplay = document.createElement('span');
          searchDisplay.className = 'search-display';
-         searchDisplay.append(document.createTextNode(selectPrefix));
+//         searchDisplay.append(document.createTextNode(selectPrefix));
          selectElements.push(searchDisplay);
          const searchArrow = document.createElement('span');
          searchArrow.className = 'search-arrow';
@@ -228,20 +246,11 @@ HStateTable.Role.Searchable = (function() {
          this.messages = messages;
       }
    }
-   let searchControl;
+   const modifiedMethods = {};
    return {
-      initialise: function(table) {
-         searchControl = new SearchControl(table);
+      initialise: function() {
+         this.searchControl = new SearchControl(this, modifiedMethods);
       },
-      renderTopLeftControl: function(orig) {
-         const container = orig();
-         searchControl.renderSearch(container);
-         return container;
-      },
-      renderTitleControl: function(orig) {
-         const container = orig();
-         searchControl.renderMessages(container);
-         return container;
-      }
+      around: modifiedMethods
    };
 })();

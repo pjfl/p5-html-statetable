@@ -7,7 +7,7 @@ use Ref::Util                   qw( is_hashref );
 use JSON::MaybeXS;
 use Moo;
 
-extends qw( HTML::StateTable::Serialiser::Base );
+extends qw'HTML::StateTable::Serialiser::Base';
 
 has '+mime_type' => default => 'application/json';
 

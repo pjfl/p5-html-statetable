@@ -1,7 +1,5 @@
 package HTML::StateTable::Cell;
 
-use namespace::autoclean;
-
 use HTML::StateTable::Constants qw( FALSE NUL TRUE );
 use HTML::StateTable::Types     qw( Bool Column Date Row Str Undef );
 use Ref::Util                   qw( is_coderef is_scalarref );
@@ -100,5 +98,7 @@ sub serialise_value_hash {}
 sub table {
    return shift->row->table;
 }
+
+use namespace::autoclean;
 
 1;

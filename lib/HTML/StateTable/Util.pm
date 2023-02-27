@@ -8,11 +8,17 @@ use JSON qw();
 
 use Sub::Exporter -setup => {
    exports => [
-      qw( encode_only_entities escape_formula foreign_sort json_bool
-          quote_column_name quote_double quote_single quote_string throw trim
+      qw( dquote encode_only_entities escape_formula foreign_sort json_bool
+          quote_column_name quote_string squote throw trim
           unquote_string )
    ],
 };
+
+sub dquote ($) {
+   my $string = shift;
+
+   return quote_string('"', $string);
+}
 
 sub encode_only_entities {
    my $html = shift;
@@ -111,22 +117,10 @@ sub quote_column_name (;@) {
    for my $part (@parts) {
       throw('Column must not be empty') unless $part;
       throw('Column name contains invalid double quote') if $part =~ m{ \" }mx;
-      $part = quote_double($part);
+      $part = dquote($part);
    }
 
    return join q(.), @parts;
-}
-
-sub quote_double ($) {
-   my $string = shift;
-
-   return quote_string('"', $string);
-}
-
-sub quote_single ($) {
-   my $string = shift;
-
-   return quote_string("'", $string);
 }
 
 sub quote_string ($$) {
@@ -148,6 +142,12 @@ sub quote_string ($$) {
    }{\\$1}gmsx;
 
    return "${start_quote}${string}${end_quote}";
+}
+
+sub squote ($) {
+   my $string = shift;
+
+   return quote_string("'", $string);
 }
 
 sub throw (;@) {

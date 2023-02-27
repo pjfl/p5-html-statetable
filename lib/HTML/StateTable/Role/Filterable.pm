@@ -1,4 +1,4 @@
-package HTML::StateTable::Result::Role;
+package HTML::StateTable::Role::Filterable;
 
 use Moo::Role;
 

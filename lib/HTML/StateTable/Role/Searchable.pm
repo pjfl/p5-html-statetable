@@ -2,7 +2,6 @@ package HTML::StateTable::Role::Searchable;
 
 use HTML::StateTable::Constants qw( DOT EXCEPTION_CLASS FALSE TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Bool Column Str );
-use HTML::StateTable::Util      qw( trim );
 use Scalar::Util                qw( blessed );
 use Unexpected::Functions       qw( throw );
 use Moo::Role;
@@ -48,7 +47,7 @@ around 'build_prepared_resultset' => sub {
    my ($orig, $self) = @_;
 
    my $rs     = $orig->($self);
-   my $search = trim $self->param_value('search');
+   my $search = $self->param_value('search');
 
    return $rs unless $search;
 
@@ -61,7 +60,7 @@ around 'build_prepared_resultset' => sub {
    }
    else {
       my @search_spec;
-      my $search_column = trim $self->param_value('search_column');
+      my $search_column = $self->param_value('search_column');
 
       for my $column (@{$self->searchable_columns}) {
          my $name = $column->value;
@@ -91,8 +90,9 @@ sub serialise_searchable {
    my $self = shift;
 
    return $self->has_searchable_columns ? {
+      location           => { messages => 'Title', search => 'TopLeft' },
       searchable_columns => [ map { $_->name } @{$self->searchable_columns} ],
-      trait_name         => 'Searchable',
+      role_name          => 'Searchable',
    } : undef;
 }
 

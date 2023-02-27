@@ -53,10 +53,11 @@ sub serialise_downloadable {
    my $self = shift;
 
    return $self->downloadable ? {
-      download_filename => $self->download_filename,
-      download_label    => $self->download_label,
-      download_method   => $self->download_method,
-      trait_name        => 'Downloadable',
+      filename  => $self->download_filename,
+      label     => $self->download_label,
+      location  => { download => 'BottomRight' },
+      method    => $self->download_method,
+      role_name => 'Downloadable',
    } : undef;
 }
 

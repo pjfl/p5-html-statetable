@@ -1,12 +1,11 @@
 package HTML::StateTable::Column::Meta;
 
 use mro;
-use namespace::autoclean;
 
 use HTML::StateTable::Constants qw( COLUMN_META FALSE TRUE );
-use HTML::StateTable::Moo::Attribute;
 use HTML::StateTable::Types     qw( Str );
 use HTML::StateTable::Util      qw( throw );
+use HTML::StateTable::Moo::Attribute;
 use Moo;
 
 has 'target' => is => 'ro', isa => Str, required => TRUE;
@@ -96,4 +95,7 @@ sub _is_class {
    return $Moo::MAKERS{$target} && $Moo::MAKERS{$target}{is_class}
         ? TRUE : FALSE;
 }
+
+use namespace::autoclean;
+
 1;
