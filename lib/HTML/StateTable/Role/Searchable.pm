@@ -90,7 +90,7 @@ sub serialise_searchable {
    my $self = shift;
 
    return $self->has_searchable_columns ? {
-      location           => { messages => 'Title', search => 'TopLeft' },
+      location           => { control => 'TopLeft', messages => 'Title' },
       searchable_columns => [ map { $_->name } @{$self->searchable_columns} ],
       role_name          => 'Searchable',
    } : undef;

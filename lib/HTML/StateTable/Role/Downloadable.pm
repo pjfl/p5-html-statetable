@@ -1,12 +1,14 @@
 package HTML::StateTable::Role::Downloadable;
 
-use HTML::StateTable::Constants qw( SERIALISE_TABLE_KEY SERIALISE_TABLE_VIEW
-                                    TRUE );
+use HTML::StateTable::Constants qw( FALSE SERIALISE_TABLE_KEY
+                                    SERIALISE_TABLE_VIEW TRUE );
 use HTML::StateTable::Types     qw( Bool Str );
-use HTML::StateTable::Util      qw( throw );
+use HTML::StateTable::Util      qw( json_bool throw );
 use Moo::Role;
 
 has 'downloadable' => is => 'ro', isa => Bool, default => TRUE;
+
+has 'download_display' => is => 'ro', isa => Bool, default => TRUE;
 
 has 'download_filename' =>
    is      => 'lazy',
@@ -53,9 +55,10 @@ sub serialise_downloadable {
    my $self = shift;
 
    return $self->downloadable ? {
+      display   => json_bool $self->download_display,
       filename  => $self->download_filename,
       label     => $self->download_label,
-      location  => { download => 'BottomRight' },
+      location  => { control => 'BottomRight' },
       method    => $self->download_method,
       role_name => 'Downloadable',
    } : undef;

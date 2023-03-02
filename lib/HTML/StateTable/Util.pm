@@ -6,13 +6,10 @@ use HTML::Entities              qw( encode_entities );
 use HTML::StateTable::Constants qw( COL_INFO_TYPE_ATTR EXCEPTION_CLASS );
 use JSON qw();
 
-use Sub::Exporter -setup => {
-   exports => [
-      qw( dquote encode_only_entities escape_formula foreign_sort json_bool
-          quote_column_name quote_string squote throw trim
-          unquote_string )
-   ],
-};
+use Sub::Exporter -setup => { exports => [
+   qw( dquote encode_only_entities escape_formula foreign_sort json_bool
+       quote_column_name quote_string squote throw trim unquote_string )
+]};
 
 sub dquote ($) {
    my $string = shift;
@@ -154,12 +151,13 @@ sub throw (;@) {
    EXCEPTION_CLASS->throw(@_);
 }
 
-sub trim (;$) {
-   my $string = shift // q();
+sub trim (;$$) {
+   my $chars = $_[1] // " \t";
+   (my $value = $_[0] // q()) =~ s{ \A [$chars]+ }{}mx;
 
-   $string =~ s{ \A [ \t]+ }{}mx; $string =~ s{ [ \t]+ \z }{}mx;
-
-   return $string;
+   chomp $value;
+   $value =~ s{ [$chars]+ \z }{}mx;
+   return $value;
 }
 
 sub unquote_string ($) {

@@ -35,41 +35,61 @@ HStateTable.Renderer = (function() {
       constructor(table, config) {
          this.cellTraits = config['cell_traits'] || [];
          this.displayed = config['displayed'];
+         this.downloadable = config['downloadable'];
          this.label = config['label'];
          this.name = config['name'];
          this.options = config['options'] || {};
+         this.resultset = table.resultset;
          this.sortable = config['sortable'];
-         this.sortDesc = table.state('sortDesc');
+         this.sortDesc = table.resultset.state('sortDesc');
          this.table = table;
          this.traits = config['traits'] || [];
-      }
-      clickHandler() {
-         return function(event) {
-            event.preventDefault();
-            this.sortDesc = !this.sortDesc;
-            this.table.resultset.search({
-               sortColumn: this.name, sortDesc: this.sortDesc
-            });
-            this.table.redraw();
-         }.bind(this);
       }
       createCell(row) {
          const cell = new Cell(this, row);
          this.applyTraits(cell, cellTraits, this.cellTraits);
          return cell;
       }
+      handler() {
+         return function(event) {
+            event.preventDefault();
+            this.sortDesc = !this.sortDesc;
+            this.resultset.search({
+               sortColumn: this.name, sortDesc: this.sortDesc
+            });
+            this.table.redraw();
+         }.bind(this);
+      }
       render() {
          let content = this.label || this.name;
          if (!this.sortable) return this.h.th(content);
-         if (this.table.state('sortColumn') == this.name) {
+         if (this.resultset.state('sortColumn') == this.name) {
             content += '\xA0' + (this.sortDesc ? '▾' : '▴');
          }
-         const handler = this.clickHandler();
-         return this.h.th({}, this.h.a({ onclick: handler }, content));
+         return this.h.th({}, this.h.a({ onclick: this.handler() }, content));
       }
    };
    Object.assign(Column.prototype, tableUtils.markup);
    Object.assign(Column.prototype, tableUtils.modifiers);
+   class Row {
+      constructor(table, result) {
+         this.cells = [];
+         this.columns = table.columns;
+         this.result = result;
+         this.table = table;
+
+         for (const column of this.columns) {
+            this.cells.push(column.createCell(this));
+         }
+      }
+      render() {
+         const row = this.h.tr();
+         for (const cell of this.cells) {
+            if (cell.column.displayed) row.append(cell.render());
+         }
+         return row;
+      }
+   };
    class PageControl {
       constructor(table) {
          this.className = 'page-control';
@@ -77,12 +97,16 @@ HStateTable.Renderer = (function() {
          this.list = this.h.ul();
          this.list.className = this.className;
          this.pagingText = 'Page %current_page of %last_page';
+         this.resultset = table.resultset;
          this.table = table;
       }
-      clickHandler(text) {
+      firstPage() {
+         return 1;
+      }
+      handler(text) {
          return function(event) {
             event.preventDefault();
-            let page = this.table.state('page');
+            let page = this.resultset.state('page');
             const lastPage = this.lastPage();
             if (text == 'first') { page = this.firstPage() }
             else if (text == 'prev' && page > 1) { page -= 1 }
@@ -92,17 +116,14 @@ HStateTable.Renderer = (function() {
             this.table.redraw();
          }.bind(this);
       }
-      firstPage() {
-         return 1;
-      }
       interpolatePageText() {
          let text = this.pagingText;
-         text = text.replace(/\%current_page/, this.table.state('page'));
+         text = text.replace(/\%current_page/, this.resultset.state('page'));
          text = text.replace(/\%last_page/, this.lastPage());
          return text;
       }
       lastPage() {
-         let pages = this.totalRecords() / this.table.state('pageSize');
+         let pages = this.totalRecords() / this.resultset.state('pageSize');
          let lastPage;
          if (pages == Math.floor(pages)) { lastPage = pages }
          else { lastPage = 1 + Math.floor(pages) }
@@ -117,7 +138,7 @@ HStateTable.Renderer = (function() {
          else { this.renderPageControlNoCount(container) }
       }
       renderPageControl(container) {
-         const currentPage = this.table.state('page');
+         const currentPage = this.resultset.state('page');
          const atFirst = !!(currentPage <= this.firstPage());
          const atLast  = !!(currentPage >= this.lastPage());
          const list = this.h.ul({ className: this.className });
@@ -131,7 +152,7 @@ HStateTable.Renderer = (function() {
                item = this.h.li({ className: 'disabled' }, text);
             }
             else {
-               item = this.h.li({ onclick: this.clickHandler(text) }, text);
+               item = this.h.li({ onclick: this.handler(text) }, text);
             }
             list.append(item);
             list.append(document.createTextNode('\xA0'));
@@ -140,7 +161,7 @@ HStateTable.Renderer = (function() {
          this.list = list;
       }
       renderPageControlNoCount(container) {
-         const currentPage = this.table.state('page');
+         const currentPage = this.resultset.state('page');
          const atFirst = !!(currentPage <= this.firstPage());
          const atLast  = !!(currentPage >= this.table.rowCount);
          const list = this.h.ul({ className: this.className });
@@ -154,7 +175,7 @@ HStateTable.Renderer = (function() {
                item = this.h.li({ className: 'disabled' }, text);
             }
             else {
-               item = this.h.li({ onclick: this.clickHandler(text) }, text);
+               item = this.h.li({ onclick: this.handler(text) }, text);
             }
             list.append(item);
             list.append(document.createTextNode('\xA0'));
@@ -175,7 +196,7 @@ HStateTable.Renderer = (function() {
          this.list.className = this.className;
          this.table = table;
       }
-      clickHandler(size) {
+      handler(size) {
          return function(event) {
             event.preventDefault();
             this.table.resultset.search({ pageSize: size });
@@ -191,9 +212,9 @@ HStateTable.Renderer = (function() {
          const list = this.h.ul(attr, this.h.li('Showing up to\xA0'));
          for (const size of sizes) {
             const attr = {};
-            if (size == this.table.state('pageSize'))
+            if (size == this.table.resultset.state('pageSize'))
                attr.className = 'selected-page-size'
-            const handler = this.clickHandler(size);
+            const handler = this.handler(size);
             list.append(this.h.li(attr, this.h.a({ onclick: handler }, size)));
             if (size != sizes.slice(-1))
                list.append(document.createTextNode(',\xA0'));
@@ -221,6 +242,19 @@ HStateTable.Renderer = (function() {
          return this._nameMap[key];
       }
    }
+   class State {
+      constructor(table) {
+         this.download;
+         this.filterColumn;
+         this.filterValue;
+         this.page = 1;
+         this.pageSize = table.properties['page-size'];
+         this.searchColumn;
+         this.searchValue;
+         this.sortColumn = table.properties['sort-column'];
+         this.sortDesc = table.properties['sort-desc'];
+      }
+   }
    class Resultset {
       constructor(table) {
          this.dataURL = table.properties['data-url'];
@@ -230,9 +264,10 @@ HStateTable.Renderer = (function() {
          this.records = [];
          this.table = table;
          this.totalRecords = 0;
+         this.parameterMap = new ParameterMap();
+         this._state = new State(table);
       }
       async fetchJSON(url) {
-         // TODO: Set request application/json and loose this
          const headers = new Headers();
          headers.set('X-Requested-With', 'XMLHttpRequest');
          const options = { headers: headers, method: 'GET' };
@@ -251,10 +286,8 @@ HStateTable.Renderer = (function() {
       }
       prepareURL() {
          const url = new URL(this.dataURL);
-         const state = this.table.state.bind(this.table);
-         const nameMap = this.table.parameterMap.nameMap.bind(
-            this.table.parameterMap
-         );
+         const state = this.state.bind(this);
+         const nameMap = this.parameterMap.nameMap.bind(this.parameterMap);
          const download = state('download');
          if (download) url.searchParams.set(nameMap('download'), download);
          else url.searchParams.delete(nameMap('download'));
@@ -290,7 +323,7 @@ HStateTable.Renderer = (function() {
             url.searchParams.delete(nameMap('searchValue'));
          }
          const sortColumn = state('sortColumn');
-         if (sortColumn) url.searchParams.set(nameMap('sortColumn'), sortColumn);
+         if (sortColumn) url.searchParams.set(nameMap('sortColumn'),sortColumn);
          else url.searchParams.delete(nameMap('sortColumn'));
          const sortDesc = state('sortDesc');
          if (sortColumn && sortDesc)
@@ -303,47 +336,18 @@ HStateTable.Renderer = (function() {
          return this;
       }
       search(options) {
-         const state  = this.table.state.bind(this.table);
-         for (const [k, v] of Object.entries(options)) { state(k, v) }
+         for (const [k, v] of Object.entries(options)) { this.state(k, v) }
          return this.reset();
       }
-   };
-   class Row {
-      constructor(table, result) {
-         this.cells = [];
-         this.columns = table.columns;
-         this.result = result;
-         this.table = table;
-
-         for (const column of this.columns) {
-            this.cells.push(column.createCell(this));
+      state(key, value) {
+         if (typeof value !== 'undefined') {
+            this._state[key] = value;
+            if (key == 'pageSize') this._state['page'] = 1;
          }
-      }
-      render() {
-         const row = this.h.tr();
-         for (const cell of this.cells) { row.append(cell.render()) }
-         return row;
+         return this._state[key];
       }
    };
    Object.assign(Row.prototype, tableUtils.markup);
-   class State {
-      constructor(table) {
-         this.download;
-         this.filterColumn;
-         this.filterValue;
-         this.page = 1;
-         this.pageSize = 20;
-         this.searchColumn;
-         this.searchValue;
-         this.sortColumn;
-         this.sortDesc = false;
-         const url = new URL(table.resultset.dataURL);
-         for (const [k, v] of Object.entries(table.parameterMap.nameMap())) {
-            const value = url.searchParams.get(v);
-            if (value) this[k] = value;
-         }
-      }
-   }
    class Table {
       constructor(container, config) {
          this.body = this.h.tbody();
@@ -356,9 +360,7 @@ HStateTable.Renderer = (function() {
          this.rows = [];
          this.rowCount = 0;
          this.table = this.h.table({ id: this.name });
-         this.parameterMap = new ParameterMap();
          this.resultset = new Resultset(this);
-         this._state = new State(this);
 
          for (const column of (config['columns'] || [])) {
             this.columns.push(new Column(this, column));
@@ -370,19 +372,25 @@ HStateTable.Renderer = (function() {
 
          this.titleControl = this.h.div({ className: 'title-control' });
          this.container.append(this.titleControl);
+
+         this.topControl = this.h.div({ className: 'top-control' });
+         this.container.append(this.topControl);
          this.topLeftControl = this.h.div({ className: 'top-left-control' });
-         this.container.append(this.topLeftControl);
+         this.topControl.append(this.topLeftControl);
          this.topRightControl = this.h.div({ className: 'top-right-control' });
-         this.container.append(this.topRightControl);
+         this.topControl.append(this.topRightControl);
 
          this.container.append(this.table);
 
+         this.bottomControl = this.h.div({ className: 'bottom-control' });
+         this.container.append(this.bottomControl);
          this.bottomLeftControl
             = this.h.div({ className: 'bottom-left-control' });
-         this.container.append(this.bottomLeftControl);
+         this.bottomControl.append(this.bottomLeftControl);
          this.bottomRightControl
             = this.h.div({ className: 'bottom-right-control' });
-         this.container.append(this.bottomRightControl);
+         this.bottomControl.append(this.bottomRightControl);
+
          this.creditControl = this.h.div({ className: 'credit-control'});
          this.container.append(this.creditControl);
 
@@ -419,7 +427,9 @@ HStateTable.Renderer = (function() {
       }
       renderHeader() {
          const row = this.h.tr();
-         for (const column of this.columns) { row.append(column.render()) }
+         for (const column of this.columns) {
+            if (column.displayed) row.append(column.render());
+         }
          const thead = this.h.thead({}, row);
          this.table.replaceChild(thead, this.header);
          this.header = thead;
@@ -468,13 +478,6 @@ HStateTable.Renderer = (function() {
       }
       renderTopRightControl() {
          return this.topRightControl;
-      }
-      state(key, value) {
-         if (typeof value !== 'undefined') {
-            this._state[key] = value;
-            if (key == 'pageSize') this._state['page'] = 1;
-         }
-         return this._state[key];
       }
    };
    Object.assign(Table.prototype, tableUtils.markup);

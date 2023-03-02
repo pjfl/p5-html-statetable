@@ -3,9 +3,12 @@ div.state-table .page-control li,
 div.state-table .page-size-control li {
    display: inline-block;
 }
+div.state-table .download-link {
+   cursor: pointer;
+}
 div.state-table .page-control,
 div.state-table .page-size-control {
-   color: gray; font-size: small; margin-top: 0; padding-left: 0;
+   color: gray; font-size: small; margin: 0; padding-left: 0;
 }
 div.state-table .page-control li.disabled {
    text-decoration: line-through;
@@ -23,13 +26,18 @@ div.state-table .status-messages {
 div.state-table .status-messages a {
    margin-left: 5px; text-decoration: underline;
 }
+div.state-table .bottom-left-control,
+div.state-table .bottom-right-control,
 div.state-table .top-left-control,
-div.state-table .bottom-left-control {
+div.state-table .top-right-control {
    display: inline-block;
 }
-div.state-table .top-right-control,
-div.state-table .bottom-right-control {
-   display: inline-block;
+div.state-table .bottom-right-control,
+div.state-table .top-right-control {
+   float: right; padding-top: 2px; text-align: right;
+}
+div.state-table .top-control {
+   position: relative;
 }
 div.state-table table {
    border-collapse: collapse; display: block; width: 100%;
@@ -47,4 +55,36 @@ div.state-table table tr.odd {
 div.state-table table td.number {
    text-align: right;
 }
-
+div.state-table .preference-columns td.checkbox {
+   text-align: center;
+}
+div.state-table .preference-dialog {
+   background: ivory; border: 1px solid; border-radius: 3px;
+   position: absolute; right: 0px; top: 25px;
+}
+div.state-table .preference-link {
+   cursor: pointer;
+}
+div.state-table .dialog-buttons {
+   text-align: right;
+}
+div.state-table .dialog-button-download {
+   float: left;
+}
+div.state-table .dialog-close {
+   background: red; border-radius: 3px; color: white; cursor: pointer;
+   display: inline-block; font-family: sans-serif; font-size: smaller;
+   font-weight: bold; padding-left: 3px; padding-right: 3px;
+}
+div.state-table .dialog-form {
+   padding-left: 3px; padding-right: 3px;
+}
+div.state-table .dialog-input {
+   padding-bottom: 3px; padding-top: 3px;
+}
+div.state-table .dialog-input button {
+   margin-right: 3px;
+}
+div.state-table .dialog-title {
+   padding-bottom: 3px; padding-right: 3px; text-align: right;
+}

@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 10 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 11 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -292,16 +292,16 @@ sub build_prepared_resultset {
 sub get_displayable_columns {
    my $self = shift;
 
-   return [ grep { $self->displayable_columns->{$_->name} }
-            @{$self->visible_columns}
+   return [
+      grep { $self->displayable_columns->{$_->name} } @{$self->visible_columns}
    ];
 }
 
 sub get_serialisable_columns {
    my $self = shift;
 
-   return [ grep { $self->serialisable_columns->{$_->name} }
-            @{$self->visible_columns}
+   return [
+      grep { $self->serialisable_columns->{$_->name} } @{$self->visible_columns}
    ];
 }
 
@@ -362,6 +362,19 @@ sub serialiser {
    ensure_class_loaded $class;
 
    return $class->new($args);
+}
+
+sub sort_column {
+   my ($self, $column_name) = @_;
+
+   if ($column_name) {
+      my $column = $self->get_column($column_name);
+
+      throw "Selected sort column isn't sortable!" unless $column->sortable;
+      $self->sort_column_name($column->name);
+   }
+
+   return $self->get_column($self->sort_column_name);
 }
 
 # Private methods

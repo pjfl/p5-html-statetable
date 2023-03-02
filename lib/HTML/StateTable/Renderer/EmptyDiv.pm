@@ -4,8 +4,9 @@ use HTML::StateTable::Constants qw( FALSE QUERY_KEY SERIALISE_COLUMN_ATTR
                                     TRIGGER_CLASS TRUE );
 use HTML::StateTable::Types     qw( HashRef NonEmptySimpleStr );
 use HTML::StateTable::Util      qw( json_bool );
-use JSON                        qw( encode_json );
 use Ref::Util                   qw( is_coderef is_hashref );
+use Type::Utils                 qw( class_type );
+use JSON::MaybeXS;
 use HTML::StateTable::Result::Dummy;
 use Moo;
 
@@ -19,7 +20,7 @@ has '+data' => default => sub {
 
    return {
       'class' => TRIGGER_CLASS,
-      'data-table-config' => encode_json({
+      'data-table-config' => $self->_json->encode({
          columns    => $self->_serialise_columns,
          name       => $self->table->name,
          properties => $self->_serialise_properties,
@@ -27,6 +28,11 @@ has '+data' => default => sub {
       }),
    };
 };
+
+has '_json' => is => 'ro', isa => class_type(JSON::MaybeXS::JSON),
+   default => sub {
+      return JSON::MaybeXS->new( convert_blessed => TRUE, utf8 => FALSE );
+   };
 
 has 'query_key' => is => 'lazy', isa => NonEmptySimpleStr, default => QUERY_KEY;
 
@@ -124,6 +130,9 @@ sub _serialise_columns {
                @{ delete $attributes{cell_traits} }
       ];
 
+      $attributes{downloadable} = json_bool
+         ($table->serialisable_columns->{$column->name} ? TRUE : FALSE);
+
       $attributes{has_tags} = json_bool TRUE
          if exists $self->_tags->{$column->name};
 
@@ -145,7 +154,11 @@ sub _serialise_properties {
       'enable-paging'   => json_bool $table->paging,
       'no-count'        => json_bool $table->no_count,
       'no-data-message' => $table->empty_text,
+      'page-size'       => $table->page_size,
       'max-page-size'   => $table->max_page_size,
+      'sort-column'     => $table->sort_column_name,
+      'sort-desc'       => json_bool $table->sort_desc,
+      'verify-token'    => $table->context->verification_token,
    };
 
    if ($table->no_count) { $data->{'no-count'} = json_bool TRUE }
