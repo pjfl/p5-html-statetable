@@ -1,7 +1,5 @@
-# -*- coding: utf-8; -*-
+use utf8; # -*- coding: utf-8; -*-
 package HTML::StateTable::Role::Configurable;
-
-use utf8;
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE TRUE );
 use HTML::StateTable::Types     qw( Bool );

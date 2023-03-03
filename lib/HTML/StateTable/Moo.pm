@@ -14,6 +14,7 @@ use HTML::StateTable::Meta;
 my $auto_column_traits = {
    filterable => 'Filterable',
    searchable => 'Searchable',
+   title      => 'Title',
 };
 my @banished_keywords  = qw( TABLE_META );
 my $column_class       = 'HTML::StateTable::Column';

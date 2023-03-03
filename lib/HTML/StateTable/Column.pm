@@ -98,6 +98,8 @@ has '_boolean_options' =>
    handles     => { is_boolean_option => 'exists' },
    default     => sub { { check_all => TRUE } };
 
+sub BUILD {}
+
 sub import {
    my ($class, @args) = @_; return $class->import_meta(__PACKAGE__, @args);
 }

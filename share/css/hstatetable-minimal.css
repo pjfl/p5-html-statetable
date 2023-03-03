@@ -3,7 +3,12 @@ div.state-table .page-control li,
 div.state-table .page-size-control li {
    display: inline-block;
 }
-div.state-table .download-link {
+div.state-table .download-link,
+div.state-table .filter-value,
+div.state-table .page-control a,
+div.state-table .page-size-control a,
+div.state-table .preference-link,
+div.state-table th a {
    cursor: pointer;
 }
 div.state-table .page-control,
@@ -40,11 +45,18 @@ div.state-table .top-control {
    position: relative;
 }
 div.state-table table {
-   border-collapse: collapse; display: block; width: 100%;
+   border-collapse: collapse; display: block; position: relative; width: 100%;
 }
 div.state-table table th {
-   background: bisque; border-right: 1px gray solid; padding-left: 5px;
+   background: ivory; border-right: 1px gray solid; padding-left: 5px;
    padding-right: 5px;
+}
+div.state-table table th.active-sort-column {
+   background: bisque;
+}
+div.state-table table th a.filter-control {
+   display: inline-block; transform: rotateX(180deg);
+   -webkit-transform: rotateX(180deg);
 }
 div.state-table table th:last-child {
    border-right: 0px;
@@ -58,12 +70,16 @@ div.state-table table td.number {
 div.state-table .preference-columns td.checkbox {
    text-align: center;
 }
+div.state-table .filter-dialog,
 div.state-table .preference-dialog {
    background: ivory; border: 1px solid; border-radius: 3px;
-   position: absolute; right: 0px; top: 25px;
+   position: absolute; top: 25px; z-index: 10;
 }
-div.state-table .preference-link {
-   cursor: pointer;
+div.state-table .filter-dialog {
+   left: 50px;
+}
+div.state-table .preference-dialog {
+   right: 0px;
 }
 div.state-table .dialog-buttons {
    text-align: right;
@@ -87,4 +103,8 @@ div.state-table .dialog-input button {
 }
 div.state-table .dialog-title {
    padding-bottom: 3px; padding-right: 3px; text-align: right;
+}
+div.state-table .filter-values {
+   list-style: none; margin-top: 3px; margin-bottom: 3px;
+   padding-left: 3px; padding-right: 3px;
 }

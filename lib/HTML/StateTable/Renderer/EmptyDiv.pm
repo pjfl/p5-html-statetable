@@ -116,7 +116,7 @@ sub _serialise_columns {
       for my $attribute (SERIALISE_COLUMN_ATTR()) {
          next unless $column->can($attribute);
 
-         my $value = $attribute eq 'searchable'
+         my $value = _is_column_trait($attribute)
             ? $column->$attribute($self) : $column->$attribute;
 
          next unless defined $value;
@@ -140,6 +140,14 @@ sub _serialise_columns {
    }
 
    return \@columns;
+}
+
+sub _is_column_trait {
+   my $attr = shift;
+
+   return TRUE if $attr eq 'searchable';
+   return TRUE if $attr eq 'title';
+   return FALSE;
 }
 
 sub _serialise_properties {

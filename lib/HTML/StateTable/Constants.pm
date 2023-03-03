@@ -92,7 +92,7 @@ sub RENDERER_PREFIX () { 'HTML::StateTable::Renderer' }
 
 sub SERIALISE_COLUMN_ATTR () {
    return qw( cell_traits filterable label name options
-              searchable sort_column sortable traits width );
+              searchable sort_column sortable title width );
 }
 
 sub SERIALISE_TABLE_KEY () { '_serialise_table' }

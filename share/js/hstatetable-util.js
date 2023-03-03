@@ -78,6 +78,9 @@ HStateTable.Util = (function() {
       modifiers: { // Another role
          applyTraits: function(obj, namespace, traits) {
             for (const trait of traits) {
+               if (!namespace[trait]) {
+                  throw new Error(`Unknown trait ${namespace} ${trait}`);
+               }
                const initialiser = namespace[trait]['initialise'];
                if (initialiser) initialiser.bind(obj)();
                for (const method of Object.keys(namespace[trait].around)) {
@@ -91,7 +94,9 @@ HStateTable.Util = (function() {
             }
             const original = this[method].bind(this);
             const around = modifier.bind(this);
-            this[method] = function(args) { return around(original, args) };
+            this[method] = function(args1, args2, args3) {
+               return around(original, args1, args2, args3);
+            };
          }
       }
    };

@@ -7,39 +7,31 @@ HStateTable.Role.Configurable = (function() {
          this.downBoxes = [];
          this.downloadable = table.roles['downloadable'] ? true : false;
          this.pageSize;
+         this.rs = table.resultset;
          this.sortBy;
          this.sortDesc;
          this.table = table;
          this.viewBoxes = [];
+         this.rs.parameterMap.nameMap('tableMeta', 'table_meta');
          this.clearHandler = function(event) {
             event.preventDefault();
-            this.resetState();
-            this.storeJSON(this.control.url, '');
             this.control.dialogHandler(event);
-            this.table.redraw();
+            this.resetState();
          }.bind(this);
          this.saveHandler = function(event) {
             event.preventDefault();
-            this.storeJSON(this.control.url, this.formData());
             this.control.dialogHandler(event);
+            this.rs.storeJSON(this.control.url, this.formData());
             this.table.redraw();
          }.bind(this);
          this.downloadHandler = function(event) {
             event.preventDefault();
-            this.table.downloadControl.downloadHandler(event);
             this.control.dialogHandler(event);
+            this.table.downloadControl.downloadHandler(event);
          }.bind(this);
       }
-      resetState() {
-         this.table.resultset.search({
-            pageSize: this.table.properties['page-size'],
-            sortColumn: this.table.properties['sort-column'],
-            sortDesc: this.table.properties['sort-desc']
-         });
-         // TODO: Reset the column displayed/downloadable attr
-      }
       formData() {
-         this.table.resultset.search({
+         this.rs.search({
             pageSize: this.pageSize.value,
             sortColumn: this.sortBy.value,
             sortDesc: this.sortDesc.checked
@@ -56,49 +48,23 @@ HStateTable.Role.Configurable = (function() {
             const name = box.name.replace(/Down$/, '');
             data.columns[name] ||= {};
             data.columns[name]['download'] = box.checked;
-            this.findColumn(name)['downloadable'] = box.checked;
+            this.table.findColumn(name)['downloadable'] = box.checked;
          }
          for (const box of this.viewBoxes) {
             const name = box.name.replace(/View$/, '');
             data.columns[name] ||= {};
             data.columns[name]['view'] = box.checked;
-            this.findColumn(name)['displayed'] = box.checked;
+            this.table.findColumn(name)['displayed'] = box.checked;
          }
          return data;
       }
-      findColumn(columnName) {
-         for (const column of this.table.columns) {
-            if (columnName == column.name) return column;
-         }
-         return;
-      }
       isViewable(columnName) {
-         const column = this.findColumn(columnName);
+         const column = this.table.findColumn(columnName);
          return column && column.displayed;
       }
       isDownloadable(columnName) {
-         const column = this.findColumn(columnName);
+         const column = this.table.findColumn(columnName);
          return column && column.downloadable;
-      }
-      async storeJSON(url, args) {
-         const body = this.createQueryString({
-            data: JSON.stringify(args),
-            _verify: this.table.properties['verify-token']
-         });
-         const headers = new Headers();
-         headers.set(
-            'Content-Type', 'application/x-www-form-urlencoded; charset=utf-8'
-         );
-         headers.set('X-Requested-With', 'XMLHttpRequest');
-         const options = {
-            body: body, cache: 'no-store', credentials: 'same-origin',
-            headers: headers, method: 'POST',
-         };
-         const response = await fetch(url, options);
-         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-         }
-         return await response.json();
       }
       renderButtons () {
          return this.h.div({ className: 'dialog-input dialog-buttons' }, [
@@ -150,7 +116,7 @@ HStateTable.Role.Configurable = (function() {
             rows.push(this.h.tr({}, this.renderCells(column)));
             if (column.sortable) {
                const option = { value: column.name };
-               if (column.name == this.table.resultset.state('sortColumn'))
+               if (column.name == this.rs.state('sortColumn'))
                   option.selected = 'selected';
                sortOptions.push(this.h.option(option, column.label));
             }
@@ -158,8 +124,7 @@ HStateTable.Role.Configurable = (function() {
          const sizeOptions = [];
          for (const size of [10, 20, 50, 100]) {
             const option = { value: size };
-            if (size == this.table.resultset.state('pageSize'))
-               option.selected = 'selected';
+            if (size == this.rs.state('pageSize')) option.selected = 'selected';
             sizeOptions.push(this.h.option(option, size));
          }
          this.pageSize = this.h.select(
@@ -169,7 +134,7 @@ HStateTable.Role.Configurable = (function() {
             { id: 'sortBy', name: 'sortBy' }, sortOptions
          );
          this.sortDesc = this.h.input(
-            { id: 'sortDesc', checked: this.table.resultset.state('sortDesc'),
+            { id: 'sortDesc', checked: this.rs.state('sortDesc'),
               name: 'sortDesc', type: 'checkbox' }
          );
          return this.h.form({
@@ -195,11 +160,26 @@ HStateTable.Role.Configurable = (function() {
             this.h.div(
                { className: 'dialog-title',
                  onclick: this.control.dialogHandler },
-               this.h.span({ className: 'dialog-close' }, 'X')
+               this.h.span({ className: 'dialog-close' }, 'x')
             ),
             this.renderForm()
          ]);
          this.table.topControl.append(this.dialog);
+      }
+      async resetState() {
+         await this.rs.storeJSON(this.control.url, '');
+         this.rs.search({ tableMeta: true });
+         const url = this.rs.prepareURL();
+         this.rs.search({ tableMeta: false });
+         const response = await this.rs.fetchJSON(url);
+         for (const column of this.table.columns) {
+            column.displayed = response['displayed'][column.name];
+            column.downloadable = response['downloadable'][column.name];
+         }
+         this.rs.state('pageSize', response['page-size']);
+         this.rs.state('sortColumn', response['sort-column']);
+         this.rs.state('sortDesc', response['sort-desc']);
+         this.table.redraw();
       }
    }
    Object.assign(Preference.prototype, HStateTable.Util.markup);
@@ -228,7 +208,9 @@ HStateTable.Role.Configurable = (function() {
       }
       render(container) {
          const control = this.h.a(
-            { className: 'preference-link', onclick: this.dialogHandler },
+            { className: 'preference-link', onclick: this.dialogHandler,
+              title: 'Preferences'
+            },
             [ this.h.span({ className: 'sprite sprite-preference' }),this.label]
          );
          if (this.control && container.contains(this.control)) {
@@ -250,22 +232,12 @@ HStateTable.Role.Configurable = (function() {
 // Package HStateTable.Role.Downloadable
 HStateTable.Role.Downloadable = (function() {
    class Downloader {
-      constructor() {
+      constructor(resultset) {
+         this.resultset = resultset;
          this.textFile = null;
       }
-      async fetchBlob(url) {
-         const response = await fetch(url);
-         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-         }
-         const headers = response.headers;
-         const filename
-               = headers.get('content-disposition').split('filename=')[1];
-         const blob = await response.blob();
-         return { blob: blob, filename: filename };
-      }
       async createLink(url, fDefault) {
-         const { blob, filename } = await this.fetchBlob(url)
+         const { blob, filename } = await this.resultset.fetchBlob(url)
          if (this.textFile !== null) window.URL.revokeObjectURL(this.textFile);
          this.textFile = window.URL.createObjectURL(blob);
          const attr = { download: filename || fDefault, href: this.textFile };
@@ -291,7 +263,7 @@ HStateTable.Role.Downloadable = (function() {
          const config = table.roles['downloadable'];
          this.control;
          this.display = config['display'];
-         this.downloader = new Downloader();
+         this.downloader = new Downloader(table.resultset);
          this.filename = config['filename'];
          this.label = config['label'];
          this.location = config['location'];
@@ -332,6 +304,67 @@ HStateTable.Role.Downloadable = (function() {
       around: modifiedMethods
    };
 })();
+// Package HStateTable.Role.Filterable
+HStateTable.Role.Filterable = (function() {
+   class FilterControl {
+      constructor(table, methods) {
+         this.table = table;
+         const config = table.roles['filterable'];
+         this.location = config['location'];
+         this.messages;
+         const paramMap = table.resultset.parameterMap;
+         this.nameMap = paramMap.nameMap.bind(paramMap);
+         this.nameMap('filterColumn', 'filter_column');
+         this.nameMap('filterValue', 'filter_value');
+         this.rs = table.resultset;
+
+         methods['createColumn'] = function(orig, table, config) {
+            const column = orig(table, config);
+            if (column.filterable)
+               this.applyTraits(column, HStateTable.ColumnTrait,['Filterable']);
+            return column;
+         };
+         const messages = 'render' + this.location['messages'] + 'Control';
+         methods[messages] = function(orig) {
+            const container = orig();
+            this.filterControl.renderMessages(container);
+            return container;
+         };
+      }
+      renderMessages(container) {
+         const messages = this.h.div();
+         const column = this.rs.state('filterColumn');
+         if (column && this.rs.state('filterValue')) {
+            const handler = function(event) {
+               event.preventDefault();
+               this.rs.search({ filterColumn: null, filterValue: null });
+               this.table.redraw();
+            }.bind(this);
+            messages.className = 'status-messages';
+            messages.append(this.h.span({ className: 'filter-message' }, [
+               'Filtering on column\xA0',
+               this.h.strong('"' + this.table.findColumn(column).label + '"'),
+               '\xA0',
+               this.h.a({ onclick: handler }, 'Show all')
+            ]));
+         }
+         if (this.messages && container.contains(this.messages)) {
+            container.replaceChild(messages, this.messages);
+         }
+         else { container.append(messages) }
+         this.messages = messages;
+      }
+   }
+   Object.assign(FilterControl.prototype, HStateTable.Util.markup);
+   Object.assign(FilterControl.prototype, HStateTable.Util.modifiers);
+   const modifiedMethods = {};
+   return {
+      initialise: function() {
+         this.filterControl = new FilterControl(this, modifiedMethods);
+      },
+      around: modifiedMethods
+   };
+})();
 // Package HStateTable.Role.Searchable
 HStateTable.Role.Searchable = (function() {
    class SearchControl {
@@ -350,12 +383,7 @@ HStateTable.Role.Searchable = (function() {
          this.nameMap('searchValue', 'search');
 
          for (const columnName of config['searchable_columns']) {
-            for (const column of table.columns) {
-               if (column.name == columnName) {
-                  this.searchableColumns.push(column);
-                  break;
-               }
-            }
+            this.searchableColumns.push(this.table.findColumn(columnName));
          }
 
          const search = 'render' + this.location['control'] + 'Control';

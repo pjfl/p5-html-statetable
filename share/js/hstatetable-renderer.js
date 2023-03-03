@@ -33,16 +33,18 @@ HStateTable.Renderer = (function() {
    Object.assign(Cell.prototype, tableUtils.modifiers); // Apply another role
    class Column {
       constructor(table, config) {
+         this.table = table;
+         this.resultset = table.resultset;
          this.cellTraits = config['cell_traits'] || [];
          this.displayed = config['displayed'];
          this.downloadable = config['downloadable'];
+         this.filterable = config['filterable'];
          this.label = config['label'];
          this.name = config['name'];
          this.options = config['options'] || {};
-         this.resultset = table.resultset;
          this.sortable = config['sortable'];
          this.sortDesc = table.resultset.state('sortDesc');
-         this.table = table;
+         this.title = config['title'];
          this.traits = config['traits'] || [];
       }
       createCell(row) {
@@ -50,7 +52,7 @@ HStateTable.Renderer = (function() {
          this.applyTraits(cell, cellTraits, this.cellTraits);
          return cell;
       }
-      handler() {
+      sortHandler() {
          return function(event) {
             event.preventDefault();
             this.sortDesc = !this.sortDesc;
@@ -61,12 +63,17 @@ HStateTable.Renderer = (function() {
          }.bind(this);
       }
       render() {
-         let content = this.label || this.name;
-         if (!this.sortable) return this.h.th(content);
-         if (this.resultset.state('sortColumn') == this.name) {
-            content += '\xA0' + (this.sortDesc ? '▾' : '▴');
+         const attr = {};
+         const rs = this.resultset;
+         let content = [this.label || this.ucfirst(this.name)];
+         if (this.title) attr.title = this.title;
+         if (this.sortable) {
+            if (rs.state('sortColumn') == this.name) {
+               attr.className = 'active-sort-column';
+            }
+            content = [this.h.a({ onclick: this.sortHandler() }, content[0])];
          }
-         return this.h.th({}, this.h.a({ onclick: this.handler() }, content));
+         return this.h.th(attr, content);
       }
    };
    Object.assign(Column.prototype, tableUtils.markup);
@@ -90,6 +97,7 @@ HStateTable.Renderer = (function() {
          return row;
       }
    };
+   Object.assign(Row.prototype, tableUtils.markup);
    class PageControl {
       constructor(table) {
          this.className = 'page-control';
@@ -228,8 +236,6 @@ HStateTable.Renderer = (function() {
    class ParameterMap {
       constructor() {
          this._nameMap = {
-            filterColumn: 'filter_column',
-            filterValue: 'filter_value',
             page: 'page',
             pageSize: 'page_size',
             sortColumn: 'sort',
@@ -246,6 +252,7 @@ HStateTable.Renderer = (function() {
       constructor(table) {
          this.download;
          this.filterColumn;
+         this.filterColumnValues;
          this.filterValue;
          this.page = 1;
          this.pageSize = table.properties['page-size'];
@@ -253,6 +260,7 @@ HStateTable.Renderer = (function() {
          this.searchValue;
          this.sortColumn = table.properties['sort-column'];
          this.sortDesc = table.properties['sort-desc'];
+         this.tableMeta;
       }
    }
    class Resultset {
@@ -266,6 +274,17 @@ HStateTable.Renderer = (function() {
          this.totalRecords = 0;
          this.parameterMap = new ParameterMap();
          this._state = new State(table);
+      }
+      async fetchBlob(url) {
+         const response = await fetch(url);
+         if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+         }
+         const headers = response.headers;
+         const filename
+               = headers.get('content-disposition').split('filename=')[1];
+         const blob = await response.blob();
+         return { blob: blob, filename: filename };
       }
       async fetchJSON(url) {
          const headers = new Headers();
@@ -287,48 +306,56 @@ HStateTable.Renderer = (function() {
       prepareURL() {
          const url = new URL(this.dataURL);
          const state = this.state.bind(this);
+         const params = url.searchParams;
          const nameMap = this.parameterMap.nameMap.bind(this.parameterMap);
          const download = state('download');
-         if (download) url.searchParams.set(nameMap('download'), download);
-         else url.searchParams.delete(nameMap('download'));
+         if (download) params.set(nameMap('download'), download);
+         else params.delete(nameMap('download'));
          const filterColumn = state('filterColumn');
          const filterValue = state('filterValue');
          if (filterColumn && filterValue) {
-            url.searchParams.set(nameMap('filterColumn'), filterColumn);
-            url.searchParams.set(nameMap('filterValue'), filterValue);
+            params.set(nameMap('filterColumn'), filterColumn);
+            params.set(nameMap('filterValue'), filterValue);
          }
          else {
-            url.searchParams.delete(nameMap('filterColumn'));
-            url.searchParams.delete(nameMap('filterValue'));
+            params.delete(nameMap('filterColumn'));
+            params.delete(nameMap('filterValue'));
          }
-         if (this.enablePaging && !download) {
-            url.searchParams.set(nameMap('page'), state('page'));
+         const filterColumnValues = state('filterColumnValues');
+         if (filterColumnValues) {
+            params.set(nameMap('filterColumnValues'), filterColumnValues);
+         }
+         else { params.delete(nameMap('filterColumnValues')) }
+         if (this.enablePaging && !download && !filterColumnValues) {
+            params.set(nameMap('page'), state('page'));
             const pageSize = this.maxPageSize
                   && state('pageSize') > this.maxPageSize
                   ? this.maxPageSize : state('pageSize');
-            url.searchParams.set(nameMap('pageSize'), pageSize);
+            params.set(nameMap('pageSize'), pageSize);
          }
          else {
-            url.searchParams.delete(nameMap('page'));
-            url.searchParams.delete(nameMap('pageSize'));
+            params.delete(nameMap('page'));
+            params.delete(nameMap('pageSize'));
          }
          const searchColumn = state('searchColumn');
          const searchValue = state('searchValue');
          if (searchColumn && searchValue) {
-            url.searchParams.set(nameMap('searchColumn'), searchColumn);
-            url.searchParams.set(nameMap('searchValue'), searchValue);
+            params.set(nameMap('searchColumn'), searchColumn);
+            params.set(nameMap('searchValue'), searchValue);
          }
          else {
-            url.searchParams.delete(nameMap('searchColumn'));
-            url.searchParams.delete(nameMap('searchValue'));
+            params.delete(nameMap('searchColumn'));
+            params.delete(nameMap('searchValue'));
          }
-         const sortColumn = state('sortColumn');
-         if (sortColumn) url.searchParams.set(nameMap('sortColumn'),sortColumn);
-         else url.searchParams.delete(nameMap('sortColumn'));
+         const sortColumn = !filterColumnValues ? state('sortColumn') : null;
+         if (sortColumn) params.set(nameMap('sortColumn'),sortColumn);
+         else params.delete(nameMap('sortColumn'));
          const sortDesc = state('sortDesc');
-         if (sortColumn && sortDesc)
-            url.searchParams.set(nameMap('sortDesc'), sortDesc);
-         else url.searchParams.delete(nameMap('sortDesc'));
+         if (sortColumn && sortDesc) params.set(nameMap('sortDesc'), sortDesc);
+         else params.delete(nameMap('sortDesc'));
+         const tableMeta = state('tableMeta');
+         if (tableMeta) params.set(nameMap('tableMeta'), tableMeta);
+         else params.delete(nameMap('tableMeta'));
          return url;
       }
       reset() {
@@ -346,8 +373,28 @@ HStateTable.Renderer = (function() {
          }
          return this._state[key];
       }
+      async storeJSON(url, args) {
+         const body = this.createQueryString({
+            data: JSON.stringify(args),
+            _verify: this.table.properties['verify-token']
+         });
+         const headers = new Headers();
+         headers.set(
+            'Content-Type', 'application/x-www-form-urlencoded; charset=utf-8'
+         );
+         headers.set('X-Requested-With', 'XMLHttpRequest');
+         const options = {
+            body: body, cache: 'no-store', credentials: 'same-origin',
+            headers: headers, method: 'POST',
+         };
+         const response = await fetch(url, options);
+         if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+         }
+         return await response.json();
+      }
    };
-   Object.assign(Row.prototype, tableUtils.markup);
+   Object.assign(Resultset.prototype, tableUtils.markup);
    class Table {
       constructor(container, config) {
          this.body = this.h.tbody();
@@ -362,14 +409,15 @@ HStateTable.Renderer = (function() {
          this.table = this.h.table({ id: this.name });
          this.resultset = new Resultset(this);
 
-         for (const column of (config['columns'] || [])) {
-            this.columns.push(new Column(this, column));
+         this.table.append(this.header);
+         this.table.append(this.body);
+         this.applyRoles('filterable');
+
+         for (const columnConfig of (config['columns'] || [])) {
+            this.columns.push(this.createColumn(columnConfig));
          }
 
          this.applyRoles();
-         this.table.append(this.header);
-         this.table.append(this.body);
-
          this.titleControl = this.h.div({ className: 'title-control' });
          this.container.append(this.titleControl);
 
@@ -399,11 +447,30 @@ HStateTable.Renderer = (function() {
          this.pageSizeControl = new PageSizeControl(this);
          this.bottomLeftControl.append(this.pageSizeControl.list);
       }
-      applyRoles() {
-         for (const [roleName, config] of Object.entries(this.roles)) {
-            const name = config['role_name'] || roleName;
-            this.applyTraits(this, tableRoles, [name]);
+      applyRoles(roleName) {
+         if (roleName) {
+            const config = this.roles[roleName];
+            if (config) {
+               const name = config['role_name'] || this.ucfirst(roleName);
+               this.applyTraits(this, tableRoles, [name]);
+            }
          }
+         else {
+            for (const [roleName, config] of Object.entries(this.roles)) {
+               if (roleName == 'filterable') continue;
+               const name = config['role_name'] || this.ucfirst(roleName);
+               this.applyTraits(this, tableRoles, [name]);
+            }
+         }
+      }
+      createColumn(config) {
+         return new Column(this, config);
+      }
+      findColumn(columnName) {
+         for (const column of this.columns) {
+            if (columnName == column.name) return column;
+         }
+         return;
       }
       async nextResult() {
          return await this.resultset.next();

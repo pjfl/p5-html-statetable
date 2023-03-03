@@ -46,9 +46,8 @@ around 'serialise_row' => sub {
    my ($orig, $self, $row, $row_number) = @_;
 
    my $record = $orig->($self, $row, $row_number);
-   my @fields = escape_formula @{$record}{@{$self->columns}};
 
-   $self->_csv->combine(@fields);
+   $self->_csv->combine(escape_formula @{$record}{@{$self->columns}});
 
    return $self->_csv->string;
 };
@@ -68,7 +67,7 @@ sub write_headers {
    $headers[0] = 'id' if $headers[0] eq 'ID';
 
    $self->_csv->combine(@headers);
-   $self->writer->("\x{FEFF}");    #BOM
+   $self->writer->("\x{FEFF}"); # Byte object mark
    $self->writer->($self->_csv->string);
 }
 

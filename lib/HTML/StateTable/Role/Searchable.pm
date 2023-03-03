@@ -29,6 +29,8 @@ has 'searchable_columns' =>
       return \@columns;
    };
 
+has 'searchable_location' => is => 'ro', isa => Str, default => 'TopLeft';
+
 has 'searchable_method' => is => 'ro', isa => Str;
 
 after 'BUILD' => sub {
@@ -90,9 +92,8 @@ sub serialise_searchable {
    my $self = shift;
 
    return $self->has_searchable_columns ? {
-      location           => { control => 'TopLeft', messages => 'Title' },
+      location => { control => $self->searchable_location, messages => 'Title'},
       searchable_columns => [ map { $_->name } @{$self->searchable_columns} ],
-      role_name          => 'Searchable',
    } : undef;
 }
 

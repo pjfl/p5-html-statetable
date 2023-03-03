@@ -1,5 +1,6 @@
 package HTML::StateTable::View::Download;
 
+use Encode                      qw( encode_utf8 );
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS EXTENSION_TYPE
                                     ITERATOR_DOWNLOAD_KEY TRUE TYPE_EXTENSION );
 use HTML::StateTable::Util      qw( dquote throw );
@@ -62,6 +63,12 @@ sub guess_object_type {
    return $type;
 }
 
+sub output_coderef {
+   my ($self, $context, $code) = @_;
+
+   $code->($self, $context);
+}
+
 sub output_filehandle {
    my ($self, $context, $fh) = @_;
 
@@ -90,12 +97,6 @@ sub output_string {
    $string = ${$string} if is_scalarref($string) && !blessed($string);
 
    $context->response->write(encode_utf8($string));
-}
-
-sub output_coderef {
-   my ($self, $context, $code) = @_;
-
-   $code->($self, $context);
 }
 
 sub _get_mime_type {

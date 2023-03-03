@@ -85,7 +85,7 @@ sub serialise_value {
    my $value = $self->value;
    my $res   = { value => $value };
 
-   $self->serialise_value_hash($value, $res);
+   $self->serialise_value2hash($value, $res);
 
    return q() unless exists $res->{value}
       && defined $res->{value} && length $res->{value};
@@ -93,7 +93,7 @@ sub serialise_value {
    return 1 == scalar keys %{$res} ? $res->{value} : $res;
 }
 
-sub serialise_value_hash {}
+sub serialise_value2hash {}
 
 sub table {
    return shift->row->table;

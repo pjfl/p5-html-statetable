@@ -11,6 +11,8 @@ extends qw'HTML::StateTable::Serialiser::Base';
 
 has '+mime_type' => default => 'application/json';
 
+has 'filter_column' => is => 'ro', isa => Str;
+
 has 'serialise_as_hashref' => is => 'ro', isa => Bool, default => TRUE;
 
 has 'serialise_meta' => is => 'ro', isa => Bool, default => FALSE;
@@ -31,6 +33,8 @@ around 'serialise' => sub {
    my ($orig, $self) = @_;
 
    my $table = $self->table;
+
+   return $self->_serialise_filter($table) if $self->filter_column;
 
    return $self->_serialise_meta($table) if $self->serialise_meta;
 
@@ -111,12 +115,32 @@ sub _extract_tags {
    return \%tags;
 }
 
+sub _serialise_filter {
+   my ($self, $table) = @_;
+
+   my $records = $table->filterable_column_values($self->filter_column);
+
+   $self->writer->($self->_json->encode({
+      records => $records, 'total-records' => scalar @{$records},
+   }));
+
+   return TRUE;
+}
 sub _serialise_meta {
    my ($self, $table) = @_;
 
    $self->writer->($self->_json->encode({
-      displayable  => $table->displayable_columns,
-      serialisable => $table->serialisable_columns,
+      displayed     => {
+         map   { $_ => json_bool $table->displayable_columns->{$_}}
+         keys %{$table->displayable_columns}
+      },
+      downloadable  => {
+         map   { $_ => json_bool $table->serialisable_columns->{$_}}
+         keys %{$table->serialisable_columns}
+      },
+      'page-size'   => $table->page_size,
+      'sort-column' => $table->sort_column_name,
+      'sort-desc'   => json_bool $table->sort_desc,
    }));
 
    return TRUE;
