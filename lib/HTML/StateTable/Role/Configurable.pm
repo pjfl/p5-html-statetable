@@ -2,7 +2,7 @@ use utf8; # -*- coding: utf-8; -*-
 package HTML::StateTable::Role::Configurable;
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE TRUE );
-use HTML::StateTable::Types     qw( Bool );
+use HTML::StateTable::Types     qw( Bool Str );
 use JSON::MaybeXS               qw( decode_json );
 use Unexpected::Functions       qw( throw );
 use Try::Tiny;
@@ -10,12 +10,15 @@ use Moo::Role;
 
 has 'configurable' => is => 'ro', isa => Bool, default => TRUE;
 
+has 'configurable_control_location' => is => 'ro', isa => Str,
+   default => 'TopRight';
+
 after 'BUILD' => sub {
    my $self = shift;
 
-   $self->add_role('configurable', __PACKAGE__);
+   return unless $self->configurable && $self->has_context;
 
-   return unless $self->configurable;
+   $self->add_role('configurable', __PACKAGE__);
 
    if (my $params = $self->param_value('config') || $self->_preference) {
       $self->_apply_configurable_params($params);
@@ -29,8 +32,7 @@ sub serialise_configurable {
 
    return $self->configurable ? {
       label     => '⚙',
-      location  => { control => 'TopRight' },
-      role_name => 'Configurable',
+      location  => { control => $self->configurable_control_location },
       url       => $self->context->preference_url,
    } : undef;
 }

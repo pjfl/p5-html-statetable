@@ -5,7 +5,8 @@ use strictures;
 use Type::Library             -base, -declare =>
                           qw( Column Context Date DBIxClass DBIxClassResultSet
                               Element Iterable Options Renderer Request
-                              ResultObject ResultRole ResultSet Row Table );
+                              ResultObject ResultRole ResultSet Row Table
+                              URI );
 use Type::Utils           qw( as class_type coerce extends from
                               message subtype via where );
 use Unexpected::Functions qw( inflate_message );
@@ -21,6 +22,7 @@ class_type DBIxClassResultSet, { class => 'DBIx::Class::ResultSet' };
 class_type Renderer,           { class => 'HTML::StateTable::Renderer' };
 class_type Row                 { class => 'HTML::StateTable::Row' };
 class_type Table,              { class => 'HTML::StateTable' };
+class_type URI,                { class => 'URI' };
 
 subtype Context => as Object;
 subtype Request => as Object;

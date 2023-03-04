@@ -2,18 +2,29 @@ package HTML::StateTable::Role::Filterable;
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE SERIALISE_TABLE_KEY
                                     SERIALISE_TABLE_VIEW TRUE );
+use HTML::StateTable::Types     qw( Str );
+use HTML::StateTable::Util      qw( json_bool );
 use Ref::Util                   qw( is_coderef );
 use Unexpected::Functions       qw( throw );
 use Moo::Role;
 
+has 'filterable_message_location' => is => 'ro', isa => Str,
+   default => 'Title';
+
 after 'BUILD' => sub {
    my $self = shift;
 
+   return unless $self->has_context;
+
    $self->add_role('filterable', __PACKAGE__);
+
+   my $view = SERIALISE_TABLE_VIEW;
+
+   throw 'Undefined view [_1]', [$view] unless $self->context->view($view);
 
    if (my $column_name = $self->param_value('filter_column_values')) {
       $self->context->stash(
-         view                  => SERIALISE_TABLE_VIEW,
+         view                  => $view,
          SERIALISE_TABLE_KEY() => {
             table              => $self,
             format             => 'json',
@@ -44,12 +55,9 @@ around 'build_prepared_resultset' => sub {
 
    if ($column->has_filter_value_map) {
       my $map = $column->filter_value_map;
+      my %pam = reverse %{ is_coderef $map ? $map->($self) : $map };
 
-      $map = $map->($self) if is_coderef $map;
-
-      my %reverse_map = reverse %{$map};
-
-      $value = $reverse_map{$value} if exists $reverse_map{$value};
+      $value = $pam{$value} if exists $pam{$value};
    }
 
    my $relation_name = $rs->current_source_alias;
@@ -79,7 +87,12 @@ sub filterable_column_values {
 }
 
 sub serialise_filterable {
-   return { location => { messages => 'Title' } };
+   my $self = shift;
+
+   return {
+      apply => { before => json_bool TRUE },
+      location => { messages => $self->filterable_message_location }
+   };
 }
 
 sub _get_related_rs {

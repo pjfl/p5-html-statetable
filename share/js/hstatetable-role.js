@@ -1,3 +1,25 @@
+// Package HStateTable.Role.CheckAll
+HStateTable.Role.CheckAll = (function() {
+   class CheckAllControl {
+      constructor(table, methods) {
+         methods['createColumn'] = function(orig, table, config) {
+            const column = orig(table, config);
+            if (column.options['checkall'])
+               this.applyTraits(column, HStateTable.ColumnTrait, ['CheckAll']);
+            return column;
+         };
+      }
+   }
+   Object.assign(CheckAllControl.prototype, HStateTable.Util.markup);
+   Object.assign(CheckAllControl.prototype, HStateTable.Util.modifiers);
+   const modifiedMethods = {};
+   return {
+      initialise: function() {
+         this.checkAllControl = new CheckAllControl(this, modifiedMethods);
+      },
+      around: modifiedMethods
+   };
+})();
 // Package HStateTable.Role.Configurable
 HStateTable.Role.Configurable = (function() {
    class Preference {
@@ -113,7 +135,8 @@ HStateTable.Role.Configurable = (function() {
          ])];
          const sortOptions = [ this.h.option({ value: '' }, '[ Default ]') ];
          for (const column of this.table.columns) {
-            rows.push(this.h.tr({}, this.renderCells(column)));
+            if (!column.cellTraits.includes('Checkbox'))
+               rows.push(this.h.tr({}, this.renderCells(column)));
             if (column.sortable) {
                const option = { value: column.name };
                if (column.name == this.rs.state('sortColumn'))
@@ -233,11 +256,11 @@ HStateTable.Role.Configurable = (function() {
 HStateTable.Role.Downloadable = (function() {
    class Downloader {
       constructor(resultset) {
-         this.resultset = resultset;
+         this.rs = resultset;
          this.textFile = null;
       }
       async createLink(url, fDefault) {
-         const { blob, filename } = await this.resultset.fetchBlob(url)
+         const { blob, filename } = await this.rs.fetchBlob(url)
          if (this.textFile !== null) window.URL.revokeObjectURL(this.textFile);
          this.textFile = window.URL.createObjectURL(blob);
          const attr = { download: filename || fDefault, href: this.textFile };
@@ -268,12 +291,13 @@ HStateTable.Role.Downloadable = (function() {
          this.label = config['label'];
          this.location = config['location'];
          this.method = config['method'];
+         this.rs = table.resultset;
          this.table = table;
          this.downloadHandler = function(event) {
             event.preventDefault();
-            table.resultset.state('download', this.method);
-            const url = this.table.resultset.prepareURL();
-            table.resultset.state('download', '');
+            this.rs.state('download', this.method);
+            const url = this.rs.prepareURL();
+            this.rs.state('download', '');
             this.downloader.handler(url, this.filename);
          }.bind(this);
          const name = 'render' + this.location['control'] + 'Control';
@@ -308,16 +332,15 @@ HStateTable.Role.Downloadable = (function() {
 HStateTable.Role.Filterable = (function() {
    class FilterControl {
       constructor(table, methods) {
-         this.table = table;
          const config = table.roles['filterable'];
          this.location = config['location'];
          this.messages;
+         this.rs = table.resultset;
+         this.table = table;
          const paramMap = table.resultset.parameterMap;
          this.nameMap = paramMap.nameMap.bind(paramMap);
          this.nameMap('filterColumn', 'filter_column');
          this.nameMap('filterValue', 'filter_value');
-         this.rs = table.resultset;
-
          methods['createColumn'] = function(orig, table, config) {
             const column = orig(table, config);
             if (column.filterable)
@@ -365,6 +388,74 @@ HStateTable.Role.Filterable = (function() {
       around: modifiedMethods
    };
 })();
+HStateTable.Role.Form = (function() {
+   class FormControl {
+      constructor(table, methods) {
+         const config = table.roles['form'];
+         this.buttonConfig = config['buttons'];
+         this.buttons = {};
+         this.handlers = {};
+         this.location = config['location'];
+         this.rs = table.resultset;
+         this.table = table;
+         this.url = config['url'];
+         for (const buttonConfig of this.buttonConfig) {
+            this.handlers[buttonConfig['action']] = function(event) {
+               event.preventDefault();
+               if (!confirm(
+                  'Are you sure you want to ' + buttonConfig['value'])
+                  ) return;
+               this.postForm(buttonConfig);
+            }.bind(this);
+         }
+         methods['appendContainer'] = function(orig, container, content) {
+            const form = this.h.form({ className: 'table-form' });
+            orig(form, content);
+            container.append(form);
+         };
+         const control = 'render' + this.location['control'] + 'Control';
+         methods[control] = function(orig) {
+            const container = orig();
+            for (const buttonConfig of this.buttonConfig) {
+               const action = buttonConfig['action'];
+               if (this.buttons[action]) continue;
+               this.buttons[action] = this.h.button(
+                  { className: buttonConfig['class'],
+                    onclick: this.handlers[action],
+                    type: 'submit' }, buttonConfig['value']
+               );
+               container.append(this.buttons[action]);
+            }
+            return container;
+         }.bind(this);
+      }
+      formData(buttonConfig) {
+         const selector = [];
+         for (const column of this.table.columns) {
+            if (!Object.keys(column.rowSelector)) continue;
+            for (const box of Object.values(column.rowSelector)) {
+               if (box.checked) selector.push(box.value);
+            }
+            break;
+         }
+         return { action: buttonConfig['action'], selector: selector };
+      }
+      async postForm(buttonConfig) {
+         await this.rs.storeJSON(this.url, this.formData(buttonConfig));
+         this.rs.reset();
+         this.table.redraw();
+      }
+   }
+   Object.assign(FormControl.prototype, HStateTable.Util.markup);
+   Object.assign(FormControl.prototype, HStateTable.Util.modifiers);
+   const modifiedMethods = {};
+   return {
+      initialise: function() {
+         this.formControl = new FormControl(this, modifiedMethods);
+      },
+      around: modifiedMethods
+   };
+})();
 // Package HStateTable.Role.Searchable
 HStateTable.Role.Searchable = (function() {
    class SearchControl {
@@ -374,9 +465,9 @@ HStateTable.Role.Searchable = (function() {
          this.location = config['location'];
          this.messages;
          this.nameMap = paramMap.nameMap.bind(paramMap);
+         this.rs = table.resultset;
          this.searchControl;
          this.searchableColumns = [];
-         this.state = table.resultset.state.bind(table.resultset);
          this.table = table;
 
          this.nameMap('searchColumn', 'search_column');
@@ -416,13 +507,13 @@ HStateTable.Role.Searchable = (function() {
             name: this.nameMap('searchValue'),
             placeholder: 'Search table...',
             type: 'text',
-            value: this.state('searchValue') || null
+            value: this.rs.state('searchValue') || null
          });
       }
       searchSelect(selectElements) {
          if (!this.searchableColumns.length) return;
          const options = [];
-         const searchColumn = this.state('searchColumn') || null;
+         const searchColumn = this.rs.state('searchColumn') || null;
          let selectPrefix = 'All';
          for (const column of this.searchableColumns) {
             let selected = false;
@@ -437,8 +528,7 @@ HStateTable.Role.Searchable = (function() {
 // selectElements.push(this.h.span({ className:'search-display'},selectPrefix));
          selectElements.push(this.h.span({ className: 'search-arrow' }));
          const select = this.h.select({
-            className: 'search-select',
-            name: this.nameMap('searchColumn')
+            className: 'search-select', name: this.nameMap('searchColumn')
          }, this.h.option({ className: 'search-select', value: '' }, 'All'));
          for (const anOption of options) { select.append(anOption) }
          selectElements.push(select);
@@ -455,8 +545,8 @@ HStateTable.Role.Searchable = (function() {
          ]);
          const handler = function(event) {
             event.preventDefault();
-            this.table.resultset.search({
-               'searchColumn': select ? select.value : null,
+            this.rs.search({
+               'searchColumn': select ? select.value : '',
                'searchValue': input.value
             });
             this.table.redraw();
@@ -472,14 +562,12 @@ HStateTable.Role.Searchable = (function() {
       }
       renderMessages(container) {
          const messages = this.h.div();
-         const column = this.state('searchColumn');
-         const value = this.state('searchValue');
-         if (column && value) {
+         const column = this.table.findColumn(this.rs.state('searchColumn'));
+         const value = this.rs.state('searchValue');
+         if (value) {
             const handler = function(event) {
                event.preventDefault();
-               this.table.resultset.search({
-                  searchColumn: null, searchValue: null
-               });
+               this.rs.search({ searchColumn: null, searchValue: null });
                this.table.redraw();
             }.bind(this);
             messages.className = 'status-messages';
@@ -487,7 +575,7 @@ HStateTable.Role.Searchable = (function() {
                'Searching for ',
                this.h.strong('"' + value + '"'),
                ' in ',
-               this.h.strong('"' + column + '"'),
+               this.h.strong('"' + (column ? column.label : 'All Columns')+'"'),
                this.h.a({ onclick: handler }, 'Show all')
             ]));
          }

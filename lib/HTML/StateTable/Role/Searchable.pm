@@ -29,18 +29,21 @@ has 'searchable_columns' =>
       return \@columns;
    };
 
-has 'searchable_location' => is => 'ro', isa => Str, default => 'TopLeft';
+has 'searchable_control_location' => is => 'ro', isa => Str,
+   default => 'TopLeft';
 
 has 'searchable_method' => is => 'ro', isa => Str;
+
+has 'searchable_message_location' => is => 'ro', isa => Str,
+   default => 'Title';
 
 after 'BUILD' => sub {
    my $self = shift;
 
-   $self->add_role('searchable', __PACKAGE__);
-
    if (!$self->searchable_method && !$self->has_searchable_columns) {
       $self->searchable(0);
    }
+   else { $self->add_role('searchable', __PACKAGE__) }
 
    return;
 };
@@ -61,7 +64,7 @@ around 'build_prepared_resultset' => sub {
       $rs = $rs->$method($search);
    }
    else {
-      my @search_spec;
+      my @search_params;
       my $search_column = $self->param_value('search_column');
 
       for my $column (@{$self->searchable_columns}) {
@@ -75,14 +78,12 @@ around 'build_prepared_resultset' => sub {
             if scalar @name_parts == 1;
 
          $name = join DOT, @name_parts[-2,-1];
-         push @search_spec, $column->search_query_builder->(
-            $column, $name, $search
-         );
+         push @search_params, $column->search_query->($column, $name, $search);
       }
 
-      return $rs unless scalar @search_spec;
+      return $rs unless scalar @search_params;
 
-      $rs = $rs->search(\@search_spec);
+      $rs = $rs->search(\@search_params);
    }
 
    return $rs;
@@ -92,7 +93,10 @@ sub serialise_searchable {
    my $self = shift;
 
    return $self->has_searchable_columns ? {
-      location => { control => $self->searchable_location, messages => 'Title'},
+      location => {
+         control  => $self->searchable_control_location,
+         messages => $self->searchable_message_location,
+      },
       searchable_columns => [ map { $_->name } @{$self->searchable_columns} ],
    } : undef;
 }

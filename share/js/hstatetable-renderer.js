@@ -15,15 +15,14 @@ HStateTable.Renderer = (function() {
          this.column = column;
          this.row = row;
       }
-      getValue() {
+      getValue(attr) {
          const value = this.row.result[this.column.name];
          if (typeof value == 'object') return value;
          return { value: value };
       }
       render() {
          const attr = {};
-         const content = this.getValue();
-         if (content.wrapperClass) { attr.className = content.wrapperClass }
+         const content = this.getValue(attr);
          if (!content.link) return this.h.td(attr, content.value);
          const link = this.h.a({ href: content.link }, content.value);
          return this.h.td(attr, link);
@@ -42,10 +41,12 @@ HStateTable.Renderer = (function() {
          this.label = config['label'];
          this.name = config['name'];
          this.options = config['options'] || {};
+         this.rowSelector = {};
          this.sortable = config['sortable'];
          this.sortDesc = table.resultset.state('sortDesc');
          this.title = config['title'];
          this.traits = config['traits'] || [];
+         this.width = config['width'] ? ('width:' + config['width'] + ';') : '';
       }
       createCell(row) {
          const cell = new Cell(this, row);
@@ -63,10 +64,12 @@ HStateTable.Renderer = (function() {
          }.bind(this);
       }
       render() {
+         this.rowSelector = {};
          const attr = {};
          const rs = this.resultset;
          let content = [this.label || this.ucfirst(this.name)];
          if (this.title) attr.title = this.title;
+         if (this.width) attr.style = this.width;
          if (this.sortable) {
             if (rs.state('sortColumn') == this.name) {
                attr.className = 'active-sort-column';
@@ -79,9 +82,10 @@ HStateTable.Renderer = (function() {
    Object.assign(Column.prototype, tableUtils.markup);
    Object.assign(Column.prototype, tableUtils.modifiers);
    class Row {
-      constructor(table, result) {
+      constructor(table, result, index) {
          this.cells = [];
          this.columns = table.columns;
+         this.index = index;
          this.result = result;
          this.table = table;
 
@@ -337,10 +341,11 @@ HStateTable.Renderer = (function() {
             params.delete(nameMap('page'));
             params.delete(nameMap('pageSize'));
          }
-         const searchColumn = state('searchColumn');
          const searchValue = state('searchValue');
-         if (searchColumn && searchValue) {
-            params.set(nameMap('searchColumn'), searchColumn);
+         if (searchValue) {
+            const searchColumn = state('searchColumn');
+            if (searchColumn) params.set(nameMap('searchColumn'), searchColumn);
+            else params.delete(nameMap('searchColumn'));
             params.set(nameMap('searchValue'), searchValue);
          }
          else {
@@ -411,27 +416,22 @@ HStateTable.Renderer = (function() {
 
          this.table.append(this.header);
          this.table.append(this.body);
-         this.applyRoles('filterable');
+         this.applyRoles(true);
 
          for (const columnConfig of (config['columns'] || [])) {
             this.columns.push(this.createColumn(columnConfig));
          }
 
-         this.applyRoles();
+         this.applyRoles(false);
          this.titleControl = this.h.div({ className: 'title-control' });
-         this.container.append(this.titleControl);
 
          this.topControl = this.h.div({ className: 'top-control' });
-         this.container.append(this.topControl);
          this.topLeftControl = this.h.div({ className: 'top-left-control' });
          this.topControl.append(this.topLeftControl);
          this.topRightControl = this.h.div({ className: 'top-right-control' });
          this.topControl.append(this.topRightControl);
 
-         this.container.append(this.table);
-
          this.bottomControl = this.h.div({ className: 'bottom-control' });
-         this.container.append(this.bottomControl);
          this.bottomLeftControl
             = this.h.div({ className: 'bottom-left-control' });
          this.bottomControl.append(this.bottomLeftControl);
@@ -440,27 +440,28 @@ HStateTable.Renderer = (function() {
          this.bottomControl.append(this.bottomRightControl);
 
          this.creditControl = this.h.div({ className: 'credit-control'});
-         this.container.append(this.creditControl);
 
          this.pageControl = new PageControl(this);
          this.bottomRightControl.append(this.pageControl.list);
          this.pageSizeControl = new PageSizeControl(this);
          this.bottomLeftControl.append(this.pageSizeControl.list);
+
+         const content = [
+            this.topControl, this.titleControl, this.table,
+            this.creditControl, this.bottomControl
+         ];
+         this.appendContainer(container, content);
       }
-      applyRoles(roleName) {
-         if (roleName) {
-            const config = this.roles[roleName];
-            if (config) {
-               const name = config['role_name'] || this.ucfirst(roleName);
-               this.applyTraits(this, tableRoles, [name]);
-            }
-         }
-         else {
-            for (const [roleName, config] of Object.entries(this.roles)) {
-               if (roleName == 'filterable') continue;
-               const name = config['role_name'] || this.ucfirst(roleName);
-               this.applyTraits(this, tableRoles, [name]);
-            }
+      appendContainer(container, content) {
+         for (const el of content) { container.append(el); }
+      }
+      applyRoles(before) {
+         for (const [roleName, config] of Object.entries(this.roles)) {
+            const apply = config['apply'] ? config['apply'] : {};
+            if (before && !apply['before']) continue;
+            if (!before && apply['before']) continue;
+            const name = config['role_name'] || this.ucfirst(roleName);
+            this.applyTraits(this, tableRoles, [name]);
          }
       }
       createColumn(config) {
@@ -475,9 +476,9 @@ HStateTable.Renderer = (function() {
       async nextResult() {
          return await this.resultset.next();
       }
-      async nextRow() {
+      async nextRow(index) {
          const result = await this.nextResult()
-         return result ? new Row(this, result) : undefined;
+         return result ? new Row(this, result, index) : undefined;
       }
       redraw() {
          this.render();
@@ -520,8 +521,9 @@ HStateTable.Renderer = (function() {
       async renderRows() {
          this.rows = [];
          this.rowCount = 0;
+         let index = 0;
          let row;
-         while (row = await this.nextRow()) { this.rows.push(row) }
+         while (row = await this.nextRow(index++)) { this.rows.push(row) }
          this.rowCount = this.rows.length;
          const tbody = this.h.tbody();
          if (this.rowCount) {

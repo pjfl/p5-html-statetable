@@ -1,4 +1,38 @@
 // -*- coding: utf-8; -*-
+HStateTable.ColumnTrait.CheckAll = (function() {
+   class CheckAll {
+      constructor(column, methods) {
+         this.column = column;
+         this.handler = function(event) {
+            if (!Object.keys(this.column.rowSelector)) return;
+            for (const box of Object.values(this.column.rowSelector)) {
+               box.checked = this.column.checkAll.checked;
+            }
+         }.bind(this);
+         methods['render'] = function(orig) { return this.render() }.bind(this);
+      }
+      render() {
+         const attr = {};
+         const col = this.column;
+         if (col.title) attr.title = col.title;
+         if (col.width) attr.style = col.width;
+         col.checkAll = this.h.input(
+            { className: 'check-all', onclick: this.handler, type: 'checkbox' }
+         );
+         return this.h.th(
+            attr, this.h.span({ className: 'checkall-control' }, col.checkAll)
+         );
+      }
+   }
+   Object.assign(CheckAll.prototype, HStateTable.Util.markup);
+   const modifiedMethods = {};
+   return {
+      initialise: function() {
+         this.checkAll = new CheckAll(this, modifiedMethods);
+      },
+      around: modifiedMethods
+   };
+})();
 // Package HStateTable.ColumnTrait.Filterable
 HStateTable.ColumnTrait.Filterable = (function() {
    class Filterable {

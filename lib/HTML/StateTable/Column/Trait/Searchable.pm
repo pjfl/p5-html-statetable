@@ -6,9 +6,10 @@ use Ref::Util                   qw( is_coderef );
 use Unexpected::Functions       qw( throw );
 use Moo::Role;
 
-has 'searchable' => is => 'ro', isa => Bool|CodeRef, reader => '_get_searchable';
+has 'searchable' => is => 'ro', isa => Bool|CodeRef,
+   reader => '_get_searchable';
 
-has 'search_query_builder' =>
+has 'search_query' =>
    is      => 'lazy',
    isa     => CodeRef,
    default => sub {

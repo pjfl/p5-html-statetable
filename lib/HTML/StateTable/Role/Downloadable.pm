@@ -8,6 +8,9 @@ use Moo::Role;
 
 has 'downloadable' => is => 'ro', isa => Bool, default => TRUE;
 
+has 'download_control_location' => is => 'ro', isa => Str,
+   default => 'BottomRight';
+
 has 'download_display' => is => 'ro', isa => Bool, default => TRUE;
 
 has 'download_filename' =>
@@ -32,21 +35,22 @@ has 'download_view_name' =>
 after 'BUILD' => sub {
    my $self = shift;
 
-   $self->add_role('downloadable', __PACKAGE__);
-
    return unless $self->downloadable && $self->has_context;
+
+   $self->add_role('downloadable', __PACKAGE__);
 
    throw 'Undefined view [_1]', [$self->download_view_name]
       unless $self->context->view($self->download_view_name);
 
    if (my $format = $self->param_value('download')) {
-      $self->context->stash->{view} = $self->download_view_name;
-
-      $self->context->stash->{$self->download_stash_key} = {
-         filename => $self->download_filename,
-         format   => $format,
-         table    => $self,
-      };
+      $self->context->stash(
+         view => $self->download_view_name,
+         $self->download_stash_key => {
+            filename => $self->download_filename,
+            format   => $format,
+            table    => $self,
+         },
+      );
    }
 };
 
@@ -55,12 +59,11 @@ sub serialise_downloadable {
    my $self = shift;
 
    return $self->downloadable ? {
-      display   => json_bool $self->download_display,
-      filename  => $self->download_filename,
-      label     => $self->download_label,
-      location  => { control => 'BottomRight' },
-      method    => $self->download_method,
-      role_name => 'Downloadable',
+      display  => json_bool $self->download_display,
+      filename => $self->download_filename,
+      label    => $self->download_label,
+      location => { control => $self->download_control_location },
+      method   => $self->download_method,
    } : undef;
 }
 

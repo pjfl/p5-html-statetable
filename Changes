@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Adds checkbox column trait. Form role. Check all role
           - Adds filterable table role
           - Adds configurable table role
           - Poor mans HTML::Tiny in utils JS

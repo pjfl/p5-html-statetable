@@ -91,12 +91,14 @@ has 'value' =>
    isa     => CodeRef|ScalarRef|Str,
    default => sub { shift->name };
 
+has 'width' => is => 'ro', isa => Str;
+
 has '_boolean_options' =>
    is          => 'ro',
    isa         => HashRef,
    handles_via => 'Hash',
    handles     => { is_boolean_option => 'exists' },
-   default     => sub { { check_all => TRUE } };
+   default     => sub { { checkall => TRUE } };
 
 sub BUILD {}
 
