@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 13 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 14 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -229,11 +229,18 @@ has '_roles' =>
    isa          => HashRef[ClassName],
    handles_via  => 'Hash',
    handles      => {
-      add_role  => 'set',
+      _add_role => 'set',
       all_roles => 'keys',
       get_role  => 'get',
    },
    default      => sub { {} };
+
+has '_role_order' =>
+   is          => 'ro',
+   isa         => ArrayRef[SimpleStr],
+   handles_via => 'Array',
+   handles     => { add_role_name => 'push', all_role_names => 'elements' },
+   default     => sub { [] };
 
 # Construction
 around 'BUILDARGS' => sub {
@@ -262,6 +269,14 @@ sub BUILD {
 }
 
 # Public methods
+sub add_role {
+   my ($self, $role_name, $class_name) = @_;
+
+   $self->_add_role($role_name, $class_name);
+   $self->add_role_name($role_name);
+   return;
+}
+
 sub build_prepared_resultset {
    my $self      = shift;
    my $resultset = $self->resultset;

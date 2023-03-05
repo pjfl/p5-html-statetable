@@ -31,8 +31,10 @@ div.state-table .status-messages {
 div.state-table .status-messages a {
    margin-left: 5px; text-decoration: underline;
 }
+div.state-table .active-control,
 div.state-table .bottom-left-control,
 div.state-table .bottom-right-control,
+div.state-table .search-box,
 div.state-table .top-left-control,
 div.state-table .top-right-control {
    display: inline-block;

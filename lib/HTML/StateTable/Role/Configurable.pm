@@ -3,7 +3,6 @@ package HTML::StateTable::Role::Configurable;
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE TRUE );
 use HTML::StateTable::Types     qw( Bool Str );
-use JSON::MaybeXS               qw( decode_json );
 use Unexpected::Functions       qw( throw );
 use Try::Tiny;
 use Moo::Role;
@@ -38,9 +37,7 @@ sub serialise_configurable {
 }
 
 sub _apply_configurable_params {
-   my ($self, $json) = @_;
-
-   my $config; try { $config = decode_json($json) } catch { warn "$_" };
+   my ($self, $config) = @_;
 
    return unless scalar keys %{$config};
 

@@ -179,13 +179,15 @@ sub _serialise_roles {
    my $self  = shift;
    my $table = $self->table;
    my $roles = {};
+   my $index = 0;
 
-   for my $role_name ($table->all_roles) {
+   for my $role_name ($table->all_role_names) {
       next unless $table->does($table->get_role($role_name));
 
       my $method = "serialise_${role_name}";
 
       if (defined(my $value = $table->$method)) {
+         $value->{'role-index'} = $index++;
          $roles->{$role_name} = $value;
       }
    }

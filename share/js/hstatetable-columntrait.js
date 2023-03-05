@@ -41,20 +41,19 @@ HStateTable.ColumnTrait.Filterable = (function() {
          this.dialog;
          this.dialogState = false;
          this.records;
-         this.rs = column.table.resultset;
          this.table = column.table;
+         this.rs = column.table.resultset;
+         this.rs.extendState('filterColumnValues');
+         this.rs.nameMap('filterColumnValues', 'filter_column_values');
          this.dialogHandler = function(event) {
             event.preventDefault();
             this.dialogState = !this.dialogState;
             if (this.dialogState) this.render();
             else {
                this.dialog.remove();
-               this.rs.reset();
-               this.table.redraw();
+               this.rs.redraw();
             }
          }.bind(this);
-         const params = this.rs.parameterMap;
-         params.nameMap('filterColumnValues', 'filter_column_values');
          methods['render'] = function(orig) {
             const container = orig();
             container.append(this.h.a(
@@ -65,9 +64,9 @@ HStateTable.ColumnTrait.Filterable = (function() {
          }.bind(this);
       }
       async renderValues() {
-         this.rs.state('filterColumnValues', this.column.name);
-         const url = this.rs.prepareURL();
-         this.rs.state('filterColumnValues', '');
+         const url = this.table.prepareURL({
+            filterColumnValues: this.column.name
+         });
          const response = await this.rs.fetchJSON(url);
          this.records = response['records'];
          const items = [];

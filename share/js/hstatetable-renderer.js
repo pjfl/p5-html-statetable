@@ -2,12 +2,14 @@
 // Package HStateTable.Renderer
 if (!HStateTable.CellTrait) HStateTable.CellTrait = {};
 if (!HStateTable.ColumnTrait) HStateTable.ColumnTrait = {};
+if (!HStateTable.RowTrait) HStateTable.RowTrait = {};
 if (!HStateTable.Role) HStateTable.Role = {};
 HStateTable.Renderer = (function() {
    const dsName       = 'tableConfig';
    const triggerClass = 'state-table';
    const cellTraits   = HStateTable.CellTrait;
    const columnTraits = HStateTable.ColumnTrait;
+   const rowTraits    = HStateTable.RowTrait;
    const tableRoles   = HStateTable.Role;
    const tableUtils   = HStateTable.Util;
    class Cell {
@@ -33,7 +35,7 @@ HStateTable.Renderer = (function() {
    class Column {
       constructor(table, config) {
          this.table = table;
-         this.resultset = table.resultset;
+         this.rs = table.resultset;
          this.cellTraits = config['cell_traits'] || [];
          this.displayed = config['displayed'];
          this.downloadable = config['downloadable'];
@@ -57,21 +59,19 @@ HStateTable.Renderer = (function() {
          return function(event) {
             event.preventDefault();
             this.sortDesc = !this.sortDesc;
-            this.resultset.search({
+            this.rs.search({
                sortColumn: this.name, sortDesc: this.sortDesc
-            });
-            this.table.redraw();
+            }).redraw();
          }.bind(this);
       }
       render() {
          this.rowSelector = {};
          const attr = {};
-         const rs = this.resultset;
          let content = [this.label || this.ucfirst(this.name)];
          if (this.title) attr.title = this.title;
          if (this.width) attr.style = this.width;
          if (this.sortable) {
-            if (rs.state('sortColumn') == this.name) {
+            if (this.rs.state('sortColumn') == this.name) {
                attr.className = 'active-sort-column';
             }
             content = [this.h.a({ onclick: this.sortHandler() }, content[0])];
@@ -93,8 +93,9 @@ HStateTable.Renderer = (function() {
             this.cells.push(column.createCell(this));
          }
       }
-      render() {
-         const row = this.h.tr();
+      render(attr) {
+         if (!attr) attr = {};
+         const row = this.h.tr(attr);
          for (const cell of this.cells) {
             if (cell.column.displayed) row.append(cell.render());
          }
@@ -102,6 +103,7 @@ HStateTable.Renderer = (function() {
       }
    };
    Object.assign(Row.prototype, tableUtils.markup);
+   Object.assign(Row.prototype, tableUtils.modifiers);
    class PageControl {
       constructor(table) {
          this.className = 'page-control';
@@ -109,7 +111,7 @@ HStateTable.Renderer = (function() {
          this.list = this.h.ul();
          this.list.className = this.className;
          this.pagingText = 'Page %current_page of %last_page';
-         this.resultset = table.resultset;
+         this.rs = table.resultset;
          this.table = table;
       }
       firstPage() {
@@ -118,24 +120,23 @@ HStateTable.Renderer = (function() {
       handler(text) {
          return function(event) {
             event.preventDefault();
-            let page = this.resultset.state('page');
+            let page = this.rs.state('page');
             const lastPage = this.lastPage();
             if (text == 'first') { page = this.firstPage() }
             else if (text == 'prev' && page > 1) { page -= 1 }
             else if (text == 'next' && page < lastPage) { page += 1 }
             else if (text == 'last') { page = lastPage }
-            this.table.resultset.search({ page: page });
-            this.table.redraw();
+            this.rs.search({ page: page }).redraw();
          }.bind(this);
       }
       interpolatePageText() {
          let text = this.pagingText;
-         text = text.replace(/\%current_page/, this.resultset.state('page'));
+         text = text.replace(/\%current_page/, this.rs.state('page'));
          text = text.replace(/\%last_page/, this.lastPage());
          return text;
       }
       lastPage() {
-         let pages = this.totalRecords() / this.resultset.state('pageSize');
+         let pages = this.totalRecords() / this.rs.state('pageSize');
          let lastPage;
          if (pages == Math.floor(pages)) { lastPage = pages }
          else { lastPage = 1 + Math.floor(pages) }
@@ -150,7 +151,7 @@ HStateTable.Renderer = (function() {
          else { this.renderPageControlNoCount(container) }
       }
       renderPageControl(container) {
-         const currentPage = this.resultset.state('page');
+         const currentPage = this.rs.state('page');
          const atFirst = !!(currentPage <= this.firstPage());
          const atLast  = !!(currentPage >= this.lastPage());
          const list = this.h.ul({ className: this.className });
@@ -173,7 +174,7 @@ HStateTable.Renderer = (function() {
          this.list = list;
       }
       renderPageControlNoCount(container) {
-         const currentPage = this.resultset.state('page');
+         const currentPage = this.rs.state('page');
          const atFirst = !!(currentPage <= this.firstPage());
          const atLast  = !!(currentPage >= this.table.rowCount);
          const list = this.h.ul({ className: this.className });
@@ -206,13 +207,13 @@ HStateTable.Renderer = (function() {
          this.enablePaging = table.properties['enable-paging'];
          this.list = this.h.ul();
          this.list.className = this.className;
+         this.rs = table.resultset;
          this.table = table;
       }
       handler(size) {
          return function(event) {
             event.preventDefault();
-            this.table.resultset.search({ pageSize: size });
-            this.table.redraw();
+            this.rs.search({ pageSize: size }).redraw();
          }.bind(this);
       }
       render(container) {
@@ -224,7 +225,7 @@ HStateTable.Renderer = (function() {
          const list = this.h.ul(attr, this.h.li('Showing up to\xA0'));
          for (const size of sizes) {
             const attr = {};
-            if (size == this.table.resultset.state('pageSize'))
+            if (size == this.rs.state('pageSize'))
                attr.className = 'selected-page-size'
             const handler = this.handler(size);
             list.append(this.h.li(attr, this.h.a({ onclick: handler }, size)));
@@ -254,17 +255,10 @@ HStateTable.Renderer = (function() {
    }
    class State {
       constructor(table) {
-         this.download;
-         this.filterColumn;
-         this.filterColumnValues;
-         this.filterValue;
          this.page = 1;
          this.pageSize = table.properties['page-size'];
-         this.searchColumn;
-         this.searchValue;
          this.sortColumn = table.properties['sort-column'];
          this.sortDesc = table.properties['sort-desc'];
-         this.tableMeta;
       }
    }
    class Resultset {
@@ -278,6 +272,9 @@ HStateTable.Renderer = (function() {
          this.totalRecords = 0;
          this.parameterMap = new ParameterMap();
          this._state = new State(table);
+      }
+      extendState(key, value) {
+         this._state[key] = value;
       }
       async fetchBlob(url) {
          const response = await fetch(url);
@@ -300,68 +297,20 @@ HStateTable.Renderer = (function() {
          }
          return await response.json();
       }
+      nameMap(key, value) {
+         return this.parameterMap.nameMap(key, value);
+      }
       async next() {
          if (this.index > 0) return this.records[this.index++];
-         const response = await this.fetchJSON(this.prepareURL());
+         const response = await this.fetchJSON(this.table.prepareURL());
          this.records = response['records'];
          this.totalRecords = response['total-records'];
          return this.records[this.index++];
       }
-      prepareURL() {
-         const url = new URL(this.dataURL);
-         const state = this.state.bind(this);
-         const params = url.searchParams;
-         const nameMap = this.parameterMap.nameMap.bind(this.parameterMap);
-         const download = state('download');
-         if (download) params.set(nameMap('download'), download);
-         else params.delete(nameMap('download'));
-         const filterColumn = state('filterColumn');
-         const filterValue = state('filterValue');
-         if (filterColumn && filterValue) {
-            params.set(nameMap('filterColumn'), filterColumn);
-            params.set(nameMap('filterValue'), filterValue);
-         }
-         else {
-            params.delete(nameMap('filterColumn'));
-            params.delete(nameMap('filterValue'));
-         }
-         const filterColumnValues = state('filterColumnValues');
-         if (filterColumnValues) {
-            params.set(nameMap('filterColumnValues'), filterColumnValues);
-         }
-         else { params.delete(nameMap('filterColumnValues')) }
-         if (this.enablePaging && !download && !filterColumnValues) {
-            params.set(nameMap('page'), state('page'));
-            const pageSize = this.maxPageSize
-                  && state('pageSize') > this.maxPageSize
-                  ? this.maxPageSize : state('pageSize');
-            params.set(nameMap('pageSize'), pageSize);
-         }
-         else {
-            params.delete(nameMap('page'));
-            params.delete(nameMap('pageSize'));
-         }
-         const searchValue = state('searchValue');
-         if (searchValue) {
-            const searchColumn = state('searchColumn');
-            if (searchColumn) params.set(nameMap('searchColumn'), searchColumn);
-            else params.delete(nameMap('searchColumn'));
-            params.set(nameMap('searchValue'), searchValue);
-         }
-         else {
-            params.delete(nameMap('searchColumn'));
-            params.delete(nameMap('searchValue'));
-         }
-         const sortColumn = !filterColumnValues ? state('sortColumn') : null;
-         if (sortColumn) params.set(nameMap('sortColumn'),sortColumn);
-         else params.delete(nameMap('sortColumn'));
-         const sortDesc = state('sortDesc');
-         if (sortColumn && sortDesc) params.set(nameMap('sortDesc'), sortDesc);
-         else params.delete(nameMap('sortDesc'));
-         const tableMeta = state('tableMeta');
-         if (tableMeta) params.set(nameMap('tableMeta'), tableMeta);
-         else params.delete(nameMap('tableMeta'));
-         return url;
+      redraw() {
+         this.reset();
+         this.table.redraw();
+         return this;
       }
       reset() {
          this.index = 0;
@@ -410,6 +359,7 @@ HStateTable.Renderer = (function() {
          this.properties = config['properties'];
          this.roles = config['roles'];
          this.rows = [];
+         this.rowTraits = config['row_traits'] || {};
          this.rowCount = 0;
          this.table = this.h.table({ id: this.name });
          this.resultset = new Resultset(this);
@@ -456,7 +406,12 @@ HStateTable.Renderer = (function() {
          for (const el of content) { container.append(el); }
       }
       applyRoles(before) {
-         for (const [roleName, config] of Object.entries(this.roles)) {
+         const roleIndex = [];
+         for (const roleName of Object.keys(this.roles)) {
+            roleIndex[this.roles[roleName]['role-index']] = roleName;
+         }
+         for (const roleName of roleIndex) {
+            const config = this.roles[roleName];
             const apply = config['apply'] ? config['apply'] : {};
             if (before && !apply['before']) continue;
             if (!before && apply['before']) continue;
@@ -478,20 +433,87 @@ HStateTable.Renderer = (function() {
       }
       async nextRow(index) {
          const result = await this.nextResult()
-         return result ? new Row(this, result, index) : undefined;
+         if (!result) return undefined;
+         const row = new Row(this, result, index);
+         for (const [traitName, config] of Object.entries(this.rowTraits)) {
+            const name = config['role_name'] || this.ucfirst(traitName);
+            this.applyTraits(row, rowTraits, [name]);
+         }
+         return row;
+      }
+      prepareURL(args) {
+         args ||= {};
+         const rs = this.resultset;
+         const url = new URL(rs.dataURL);
+         const params = url.searchParams;
+         const state = rs.state.bind(rs);
+         const nameMap = rs.nameMap.bind(rs);
+         const download = args['download'] || state('download');
+         if (download) params.set(nameMap('download'), download);
+         else params.delete(nameMap('download'));
+         const filterColumn = state('filterColumn');
+         const filterValue = state('filterValue');
+         if (filterColumn && filterValue) {
+            params.set(nameMap('filterColumn'), filterColumn);
+            params.set(nameMap('filterValue'), filterValue);
+         }
+         else {
+            params.delete(nameMap('filterColumn'));
+            params.delete(nameMap('filterValue'));
+         }
+         const filterColumnValues
+               = args['filterColumnValues'] || state('filterColumnValues');
+         if (filterColumnValues) {
+            params.set(nameMap('filterColumnValues'), filterColumnValues);
+         }
+         else { params.delete(nameMap('filterColumnValues')) }
+         if (rs.enablePaging && !download && !filterColumnValues) {
+            params.set(nameMap('page'), state('page'));
+            const pageSize = rs.maxPageSize
+                  && state('pageSize') > rs.maxPageSize
+                  ? rs.maxPageSize : state('pageSize');
+            params.set(nameMap('pageSize'), pageSize);
+         }
+         else {
+            params.delete(nameMap('page'));
+            params.delete(nameMap('pageSize'));
+         }
+         const searchValue = state('searchValue');
+         if (searchValue) {
+            const searchColumn = state('searchColumn');
+            if (searchColumn) params.set(nameMap('searchColumn'), searchColumn);
+            else params.delete(nameMap('searchColumn'));
+            params.set(nameMap('searchValue'), searchValue);
+         }
+         else {
+            params.delete(nameMap('searchColumn'));
+            params.delete(nameMap('searchValue'));
+         }
+         if (state('showInactive')) params.set(nameMap('showInactive'), true);
+         else params.delete(nameMap('showInactive'));
+         const sortColumn = !filterColumnValues ? state('sortColumn') : null;
+         if (sortColumn) params.set(nameMap('sortColumn'),sortColumn);
+         else params.delete(nameMap('sortColumn'));
+         const sortDesc = state('sortDesc');
+         if (sortColumn && sortDesc) params.set(nameMap('sortDesc'), sortDesc);
+         else params.delete(nameMap('sortDesc'));
+         const tableMeta = args['tableMeta'] || state('tableMeta');
+         if (tableMeta) params.set(nameMap('tableMeta'), tableMeta);
+         else params.delete(nameMap('tableMeta'));
+         return url;
       }
       redraw() {
          this.render();
       }
       render() {
-         this.renderTitleControl();
          this.renderTopLeftControl();
          this.renderTopRightControl();
+         this.renderTitleControl();
          this.renderHeader();
          this.renderRows();
+         this.renderCreditControl();
          this.renderBottomLeftControl();
          this.renderBottomRightControl();
-         this.renderCreditControl();
       }
       renderHeader() {
          const row = this.h.tr();
@@ -529,8 +551,7 @@ HStateTable.Renderer = (function() {
          if (this.rowCount) {
             let className = 'odd';
             for (row of this.rows) {
-               const rendered = row.render();
-               rendered.className = className;
+               const rendered = row.render({ className: className });
                className = (className == 'odd') ? 'even' : 'odd';
                tbody.append(rendered);
             }
