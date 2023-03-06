@@ -4,24 +4,29 @@ if (!HStateTable.Util) HStateTable.Util = {};
 HStateTable.Util = (function() {
    const _typeof = function(x) {
       if (!x) return;
+      if ((typeof x == 'object') && (x.nodeType == 1)
+          && (typeof x.style == 'object')
+          && (typeof x.ownerDocument == 'object')) return 'element';
       if (typeof x == 'object' && Array.isArray(x)) return 'array';
       if (typeof x == 'number') return 'number';
       if (typeof x == 'object') return 'object';
       if (typeof x == 'string') return 'string';
       return;
    };
+   const _events = ['onchange', 'onclick', 'onsubmit'];
    class HtmlTiny {
       _tag(tag, attr, content) {
          const el = document.createElement(tag);
          if (_typeof(attr) == 'object') {
             for (const prop of Object.keys(attr)) {
-               if (['onchange', 'onclick', 'onsubmit'].includes(prop)) {
+               if (_events.includes(prop)) {
                   el.addEventListener(prop.replace(/^on/, ''), attr[prop]);
                }
                else { el[prop] = attr[prop]; }
             }
          }
          else if (_typeof(attr) == 'array') { content = attr; }
+         else if (_typeof(attr) == 'element') { content = [attr]; }
          else if (_typeof(attr) == 'string') { content = [attr]; }
          if (content) {
             if (_typeof(content) != 'array') content = [content];
@@ -44,7 +49,7 @@ HStateTable.Util = (function() {
       option(attr, content)   { return this._tag('option', attr, content); }
       select(attr, content)   { return this._tag('select', attr, content); }
       span(attr, content)     { return this._tag('span', attr, content); }
-      strong(attr, content)   { return this._tag('stong', attr, content); }
+      strong(attr, content)   { return this._tag('strong', attr, content); }
       table(attr, content)    { return this._tag('table', attr, content); }
       tbody(attr, content)    { return this._tag('tbody', attr, content); }
       td(attr, content)       { return this._tag('td', attr, content); }

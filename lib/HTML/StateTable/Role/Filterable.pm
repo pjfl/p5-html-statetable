@@ -1,7 +1,8 @@
 package HTML::StateTable::Role::Filterable;
 
-use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE SERIALISE_TABLE_KEY
-                                    SERIALISE_TABLE_VIEW TRUE );
+use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE MAX_FILTER_ROWS
+                                    SERIALISE_TABLE_KEY SERIALISE_TABLE_VIEW
+                                    TRUE );
 use HTML::StateTable::Types     qw( Str );
 use HTML::StateTable::Util      qw( json_bool );
 use Ref::Util                   qw( is_coderef );
@@ -72,18 +73,62 @@ around 'build_prepared_resultset' => sub {
          if $column->filter_use_pkey;
    }
 
-   return $rs->search({ "${relation_name}.${filter_column}" => $value })
-      unless $column->is_generated;
+   return $rs->search({ -nest => \[$column->sql . ' = ?' => [sql => $value]]})
+      if $column->is_generated;
 
-   return $rs->search({ -nest => \[$column->sql . ' = ?' => [sql => $value]]});
+   return $rs->search({ "${relation_name}.${filter_column}" => $value });
 };
 
-sub filterable_column_values {
+sub filter_column_values {
    my ($self, $column_name) = @_;
 
-   my $rs = $self->resultset->search();
+   return [] unless $column_name;
 
-   return [$rs->get_column($column_name)->all];
+   my $column = $self->get_column($column_name);
+
+   return [] unless $column && $column->filterable;
+
+   my $rs = $self->resultset;
+
+   delete $rs->{attrs}->{'+as'}; delete $rs->{attrs}->{'+select'};
+
+   if ($column->has_filter_relation) {
+      my ($related_rs, $relation)
+         = $self->_get_related_rs($rs, $column->filter_relation);
+      my $pkey    = $self->_get_result_source_pkey($related_rs);
+      my @columns = map { "${relation}.${_}" } ($pkey, $column->filter_field);
+      my $schema  = $related_rs->result_source->schema;
+      my $order   = $schema->storage->sql_maker->_quote($columns[1]);
+
+      shift @columns unless $column->filter_use_pkey;
+
+      $rs = $related_rs->search(undef, {
+         columns => [@columns], group_by => [@columns]
+      });
+
+      my $info = $rs->result_source->column_info($column->filter_field);
+
+      $order = 'text' eq lc $info->{data_type} ? \qq{lower($order)} : \$order;
+      $rs = $rs->search(undef, { order_by => $order });
+   }
+   else {
+      if ($column->is_generated) {
+         $rs = $self->_apply_column_sql($rs, $column)->search(undef, {
+            columns => [], group_by => \$column->sql, order_by => \q{1},
+         });
+      }
+      else {
+         $rs = $rs->search(undef, {
+            columns  => [$column->filter_column],
+            distinct => TRUE,
+            order_by => $column->filter_column,
+         });
+      }
+   }
+
+   $rs = $rs->search({}, { rows => MAX_FILTER_ROWS });
+
+   return [$rs->get_column($column->filter_column)->all];
 }
 
 sub serialise_filterable {

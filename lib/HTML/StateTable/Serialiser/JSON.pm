@@ -65,7 +65,7 @@ around 'serialise_row' => sub {
    $data->{_highlight} = json_bool $self->table->highlight_row($row)
       if $self->table->does('HTML::StateTable::Role::HighlightRow');
 
-   $data->{_inactive} = json_bool $self->table->is_row_active($row)
+   $data->{_inactive} = json_bool !$self->table->is_row_active($row)
       if $self->table->does('HTML::StateTable::Role::Active');
 
    $row = $self->_json->encode($data);
@@ -118,7 +118,7 @@ sub _extract_tags {
 sub _serialise_filter {
    my ($self, $table) = @_;
 
-   my $records = $table->filterable_column_values($self->filter_column);
+   my $records = $table->filter_column_values($self->filter_column);
 
    $self->writer->($self->_json->encode({
       records => $records, 'total-records' => scalar @{$records},

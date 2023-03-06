@@ -4,14 +4,19 @@ HStateTable.CellTrait.Checkbox = (function() {
       around: {
          getValue: function(orig, attr) {
             const cell = orig();
-            attr.className = this.appendValue(attr.className, 'checkbox');
-            if (this.column.width)
-               attr.style = this.appendValue(attr.style, this.column.width);
-            const name = this.column.name + '.' + this.row.index;
+            const col = this.column;
+            const append = this.appendValue.bind(attr);
+            attr.className = append('className', 'checkbox');
+            if (col.width) attr.style = append('style', col.width);
+            const handler = function(event) {
+               col.table[col.table.formControl.control]();
+            }.bind(this);
+            const name = col.name + '.' + this.row.index;
             const box = this.h.input({
-               id: name, name: name, type: 'checkbox', value: cell.value
+               id: name, name: name, onclick: handler,
+               type: 'checkbox', value: cell.value
             });
-            this.column.rowSelector[name] = box;
+            col.rowSelector[name] = box;
             return { value: box };
          }
       }

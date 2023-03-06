@@ -72,7 +72,7 @@ has 'options' =>
 
 has 'position' => is => 'ro', isa => PositiveInt, default => 0;
 
-has 'serialised' => is => 'ro', isa => Bool, default => TRUE;
+has 'serialised' => is => 'rw', isa => Bool, default => TRUE;
 
 has 'sort_column' =>
    is        => 'ro',

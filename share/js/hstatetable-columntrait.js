@@ -8,6 +8,7 @@ HStateTable.ColumnTrait.CheckAll = (function() {
             for (const box of Object.values(this.column.rowSelector)) {
                box.checked = this.column.checkAll.checked;
             }
+            this.column.table[this.column.table.formControl.control]();
          }.bind(this);
          methods['render'] = function(orig) { return this.render() }.bind(this);
       }
@@ -86,7 +87,7 @@ HStateTable.ColumnTrait.Filterable = (function() {
             ),
             await this.renderValues()
          ]);
-         this.table.table.append(this.dialog);
+         this.column.header.append(this.dialog);
       }
       selectHandler(value) {
          return function(event) {

@@ -58,6 +58,11 @@ sub import {
             if exists $attributes{$key};
       }
 
+      if (exists $attributes{cell_traits}) {
+         $attributes{serialised} //= FALSE
+            if grep { $_ eq 'Checkbox' } @{$attributes{cell_traits}};
+      }
+
       for my $name (@{$names}) {
          _assert_no_banished_keywords($target, $name);
 

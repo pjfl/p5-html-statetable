@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Adds force limit and tag table roles
           - Adds Active and HighlightRow row traits
           - Adds checkbox column trait. Form role. Check all role
           - Adds filterable table role

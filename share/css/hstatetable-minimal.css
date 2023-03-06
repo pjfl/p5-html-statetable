@@ -11,12 +11,18 @@ div.state-table .preference-link,
 div.state-table th a {
    cursor: pointer;
 }
+div.state-table .active-control-label {
+   color: gray; font-size: small;
+}
 div.state-table .page-control,
 div.state-table .page-size-control {
    color: gray; font-size: small; margin: 0; padding-left: 0;
 }
+div.state-table .page-control li {
+   cursor: pointer;
+}
 div.state-table .page-control li.disabled {
-   text-decoration: line-through;
+   cursor: text; text-decoration: line-through;
 }
 div.state-table .page-control li:first-letter {
    text-transform:capitalize;
@@ -47,7 +53,8 @@ div.state-table .top-control {
    position: relative;
 }
 div.state-table table {
-   border-collapse: collapse; display: block; position: relative; width: 100%;
+   border-collapse: collapse; display: block; margin-bottom: 5px;
+   margin-top: 5px; position: relative; width: 100%;
 }
 div.state-table table th {
    background: ivory; border-right: 1px gray solid; padding-left: 5px;
@@ -66,6 +73,15 @@ div.state-table table th:last-child {
 div.state-table table tr.odd {
    background: linen;
 }
+div.state-table table tr.highlight {
+   background: DarkSeaGreen !important;
+}
+div.state-table table tr.inactive {
+   background: Gainsboro !important;
+}
+div.state-table table td {
+   padding-left: 5px; padding-right: 5px;
+}
 div.state-table table td.number {
    text-align: right;
 }
@@ -76,9 +92,6 @@ div.state-table .filter-dialog,
 div.state-table .preference-dialog {
    background: ivory; border: 1px solid; border-radius: 3px;
    position: absolute; top: 25px; z-index: 10;
-}
-div.state-table .filter-dialog {
-   left: 50px;
 }
 div.state-table .preference-dialog {
    right: 0px;
@@ -107,6 +120,6 @@ div.state-table .dialog-title {
    padding-bottom: 3px; padding-right: 3px; text-align: right;
 }
 div.state-table .filter-values {
-   list-style: none; margin-top: 3px; margin-bottom: 3px;
-   padding-left: 3px; padding-right: 3px;
+   font-weight: normal; list-style: none; margin-top: 3px; margin-bottom: 3px;
+   padding-left: 3px; padding-right: 3px; text-align: left;
 }

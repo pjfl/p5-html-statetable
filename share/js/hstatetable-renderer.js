@@ -40,6 +40,7 @@ HStateTable.Renderer = (function() {
          this.displayed = config['displayed'];
          this.downloadable = config['downloadable'];
          this.filterable = config['filterable'];
+         this.header;
          this.label = config['label'];
          this.name = config['name'];
          this.options = config['options'] || {};
@@ -76,7 +77,8 @@ HStateTable.Renderer = (function() {
             }
             content = [this.h.a({ onclick: this.sortHandler() }, content[0])];
          }
-         return this.h.th(attr, content);
+         this.header = this.h.th(attr, content);
+         return this.header;
       }
    };
    Object.assign(Column.prototype, tableUtils.markup);
@@ -446,60 +448,24 @@ HStateTable.Renderer = (function() {
          const rs = this.resultset;
          const url = new URL(rs.dataURL);
          const params = url.searchParams;
-         const state = rs.state.bind(rs);
-         const nameMap = rs.nameMap.bind(rs);
-         const download = args['download'] || state('download');
-         if (download) params.set(nameMap('download'), download);
-         else params.delete(nameMap('download'));
-         const filterColumn = state('filterColumn');
-         const filterValue = state('filterValue');
-         if (filterColumn && filterValue) {
-            params.set(nameMap('filterColumn'), filterColumn);
-            params.set(nameMap('filterValue'), filterValue);
+         if (rs.enablePaging) {
+            params.set(rs.nameMap('page'), rs.state('page'));
+            const max = rs.maxPageSize;
+            const pageSize = max && rs.state('pageSize') > max
+                  ? max : rs.state('pageSize');
+            params.set(rs.nameMap('pageSize'), pageSize);
          }
          else {
-            params.delete(nameMap('filterColumn'));
-            params.delete(nameMap('filterValue'));
+            params.delete(rs.nameMap('page'));
+            params.delete(rs.nameMap('pageSize'));
          }
-         const filterColumnValues
-               = args['filterColumnValues'] || state('filterColumnValues');
-         if (filterColumnValues) {
-            params.set(nameMap('filterColumnValues'), filterColumnValues);
-         }
-         else { params.delete(nameMap('filterColumnValues')) }
-         if (rs.enablePaging && !download && !filterColumnValues) {
-            params.set(nameMap('page'), state('page'));
-            const pageSize = rs.maxPageSize
-                  && state('pageSize') > rs.maxPageSize
-                  ? rs.maxPageSize : state('pageSize');
-            params.set(nameMap('pageSize'), pageSize);
-         }
-         else {
-            params.delete(nameMap('page'));
-            params.delete(nameMap('pageSize'));
-         }
-         const searchValue = state('searchValue');
-         if (searchValue) {
-            const searchColumn = state('searchColumn');
-            if (searchColumn) params.set(nameMap('searchColumn'), searchColumn);
-            else params.delete(nameMap('searchColumn'));
-            params.set(nameMap('searchValue'), searchValue);
-         }
-         else {
-            params.delete(nameMap('searchColumn'));
-            params.delete(nameMap('searchValue'));
-         }
-         if (state('showInactive')) params.set(nameMap('showInactive'), true);
-         else params.delete(nameMap('showInactive'));
-         const sortColumn = !filterColumnValues ? state('sortColumn') : null;
-         if (sortColumn) params.set(nameMap('sortColumn'),sortColumn);
-         else params.delete(nameMap('sortColumn'));
-         const sortDesc = state('sortDesc');
-         if (sortColumn && sortDesc) params.set(nameMap('sortDesc'), sortDesc);
-         else params.delete(nameMap('sortDesc'));
-         const tableMeta = args['tableMeta'] || state('tableMeta');
-         if (tableMeta) params.set(nameMap('tableMeta'), tableMeta);
-         else params.delete(nameMap('tableMeta'));
+         const sortColumn = rs.state('sortColumn');
+         if (sortColumn) params.set(rs.nameMap('sortColumn'), sortColumn);
+         else params.delete(rs.nameMap('sortColumn'));
+         const sortDesc = rs.state('sortDesc');
+         if (sortColumn && sortDesc)
+            params.set(rs.nameMap('sortDesc'), sortDesc);
+         else params.delete(rs.nameMap('sortDesc'));
          return url;
       }
       redraw() {
@@ -520,7 +486,7 @@ HStateTable.Renderer = (function() {
          for (const column of this.columns) {
             if (column.displayed) row.append(column.render());
          }
-         const thead = this.h.thead({}, row);
+         const thead = this.h.thead(row);
          this.table.replaceChild(thead, this.header);
          this.header = thead;
       }
@@ -537,8 +503,8 @@ HStateTable.Renderer = (function() {
       }
       renderNoData() {
          const message = this.properties['no-data-message'];
-         const cell = this.h.td({ colspan: this.columns.length }, message);
-         return this.h.tr({}, cell);
+         const cell = this.h.td({ colSpan: this.columns.length }, message);
+         return this.h.tr(cell);
       }
       async renderRows() {
          this.rows = [];

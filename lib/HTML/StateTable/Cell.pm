@@ -66,6 +66,8 @@ has 'value' =>
       return;
    };
 
+sub BUILD {}
+
 sub has_link {
    return defined shift->link;
 }

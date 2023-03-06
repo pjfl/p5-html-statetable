@@ -7,6 +7,7 @@ HStateTable.Role.Active = (function() {
          this.enabled = config['enabled'];
          this.label = config['label'];
          this.location = config['location'];
+         this.controlLocation = this.location['control'];
          this.rs = table.resultset;
          this.showInactive = false;
          this.table = table;
@@ -18,26 +19,37 @@ HStateTable.Role.Active = (function() {
             this.rs.state('showInactive', this.showInactive);
             this.rs.redraw();
          }.bind(this);
-         const name = 'render' + this.location['control'] + 'Control';
+         const name = 'render' + this.controlLocation + 'Control';
          methods[name] = function(orig) {
             const container = orig();
             if (this.enabled) this.render(container);
             return container;
          }.bind(this);
+         methods['prepareURL'] = function(orig, args) {
+            args ||= {};
+            const url = orig(args);
+            const params = url.searchParams;
+            const colName = this.rs.nameMap('showInactive');
+            if (this.rs.state('showInactive')) params.set(colName, true);
+            else params.delete(colName);
+            return url;
+         }.bind(this);
       }
       render(container) {
-         const activeForm = this.h.form({
-            'accept-charset': 'utf-8', className: 'active-control',
-            id: this.table.name + 'Active'
-         }, [
+         const content = [ this.label ];
+         const box = this.h.input(
+            { checked: this.showInactive, name: 'showInactive',
+              onclick: this.handler, type: 'checkbox' }
+         );
+         if (this.controlLocation.match(/Right/)) content.push(box);
+         else content.unshift(box);
+         const activeForm = this.h.form(
+            { className: 'active-control', id: this.table.name + 'Active' },
             this.h.label(
-               { htmlFor: 'showInactive' },
-               [ this.h.input(
-                  { checked: this.showInactive, name: 'showInactive',
-                    onclick: this.handler, type: 'checkbox' }
-               ), this.label]
-            ),
-         ]);
+               { className: 'active-control-label', htmlFor: 'showInactive' },
+               content
+            )
+         );
          if (this.activeForm && container.contains(this.activeForm)) {
             container.replaceChild(activeForm, this.activeForm);
          }
@@ -185,7 +197,7 @@ HStateTable.Role.Configurable = (function() {
       renderForm() {
          this.downBoxes = [];
          this.viewBoxes = [];
-         const rows = [this.h.tr({}, [
+         const rows = [this.h.tr([
             this.h.th('Column'),
             this.h.th('View'),
             this.downloadable ? this.h.th('Download') : ''
@@ -193,7 +205,7 @@ HStateTable.Role.Configurable = (function() {
          const sortOptions = [ this.h.option({ value: '' }, '[ Default ]') ];
          for (const column of this.table.columns) {
             if (!column.cellTraits.includes('Checkbox'))
-               rows.push(this.h.tr({}, this.renderCells(column)));
+               rows.push(this.h.tr(this.renderCells(column)));
             if (column.sortable) {
                const option = { value: column.name };
                if (column.name == this.rs.state('sortColumn'))
@@ -225,7 +237,7 @@ HStateTable.Role.Configurable = (function() {
             this.h.div({ className: 'dialog-input' }, [
                this.h.label({ htmlFor: 'sortBy' }, 'Sort by\xA0'),
                this.sortBy,
-               this.h.label({}, [this.sortDesc, 'Desc'])
+               this.h.label([this.sortDesc, 'Desc'])
             ]),
             this.h.div({ className: 'dialog-input' }, [
                this.h.label({ htmlFor: 'pageSize' }, 'Show up to\xA0'),
@@ -268,6 +280,7 @@ HStateTable.Role.Configurable = (function() {
          this.dialogState = false;
          this.label = config['label'];
          this.location = config['location'];
+         this.rs = table.resultset;
          this.table = table;
          this.url = new URL(config['url'].replace(/\*/, table.name));
          this.dialogHandler = function(event) {
@@ -283,6 +296,16 @@ HStateTable.Role.Configurable = (function() {
             this.configControl.render(container);
             return container;
          };
+         methods['prepareURL'] = function(orig, args) {
+            args ||= {};
+            const url = orig(args);
+            const params = url.searchParams;
+            const colName = this.rs.nameMap('tableMeta');
+            const tableMeta = args['tableMeta'] || this.rs.state('tableMeta');
+            if (tableMeta) params.set(colName, tableMeta);
+            else params.delete(colName);
+            return url;
+         }.bind(this);
       }
       render(container) {
          const control = this.h.a(
@@ -361,6 +384,20 @@ HStateTable.Role.Downloadable = (function() {
             this.downloadControl.render(container);
             return container;
          };
+         methods['prepareURL'] = function(orig, args) {
+            args ||= {};
+            const url = orig(args);
+            const params = url.searchParams;
+            const download = args['download'] || this.rs.state('download');
+            const colName = this.rs.nameMap('download');
+            if (download) {
+               params.set(colName, download);
+               params.delete(this.rs.nameMap('page'));
+               params.delete(this.rs.nameMap('pageSize'));
+            }
+            else params.delete(colName);
+            return url;
+         }.bind(this);
       }
       render(container) {
          const control = this.display ? this.h.a(
@@ -408,6 +445,35 @@ HStateTable.Role.Filterable = (function() {
             this.filterControl.renderMessages(container);
             return container;
          };
+         methods['prepareURL'] = function(orig, args) {
+            args ||= {};
+            const url = orig(args);
+            const params = url.searchParams;
+            const filterColumn = this.rs.state('filterColumn');
+            const filterValue = this.rs.state('filterValue');
+            const colName = this.rs.nameMap('filterColumn');
+            const valName = this.rs.nameMap('filterValue');
+            if (filterColumn && filterValue) {
+               params.set(colName, filterColumn);
+               params.set(valName, filterValue);
+            }
+            else {
+               params.delete(colName);
+               params.delete(valName);
+            }
+            const columnValues = args['filterColumnValues']
+                  || this.rs.state('filterColumnValues');
+            const colValuesName = this.rs.nameMap('filterColumnValues');
+            if (columnValues) {
+               params.set(colValuesName, columnValues);
+               params.delete(this.rs.nameMap('page'));
+               params.delete(this.rs.nameMap('pageSize'));
+               params.delete(this.rs.nameMap('sortColumn'));
+               params.delete(this.rs.nameMap('sortDesc'));
+            }
+            else { params.delete(colValuesName) }
+            return url;
+         }.bind(this);
       }
       renderMessages(container) {
          const messages = this.h.div();
@@ -450,17 +516,18 @@ HStateTable.Role.Form = (function() {
          const config = table.roles['form'];
          this.buttonConfig = config['buttons'];
          this.buttons = {};
+         this.confirm = config['confirm'];
          this.handlers = {};
          this.location = config['location'];
+         this.control = 'render' + this.location['control'] + 'Control';
          this.rs = table.resultset;
          this.table = table;
          this.url = config['url'];
          for (const buttonConfig of this.buttonConfig) {
             this.handlers[buttonConfig['action']] = function(event) {
                event.preventDefault();
-               if (!confirm(
-                  'Are you sure you want to ' + buttonConfig['value'])
-                  ) return;
+               if (!confirm(this.confirm.replace(/\*/, buttonConfig['value'])))
+                  return;
                this.postForm(buttonConfig);
             }.bind(this);
          }
@@ -469,21 +536,20 @@ HStateTable.Role.Form = (function() {
             orig(form, content);
             container.append(form);
          };
-         const control = 'render' + this.location['control'] + 'Control';
-         methods[control] = function(orig) {
+         methods[this.control] = function(orig) {
             const container = orig();
-            for (const buttonConfig of this.buttonConfig) {
-               const action = buttonConfig['action'];
-               if (this.buttons[action]) continue;
-               this.buttons[action] = this.h.button(
-                  { className: buttonConfig['class'],
-                    onclick: this.handlers[action],
-                    type: 'submit' }, buttonConfig['value']
-               );
-               container.append(this.buttons[action]);
-            }
+            this.render(container);
             return container;
          }.bind(this);
+      }
+      anyChecked(buttonConfig) {
+         for (const column of this.table.columns) {
+            if (!Object.keys(column.rowSelector)) continue;
+            for (const box of Object.values(column.rowSelector)) {
+               if (box.checked) return true;
+            }
+         }
+         return false;
       }
       formData(buttonConfig) {
          const selector = [];
@@ -496,9 +562,44 @@ HStateTable.Role.Form = (function() {
          }
          return { action: buttonConfig['action'], selector: selector };
       }
+      is_disabled(buttonConfig) {
+         if (buttonConfig['selection'] == 'disable_on_select')
+            return this.anyChecked(buttonConfig);
+         if (buttonConfig['selection'] == 'select_one')
+            return !this.onlyOneChecked(buttonConfig);
+         return !this.anyChecked(buttonConfig);
+      }
+      onlyOneChecked(buttonConfig) {
+         for (const column of this.table.columns) {
+            if (!Object.keys(column.rowSelector)) continue;
+            let count = 0;
+            for (const box of Object.values(column.rowSelector)) {
+               if (box.checked) count++;
+            }
+            return (count == 1) ? true : false;
+         }
+         return false;
+      }
       async postForm(buttonConfig) {
          await this.rs.storeJSON(this.url, this.formData(buttonConfig));
          this.rs.redraw();
+      }
+      render(container) {
+         for (const buttonConfig of this.buttonConfig) {
+            const action = buttonConfig['action'];
+            const button = this.h.button(
+               { className: buttonConfig['class'],
+                 disabled: this.is_disabled(buttonConfig),
+                 onclick: this.handlers[action],
+                 type: 'submit' }, buttonConfig['value']
+            );
+            if (this.buttons[action]
+                && container.contains(this.buttons[action])) {
+               container.replaceChild(button, this.buttons[action]);
+            }
+            else { container.append(button) }
+            this.buttons[action] = button;
+         }
       }
    }
    Object.assign(FormControl.prototype, HStateTable.Util.markup);
@@ -558,6 +659,25 @@ HStateTable.Role.Searchable = (function() {
             this.searchControl.renderMessages(container);
             return container;
          };
+         methods['prepareURL'] = function(orig, args) {
+            args ||= {};
+            const url = orig(args);
+            const params = url.searchParams;
+            const searchValue = this.rs.state('searchValue');
+            const colName = this.rs.nameMap('searchColumn');
+            const valName = this.rs.nameMap('searchValue');
+            if (searchValue) {
+               const searchColumn = this.rs.state('searchColumn');
+               if (searchColumn) params.set(colName, searchColumn);
+               else params.delete(colName);
+               params.set(valName, searchValue);
+            }
+            else {
+               params.delete(colName);
+               params.delete(valName);
+            }
+            return url;
+         }.bind(this);
       }
       searchAction(text) {
          return this.h.span(
@@ -575,6 +695,7 @@ HStateTable.Role.Searchable = (function() {
             className: 'search-field',
             name: this.rs.nameMap('searchValue'),
             placeholder: 'Search table...',
+            size: 10,
             type: 'text',
             value: this.rs.state('searchValue') || null
          });

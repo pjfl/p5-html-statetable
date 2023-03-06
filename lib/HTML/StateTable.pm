@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 14 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 15 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -394,11 +394,13 @@ sub sort_column {
 
 # Private methods
 sub _apply_column_sql {
-   my ($self, $resultset) = @_;
+   my ($self, $resultset, @columns) = @_;
+
+   @columns = $self->all_visible_columns unless scalar @columns;
 
    my (@as, @select);
 
-   for my $column ($self->all_visible_columns) {
+   for my $column (@columns) {
       next unless $column->is_generated;
 
       my $as = $column->as; my $sql = $column->sql;

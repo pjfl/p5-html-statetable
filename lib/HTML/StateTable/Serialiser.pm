@@ -23,6 +23,9 @@ sub serialise {
 
    $table->paging(FALSE) if $self->disable_paging;
 
+   $table->force_row_limit
+      if $table->does('HTML::StateTable::Role::ForceRowLimit');
+
    while (my $row = $table->next_row) {
       $writer->($self->serialise_row($row, $row_number));
       $row_number++;
