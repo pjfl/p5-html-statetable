@@ -278,7 +278,7 @@ HStateTable.Role.Configurable = (function() {
          const config = table.roles['configurable'];
          this.control;
          this.dialogState = false;
-         this.label = config['label'];
+         this.label = config['label'] || 'V';
          this.location = config['location'];
          this.rs = table.resultset;
          this.table = table;
@@ -312,7 +312,8 @@ HStateTable.Role.Configurable = (function() {
             { className: 'preference-link', onclick: this.dialogHandler,
               title: 'Preferences'
             },
-            [ this.h.span({ className: 'sprite sprite-preference' }),this.label]
+            [ this.h.span({ className: 'sprite sprite-preference' }),
+              '\xA0' + this.label + '\xA0' ]
          );
          if (this.control && container.contains(this.control)) {
             container.replaceChild(control, this.control);
@@ -425,8 +426,10 @@ HStateTable.Role.Filterable = (function() {
    class FilterControl {
       constructor(table, methods) {
          const config = table.roles['filterable'];
+         this.label = config['label'];
          this.location = config['location'];
          this.messages;
+         this.ns = HStateTable.ColumnTrait;
          this.table = table;
          this.rs = table.resultset;
          this.rs.extendState('filterColumn');
@@ -435,10 +438,12 @@ HStateTable.Role.Filterable = (function() {
          this.rs.nameMap('filterValue', 'filter_value');
          methods['createColumn'] = function(orig, table, config) {
             const column = orig(table, config);
-            if (column.filterable)
-               this.applyTraits(column, HStateTable.ColumnTrait,['Filterable']);
+            if (column.filterable) {
+               const args = { label: this.label };
+               this.applyTraits(column, this.ns, ['Filterable'], args);
+            }
             return column;
-         };
+         }.bind(this);
          const messages = 'render' + this.location['messages'] + 'Control';
          methods[messages] = function(orig) {
             const container = orig();
@@ -645,7 +650,8 @@ HStateTable.Role.Searchable = (function() {
          this.rs.extendState('searchValue');
          this.rs.nameMap('searchValue', 'search');
          for (const columnName of config['searchable_columns']) {
-            this.searchableColumns.push(this.table.findColumn(columnName));
+            const column = this.table.findColumn(columnName);
+            if (column) this.searchableColumns.push(column);
          }
          const search = 'render' + this.location['control'] + 'Control';
          methods[search] = function(orig) {
@@ -751,21 +757,23 @@ HStateTable.Role.Searchable = (function() {
          this.searchControl = control;
       }
       renderMessages(container) {
+         const rs = this.rs;
+         const searchCol = rs.state('searchColumn');
+         const column = this.table.findColumn(searchCol);
+         const value = rs.state('searchValue');
          const messages = this.h.div();
-         const column = this.table.findColumn(this.rs.state('searchColumn'));
-         const value = this.rs.state('searchValue');
          if (value) {
             const handler = function(event) {
                event.preventDefault();
-               this.rs.search({ searchColumn: null, searchValue: null });
-               this.rs.redraw();
+               rs.search({ searchColumn: null, searchValue: null }).redraw();
             }.bind(this);
+            const label = column ? column.label
+                   : ( searchCol ? this.ucfirst(searchCol) : 'All Columns');
             messages.className = 'status-messages';
             messages.append(this.h.span({ className: 'search-message' }, [
-               'Searching for ',
-               this.h.strong('"' + value + '"'),
-               ' in ',
-               this.h.strong('"' + (column ? column.label : 'All Columns')+'"'),
+               'Searching for\xA0',
+               this.h.strong('"' + value + '"'), '\xA0in\xA0',
+               this.h.strong('"' + label + '"'),
                this.h.a({ onclick: handler }, 'Show all')
             ]));
          }
@@ -781,6 +789,29 @@ HStateTable.Role.Searchable = (function() {
    return {
       initialise: function() {
          this.searchControl = new SearchControl(this, modifiedMethods);
+      },
+      around: modifiedMethods
+   };
+})();
+// Package HStateTable.Role.Tagable
+HStateTable.Role.Tagable = (function() {
+   class TagControl {
+      constructor(table, methods) {
+         const config = table.roles['tagable'];
+         this.appendTo = config['append_to'];
+         this.enablePopular = config['enable_popular'];
+         this.location = config['location'];
+         this.searchColumn = config['search_column'];
+         this.table = table;
+         this.tags = config['tags'];
+         const column = this.table.findColumn(this.appendTo);
+         column.cellTraits.push('Tagable');
+      }
+   }
+   const modifiedMethods = {};
+   return {
+      initialise: function() {
+         this.tagControl = new TagControl(this, modifiedMethods);
       },
       around: modifiedMethods
    };

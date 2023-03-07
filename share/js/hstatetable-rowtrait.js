@@ -3,10 +3,9 @@ HStateTable.RowTrait.Active = (function() {
    return {
       around: {
          render: function(orig, attr) {
-            if (!attr) attr = {};
+            attr ||= {};
             if (this.result['_inactive']) {
-               attr.className
-                  = this.appendValue.bind(attr)('className', 'inactive');
+               attr.className = attr.appendValue('className', 'inactive');
             }
             return orig(attr);
          }
@@ -18,10 +17,9 @@ HStateTable.RowTrait.HighlightRow = (function() {
    return {
       around: {
          render: function(orig, attr) {
-            if (!attr) attr = {};
+            attr ||= {};
             if (this.result['_highlight']) {
-               attr.className
-                  = this.appendValue.bind(attr)('className', 'highlight');
+               attr.className = attr.appendValue('className', 'highlight');
             }
             return orig(attr);
          }

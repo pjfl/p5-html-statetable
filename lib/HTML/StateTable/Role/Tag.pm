@@ -2,6 +2,7 @@ package HTML::StateTable::Role::Tag;
 
 use HTML::StateTable::Constants qw( FALSE TRUE );
 use HTML::StateTable::Types     qw( Bool Int Str );
+use HTML::StateTable::Util      qw( json_bool );
 use Type::Utils                 qw( class_type );
 use Moo::Role;
 
@@ -13,8 +14,9 @@ has 'tag_all' =>
       my $schema = $self->resultset->result_source->schema;
 
       return $schema->resultset($self->tag_rs_name)->search(
-         { id => { -in => $self->tag_allowed_ids->as_query } },
-         { order_by => { -asc => $self->tag_column_name }}
+         { id       => { -in  => $self->tag_allowed_ids->as_query } },
+         { order_by => { -asc => $self->tag_column_name },
+           rows     => $self->tag_display_limit }
       );
    };
 
@@ -39,7 +41,9 @@ has 'tag_control_location' => is => 'ro', isa => Str, default => 'TopLeft';
 
 has 'tag_display_limit' => is => 'ro', isa => Int, default => 20;
 
-has 'tag_enable' => is => 'rw', isa => Bool, lazy => TRUE, default => TRUE;
+has 'tag_enable' => is => 'ro', isa => Bool, default => TRUE;
+
+has 'tag_enable_popular' => is => 'ro', isa => Bool, default => FALSE;
 
 has 'tag_id_column_name' => is => 'ro', isa => Str, default => 'tag_id';
 
@@ -52,8 +56,8 @@ has 'tag_popular' =>
       my $column = $self->tag_result . $self->tag_popular_suffix;
 
       return $schema->resultset($self->tag_rs_name)->search(
-         { id       => { -in   => $self->allowed_tag_ids->as_query },
-           $column  => { '!='  => FALSE } },
+         { id       => { -in   => $self->tag_allowed_ids->as_query },
+           $column  => { '!='  => 0 } },
          { order_by => { -desc => $column },
            rows     => $self->tag_display_limit }
       );
@@ -64,11 +68,7 @@ has 'tag_popular_suffix' => is => 'ro', isa => Str, default => '_popularity';
 has 'tag_result' =>
    is      => 'lazy',
    isa     => Str,
-   default => sub {
-      my $self = shift;
-
-      return lc $self->resultset->result_source->source_name;
-   };
+   default => sub { lc shift->resultset->result_source->source_name };
 
 has 'tag_result_suffix' => is => 'ro', isa => Str, default => '_tags';
 
@@ -81,26 +81,28 @@ after 'BUILD' => sub {
 
    return unless $self->tag_enable && $self->tag_all->count > 0;
 
-   $self->add_role('table_tags', __PACKAGE__);
+   $self->add_role('tagable', __PACKAGE__);
    return;
 };
 
-sub serialise_table_tags {
-   my $self     = shift;
-   my $name     = $self->tag_column_name;
-   my @all_tags = ();
+sub serialise_tagable {
+   my $self = shift;
+   my $name = $self->tag_column_name;
+   my @tags = ();
 
-   while (my $tag = $self->tag_all->next) { push @all_tags, $tag->$name }
-
-   my @popular_tags = ();
-
-   while (my $tag = $self->tag_popular->next) { push @popular_tags, $tag->$name}
+   if ($self->tag_enable_popular) {
+      while (my $tag = $self->tag_popular->next) { push @tags, $tag->$name }
+   }
+   else {
+      while (my $tag = $self->tag_all->next) { push @tags, $tag->$name }
+   }
 
    return {
-      all_tags      => \@all_tags,
-      location      => { control => $self->tag_control_location },
-      popular_tags  => \@popular_tags,
-      search_column => $self->tag_search_column,
+      append_to      => $self->get_column($self->tag_search_column)->append_to,
+      enable_popular => json_bool $self->tag_enable_popular,
+      location       => { control => $self->tag_control_location },
+      search_column  => $self->tag_search_column,
+      tags           => \@tags,
    };
 }
 

@@ -3,18 +3,17 @@ HStateTable.CellTrait.Checkbox = (function() {
    return {
       around: {
          getValue: function(orig, attr) {
-            const cell = orig();
+            const result = orig(attr);
             const col = this.column;
-            const append = this.appendValue.bind(attr);
-            attr.className = append('className', 'checkbox');
-            if (col.width) attr.style = append('style', col.width);
+            attr.className = attr.appendValue('className', 'checkbox');
+            if (col.width) attr.style = attr.appendValue('style', col.width);
             const handler = function(event) {
                col.table[col.table.formControl.control]();
             }.bind(this);
             const name = col.name + '.' + this.row.index;
             const box = this.h.input({
                id: name, name: name, onclick: handler,
-               type: 'checkbox', value: cell.value
+               type: 'checkbox', value: result.value
             });
             col.rowSelector[name] = box;
             return { value: box };
@@ -27,9 +26,9 @@ HStateTable.CellTrait.Date = (function() {
    return {
       around: {
          getValue: function(orig, attr) {
-            const cell = orig();
-            cell.value = new Date(cell.value).toLocaleDateString();
-            return cell;
+            const result = orig(attr);
+            result.value = new Date(result.value).toLocaleDateString();
+            return result;
          }
       }
    };
@@ -39,13 +38,13 @@ HStateTable.CellTrait.DateTime = (function() {
    return {
       around: {
          getValue: function(orig, attr) {
-            const cell = orig();
-            const datetime = new Date(cell.value);
+            const result = orig(attr);
+            const datetime = new Date(result.value);
             const date = datetime.toLocaleDateString();
             const options = { hour: "2-digit", minute: "2-digit" };
             const time = datetime.toLocaleTimeString([], options);
-            cell.value = date + ' ' + time;
-            return cell;
+            result.value = date + ' ' + time;
+            return result;
          }
       }
    };
@@ -55,9 +54,44 @@ HStateTable.CellTrait.Numeric = (function() {
    return {
       around: {
          getValue: function(orig, attr) {
-            const cell = orig();
-            attr.className = this.appendValue(attr.className, 'number');
-            return cell;
+            const result = orig(attr);
+            attr.className = attr.appendValue('className', 'number');
+            return result;
+         }
+      }
+   };
+})();
+// Package HStateTable.CellTrait.Tagable
+HStateTable.CellTrait.Tagable = (function() {
+   return {
+      around: {
+         getValue: function(orig, attr) {
+            const result = orig(attr);
+            if (result.tags && result.tags[0]) {
+               const table = this.column.table;
+               const searchColumn = table.tagControl.searchColumn;
+               const rs = table.resultset;
+               const handler = function(tag) {
+                  return function(event) {
+                     event.preventDefault();
+                     rs.search(
+                        { searchColumn: searchColumn, searchValue: tag }
+                     ).redraw();
+                  };
+               };
+               const content = this.h.ul({ className: 'cell-content-append' });
+               for (const tag of result.tags) {
+                  const arrow = this.h.span({ className: 'tag-arrow-left' });
+                  const value = this.h.span(
+                     { className: 'tag-value', onclick: handler(tag) }, tag
+                  );
+                  content.append(
+                     this.h.li({ className: 'cell-tag' }, [arrow, value])
+                  );
+               }
+               result.append = content;
+            }
+            return result;
          }
       }
    };
@@ -67,10 +101,10 @@ HStateTable.CellTrait.Time = (function() {
    return {
       around: {
          getValue: function(orig, attr) {
-            const cell = orig();
+            const result = orig(attr);
             const options = { hour: "2-digit", minute: "2-digit" };
-            cell.value = new Date(cell.value).toLocaleTimeString([], options);
-            return cell;
+            result.value = new Date(result.value).toLocaleTimeString([], options);
+            return result;
          }
       }
    };

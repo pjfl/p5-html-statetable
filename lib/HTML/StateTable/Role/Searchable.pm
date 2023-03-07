@@ -77,7 +77,7 @@ around 'build_prepared_resultset' => sub {
          unshift @name_parts, $rs->current_source_alias()
             if scalar @name_parts == 1;
 
-         $name = join DOT, @name_parts[-2,-1];
+         $name = join DOT, @name_parts[-2, -1];
          push @search_params, $column->search_query->($column, $name, $search);
       }
 
@@ -92,13 +92,15 @@ around 'build_prepared_resultset' => sub {
 sub serialise_searchable {
    my $self = shift;
 
-   return $self->has_searchable_columns ? {
+   return unless $self->has_searchable_columns;
+
+   return {
       location => {
          control  => $self->searchable_control_location,
          messages => $self->searchable_message_location,
       },
       searchable_columns => [ map { $_->name } @{$self->searchable_columns} ],
-   } : undef;
+   };
 }
 
 use namespace::autoclean;

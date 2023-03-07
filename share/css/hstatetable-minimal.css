@@ -64,8 +64,8 @@ div.state-table table th.active-sort-column {
    background: bisque;
 }
 div.state-table table th a.filter-control {
-   display: inline-block; transform: rotateX(180deg);
-   -webkit-transform: rotateX(180deg);
+   color: gray; display: inline-block; font-weight: normal;
+   -webkit-transform: rotateX(180deg); transform: rotateX(180deg);
 }
 div.state-table table th:last-child {
    border-right: 0px;
@@ -87,6 +87,27 @@ div.state-table table td.number {
 }
 div.state-table td.checkbox {
    text-align: center;
+}
+div.state-table .cell-content-append {
+   display: block; list-style: none; margin-top: 0;
+   margin-bottom: 0; padding-left: 3px; padding-right: 3px;
+}
+div.state-table .cell-tag {
+   display: inline-block; margin-right: 5px;
+   padding-left: 3px; padding-right: 3px;
+}
+div.state-table .cell-tag .tag-arrow-left {
+   display: inline-block; border-top: 8px solid transparent;
+   border-bottom: 8px solid transparent; border-right: 8px solid gray;
+   height: 0; vertical-align: middle; width: 0;
+}
+div.state-table .cell-tag .tag-value {
+   background: gray;
+   border-bottom-right-radius: 3px; border-top-right-radius: 3px;
+   color: white; display: inline-block; font-size: x-small;
+   padding-bottom: 1px; padding-left: 3px;
+   padding-right: 3px; padding-top: 2px;
+   vertical-align: middle;
 }
 div.state-table .filter-dialog,
 div.state-table .preference-dialog {

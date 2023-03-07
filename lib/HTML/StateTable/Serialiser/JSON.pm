@@ -1,6 +1,6 @@
 package HTML::StateTable::Serialiser::JSON;
 
-use HTML::StateTable::Constants qw( FALSE TRUE );
+use HTML::StateTable::Constants qw( FALSE PIPE TRUE );
 use HTML::StateTable::Types     qw( Bool HashRef Object Str );
 use HTML::StateTable::Util      qw( json_bool );
 use Ref::Util                   qw( is_hashref );
@@ -103,12 +103,14 @@ sub _extract_tags {
    my ($self, $row) = @_;
 
    my $displayable_columns = $self->table->displayable_columns;
+   my $sep  = PIPE;
    my %tags = ();
 
    for my $cell (grep { !$_->hidden && $_->unfiltered_value } $row->cells) {
       my $column = $cell->column;
+      my $value  = $cell->unfiltered_value;
 
-      $tags{$column->append_to} = [ split m{ \| }mx, $cell->unfiltered_value ]
+      $tags{$column->append_to} = [ split m{ \Q$sep\E }mx, $value ]
          if $column->append_to && $displayable_columns->{$column->name};
    }
 
@@ -126,6 +128,7 @@ sub _serialise_filter {
 
    return TRUE;
 }
+
 sub _serialise_meta {
    my ($self, $table) = @_;
 

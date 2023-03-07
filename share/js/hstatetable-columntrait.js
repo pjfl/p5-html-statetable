@@ -37,10 +37,12 @@ HStateTable.ColumnTrait.CheckAll = (function() {
 // Package HStateTable.ColumnTrait.Filterable
 HStateTable.ColumnTrait.Filterable = (function() {
    class Filterable {
-      constructor(column, methods) {
+      constructor(column, methods, args) {
+         args ||= {};
          this.column = column;
          this.dialog;
          this.dialogState = false;
+         this.label = args['label'] || 'V';
          this.records;
          this.table = column.table;
          this.rs = column.table.resultset;
@@ -57,12 +59,18 @@ HStateTable.ColumnTrait.Filterable = (function() {
          }.bind(this);
          methods['render'] = function(orig) {
             const container = orig();
-            container.append(this.h.a(
-               { className: 'filter-control', onclick: this.dialogHandler,
-                 title: 'Filter' }, '\xA0⛢\xA0'
-            ));
+            container.append(this.renderAnchor());
             return container;
          }.bind(this);
+      }
+      renderAnchor() {
+         return this.h.a(
+            { className: 'filter-control',
+              onclick: this.dialogHandler,
+              title: 'Filter' },
+            [ this.h.span({ className: 'sprite sprite-filter' }),
+              '\xA0' + this.label + '\xA0' ]
+         );
       }
       async renderValues() {
          const url = this.table.prepareURL({
@@ -102,8 +110,8 @@ HStateTable.ColumnTrait.Filterable = (function() {
    Object.assign(Filterable.prototype, HStateTable.Util.markup);
    const modifiedMethods = {};
    return {
-      initialise: function() {
-         this.filter = new Filterable(this, modifiedMethods);
+      initialise: function(args) {
+         this.filter = new Filterable(this, modifiedMethods, args);
       },
       around: modifiedMethods
    };

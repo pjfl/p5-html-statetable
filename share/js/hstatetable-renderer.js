@@ -25,9 +25,10 @@ HStateTable.Renderer = (function() {
       render() {
          const attr = {};
          const content = this.getValue(attr);
-         if (!content.link) return this.h.td(attr, content.value);
+         const append = content.append;
+         if (!content.link) return this.h.td(attr, [content.value, append]);
          const link = this.h.a({ href: content.link }, content.value);
-         return this.h.td(attr, link);
+         return this.h.td(attr, [link, append]);
       }
    };
    Object.assign(Cell.prototype, tableUtils.markup); // Apply role
@@ -46,7 +47,7 @@ HStateTable.Renderer = (function() {
          this.options = config['options'] || {};
          this.rowSelector = {};
          this.sortable = config['sortable'];
-         this.sortDesc = table.resultset.state('sortDesc');
+         this.sortDesc = this.rs.state('sortDesc');
          this.title = config['title'];
          this.traits = config['traits'] || [];
          this.width = config['width'] ? ('width:' + config['width'] + ';') : '';
@@ -96,7 +97,7 @@ HStateTable.Renderer = (function() {
          }
       }
       render(attr) {
-         if (!attr) attr = {};
+         attr ||= {};
          const row = this.h.tr(attr);
          for (const cell of this.cells) {
             if (cell.column.displayed) row.append(cell.render());

@@ -12,6 +12,8 @@ has 'configurable' => is => 'ro', isa => Bool, default => TRUE;
 has 'configurable_control_location' => is => 'ro', isa => Str,
    default => 'TopRight';
 
+has 'configurable_label' => is => 'ro', isa => Str, default => '⚙';
+
 after 'BUILD' => sub {
    my $self = shift;
 
@@ -30,7 +32,7 @@ sub serialise_configurable {
    my $self = shift;
 
    return $self->configurable ? {
-      label     => '⚙',
+      label     => $self->configurable_label,
       location  => { control => $self->configurable_control_location },
       url       => $self->context->preference_url,
    } : undef;

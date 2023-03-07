@@ -31,6 +31,7 @@ HStateTable.Util = (function() {
          if (content) {
             if (_typeof(content) != 'array') content = [content];
             for (const child of content) {
+               if (!_typeof(child)) continue;
                if (_typeof(child) == 'number' || _typeof(child) == 'string') {
                   el.append(document.createTextNode(child));
                }
@@ -58,14 +59,16 @@ HStateTable.Util = (function() {
       thead(attr, content)    { return this._tag('thead', attr, content); }
       ul(attr, content)       { return this._tag('ul', attr, content); }
    }
+   Object.assign(Object.prototype, {
+      appendValue: function(key, newValue) {
+         let existingValue = this[key] || '';
+         if (existingValue) existingValue += ' ';
+         return existingValue + newValue;
+      }
+   });
    const esc = encodeURIComponent;
    return {
       markup: { // A role
-         appendValue: function(key, newValue) {
-            let existingValue = this[key] || '';
-            if (existingValue) existingValue += ' ';
-            return existingValue + newValue;
-         },
          h: new HtmlTiny(),
          createQueryString: function(obj) {
             if (!obj) return '';
@@ -81,13 +84,13 @@ HStateTable.Util = (function() {
          }
       },
       modifiers: { // Another role
-         applyTraits: function(obj, namespace, traits) {
+         applyTraits: function(obj, namespace, traits, args) {
             for (const trait of traits) {
                if (!namespace[trait]) {
                   throw new Error(`Unknown trait ${namespace} ${trait}`);
                }
                const initialiser = namespace[trait]['initialise'];
-               if (initialiser) initialiser.bind(obj)();
+               if (initialiser) initialiser.bind(obj)(args);
                for (const method of Object.keys(namespace[trait].around)) {
                   obj.around(method, namespace[trait].around[method]);
                }
@@ -99,8 +102,8 @@ HStateTable.Util = (function() {
             }
             const original = this[method].bind(this);
             const around = modifier.bind(this);
-            this[method] = function(args1, args2, args3) {
-               return around(original, args1, args2, args3);
+            this[method] = function(args1, args2, args3, args4, args5) {
+               return around(original, args1, args2, args3, args4, args5);
             };
          }
       }

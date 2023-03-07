@@ -1,3 +1,4 @@
+use utf8; # -*- coding: utf-8; -*-
 package HTML::StateTable::Role::Filterable;
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE MAX_FILTER_ROWS
@@ -8,6 +9,8 @@ use HTML::StateTable::Util      qw( json_bool );
 use Ref::Util                   qw( is_coderef );
 use Unexpected::Functions       qw( throw );
 use Moo::Role;
+
+has 'filterable_label' => is => 'ro', isa => Str, default => '⛢'; # ↣
 
 has 'filterable_message_location' => is => 'ro', isa => Str,
    default => 'Title';
@@ -135,7 +138,8 @@ sub serialise_filterable {
    my $self = shift;
 
    return {
-      apply => { before => json_bool TRUE },
+      apply    => { before => json_bool TRUE },
+      label    => $self->filterable_label,
       location => { messages => $self->filterable_message_location }
    };
 }
