@@ -7,28 +7,42 @@ use Ref::Util                   qw( is_hashref );
 use Scalar::Util                qw( blessed );
 use Moo::Role;
 
-has 'form_buttons' =>
-   is      => 'lazy',
-   isa     => ArrayRef[HashRef|Str],
+has 'form_buttons' => is => 'lazy', isa => ArrayRef[HashRef|Str],
    default => sub { [] };
 
 has 'form_confirm_message' => is => 'ro', isa => Str,
    default => 'Are you sure you want to *';
 
-has 'form_control_location' => is => 'ro', isa => Str, default => 'Credit';
+has 'form_control_location' => is => 'ro', isa => Str,
+   default => 'Credit';
 
-has 'form_hidden' => is => 'ro', isa => ArrayRef, default => sub { [] };
+has 'form_hidden' => is => 'ro', isa => ArrayRef,
+   default => sub { [] };
 
 after 'BUILD' => sub {
    my $self = shift;
 
    $self->add_role('form', __PACKAGE__) if $self->has_context;
+
+   return;
 };
 
 sub serialise_form {
    my $self    = shift;
    my $name    = $self->name;
-   (my $url    = $self->context->table_form_url) =~ s{ \* }{$name}mx;
+   (my $url    = $self->context->table_action_url) =~ s{ \* }{$name}mx;
+
+   return {
+      buttons  => $self->_serialise_buttons,
+      confirm  => $self->form_confirm_message,
+      hidden   => $self->form_hidden,
+      location => { control => $self->form_control_location },
+      url      => $url,
+   };
+}
+
+sub _serialise_buttons {
+   my $self    = shift;
    my $buttons = [];
 
    for my $button (@{$self->form_buttons}) {
@@ -46,14 +60,7 @@ sub serialise_form {
       push @{$buttons}, $copy;
    }
 
-   return {
-      buttons      => $buttons,
-      confirm      => $self->form_confirm_message,
-      hidden       => $self->form_hidden,
-      location     => { control => $self->form_control_location },
-      'table-name' => $name,
-      url          => $url,
-   };
+   return $buttons;
 }
 
 use namespace::autoclean;

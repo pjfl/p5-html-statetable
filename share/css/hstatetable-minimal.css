@@ -104,7 +104,7 @@ div.state-table .cell-tag .tag-arrow-left {
 div.state-table .cell-tag .tag-value {
    background: gray;
    border-bottom-right-radius: 3px; border-top-right-radius: 3px;
-   color: white; display: inline-block; font-size: x-small;
+   color: white; cursor: pointer; display: inline-block; font-size: x-small;
    padding-bottom: 1px; padding-left: 3px;
    padding-right: 3px; padding-top: 2px;
    vertical-align: middle;

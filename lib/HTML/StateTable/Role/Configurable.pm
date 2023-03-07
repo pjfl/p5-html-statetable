@@ -1,7 +1,7 @@
 use utf8; # -*- coding: utf-8; -*-
 package HTML::StateTable::Role::Configurable;
 
-use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE TRUE );
+use HTML::StateTable::Constants qw( DOT EXCEPTION_CLASS FALSE TRUE );
 use HTML::StateTable::Types     qw( Bool Str );
 use Unexpected::Functions       qw( throw );
 use Try::Tiny;
@@ -30,12 +30,14 @@ after 'BUILD' => sub {
 
 sub serialise_configurable {
    my $self = shift;
+   my $name = $self->name;
+   (my $url = $self->context->table_preference_url) =~ s{ \* }{$name}mx;
 
-   return $self->configurable ? {
-      label     => $self->configurable_label,
-      location  => { control => $self->configurable_control_location },
-      url       => $self->context->preference_url,
-   } : undef;
+   return {
+      label    => $self->configurable_label,
+      location => { control => $self->configurable_control_location },
+      url      => $url,
+   };
 }
 
 sub _apply_configurable_params {
@@ -78,7 +80,7 @@ sub _preference {
 
    return unless $self->has_context;
 
-   my $name = 'table.' . $self->name . '.preference';
+   my $name = 'table' . DOT . $self->name . DOT . 'preference';
    my $pref = $self->context->preference($name);
 
    return $pref ? $pref->value : undef;
