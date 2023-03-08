@@ -13,7 +13,10 @@ HStateTable.Util = (function() {
       if (typeof x == 'string') return 'string';
       return;
    };
-   const _events = ['onchange', 'onclick', 'onsubmit'];
+   const _events = [
+      'onchange', 'onclick', 'ondragenter', 'ondragleave',
+      'ondragover', 'ondragstart', 'ondrop', 'onsubmit'
+   ];
    class HtmlTiny {
       _tag(tag, attr, content) {
          const el = document.createElement(tag);

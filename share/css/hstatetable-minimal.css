@@ -117,6 +117,12 @@ div.state-table .preference-dialog {
 div.state-table .preference-dialog {
    right: 0px;
 }
+div.state-table table.preference-columns {
+   user-select: none;
+}
+div.state-table .dropzone.dragover {
+  background: purple;
+}
 div.state-table .dialog-buttons {
    text-align: right;
 }
@@ -143,4 +149,7 @@ div.state-table .dialog-title {
 div.state-table .filter-values {
    font-weight: normal; list-style: none; margin-top: 3px; margin-bottom: 3px;
    padding-left: 3px; padding-right: 3px; text-align: left;
+}
+div.state-table .grab-handle-cell {
+   text-align: center;
 }

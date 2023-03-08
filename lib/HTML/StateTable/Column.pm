@@ -70,7 +70,7 @@ has 'options' =>
    },
    default     => sub { {} };
 
-has 'position' => is => 'ro', isa => PositiveInt, default => 0;
+has 'position' => is => 'rw', isa => PositiveInt, default => 0;
 
 has 'serialised' => is => 'rw', isa => Bool, default => TRUE;
 

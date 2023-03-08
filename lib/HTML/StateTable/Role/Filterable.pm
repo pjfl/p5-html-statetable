@@ -10,7 +10,7 @@ use Ref::Util                   qw( is_coderef );
 use Unexpected::Functions       qw( throw );
 use Moo::Role;
 
-has 'filterable_label' => is => 'ro', isa => Str, default => '⛢'; # ↣
+has 'filterable_label' => is => 'ro', isa => Str, default => '⛢'; # ↣ ↓ ⛢ ∀
 
 has 'filterable_message_location' => is => 'ro', isa => Str,
    default => 'Title';

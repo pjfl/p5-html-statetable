@@ -21,8 +21,14 @@ after 'BUILD' => sub {
 
    $self->add_role('configurable', __PACKAGE__);
 
-   if (my $params = $self->param_value('config') || $self->_preference) {
+   my $params = $self->param_value('config') || $self->_preference;
+
+   if (scalar keys %{$params}) {
       $self->_apply_configurable_params($params);
+      return;
+   }
+   else {
+      for my $column ($self->_get_meta->all_columns) { $column->position(0) }
    }
 
    return;
@@ -41,12 +47,23 @@ sub serialise_configurable {
 }
 
 sub _apply_configurable_params {
-   my ($self, $config) = @_;
+   my ($self, $params) = @_;
 
-   return unless scalar keys %{$config};
+   my $index = 0;
+   my $position = {};
+
+   for my $column_name (@{$params->{column_order} // []}) {
+      $position->{$column_name} = $index++;
+   }
+
+   for my $column ($self->_get_meta->all_columns) {
+      if (exists $position->{$column->name}) {
+         $column->position($position->{$column->name});
+      }
+   }
 
    for my $column (@{$self->columns}) {
-      if (my $col = $config->{columns}->{$column->name}) {
+      if (my $col = $params->{columns}->{$column->name}) {
          if (exists $col->{view}) {
             my $value = $col->{view} ? TRUE : FALSE;
 
@@ -61,14 +78,14 @@ sub _apply_configurable_params {
       }
    }
 
-   if ($self->sortable and my $sort = $config->{sort}) {
+   if ($self->sortable and my $sort = $params->{sort}) {
       unless ($self->param_value('sort')) {
          $self->sort_column($sort->{column});
          $self->sort_desc($sort->{desc} ? TRUE : FALSE);
       }
    }
 
-   if (my $page_size = $config->{page_size}){
+   if (my $page_size = $params->{page_size}){
       $self->page_size($page_size) unless $self->param_value('page_size');
    }
 
@@ -83,7 +100,7 @@ sub _preference {
    my $name = 'table' . DOT . $self->name . DOT . 'preference';
    my $pref = $self->context->preference($name);
 
-   return $pref ? $pref->value : undef;
+   return $pref ? $pref->value : {};
 }
 
 use namespace::autoclean;

@@ -414,6 +414,7 @@ HStateTable.Renderer = (function() {
             roleIndex[this.roles[roleName]['role-index']] = roleName;
          }
          for (const roleName of roleIndex) {
+            if (!roleName) return;
             const config = this.roles[roleName];
             const apply = config['apply'] ? config['apply'] : {};
             if (before && !apply['before']) continue;

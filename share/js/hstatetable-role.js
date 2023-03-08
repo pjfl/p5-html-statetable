@@ -97,6 +97,7 @@ HStateTable.Role.Configurable = (function() {
          this.downBoxes = [];
          this.downloadable = table.roles['downloadable'] ? true : false;
          this.pageSize;
+         this.reorderable = table.roles['reorderable'] ? true : false;
          this.sortBy;
          this.sortDesc;
          this.table = table;
@@ -113,6 +114,40 @@ HStateTable.Role.Configurable = (function() {
             this.control.dialogHandler(event);
             this.resetState();
          }.bind(this);
+         // DrapEnter and dragLeave on table to highlight when active
+         this.dragEnterHandler = function(event) {
+            if (event.target.classList.contains('dropzone')) {
+//               event.target.classList.add('dragover');
+            }
+         }.bind(this);
+         this.dragLeaveHandler = function(event) {
+            event.target.classList.remove('dragover');
+         }.bind(this);
+         this.dragOverHandler = function(event) {
+            event.preventDefault();
+            const id    = event.dataTransfer.getData('text');
+            const moved = document.getElementById(id);
+            const cell  = this.findCell(event.target);
+            if (!cell) return;
+            const row   = cell.parentNode;
+            const rows  = Array.from(row.parentNode.children);
+            if (rows.indexOf(row) > rows.indexOf(moved)) row.after(moved);
+            else row.before(moved);
+         }.bind(this);
+         this.dragStartHandler = function(event) {
+            event.dataTransfer.setData('text', event.target.id);
+            event.target.classList.add('dragover');
+         }.bind(this);
+         this.dropHandler = function(event) {
+            event.preventDefault();
+            event.target.classList.remove('dragover');
+            const cell = this.findCell(event.target);
+            if (!cell) return;
+            const row  = cell.parentNode;
+            const rows = Array.from(row.parentNode.children);
+            this.table.columns = this.columnReorder(rows);
+            this.rs.redraw();
+         }.bind(this);
          this.saveHandler = function(event) {
             event.preventDefault();
             this.control.dialogHandler(event);
@@ -124,6 +159,29 @@ HStateTable.Role.Configurable = (function() {
             this.control.dialogHandler(event);
             this.table.downloadControl.downloadHandler(event);
          }.bind(this);
+      }
+      columnReorder(rows) {
+         const header = rows.shift();
+         const order = [];
+         for (const row of rows) order.push(row.id.split(/\./)[1]);
+         const columns = [];
+         const col0 = this.table.columns[0];
+         if (col0.cellTraits.includes('Checkbox')) columns.push(col0);
+         for (const columnName of order) {
+            columns.push(this.table.findColumn(columnName));
+         }
+         return columns;
+      }
+      findCell(target) {
+         let cell = target;
+         while (cell.nodeName != 'TD') {
+            cell = cell.parentNode;
+            if (!cell) {
+               throw new Error(`Drop handler lost plot: ${target.nodeName}`);
+               return;
+            }
+         }
+         return cell;
       }
       isViewable(columnName) {
          const column = this.table.findColumn(columnName);
@@ -169,20 +227,44 @@ HStateTable.Role.Configurable = (function() {
             this.downBoxes.push(downBox);
             cells.push(this.h.td({ className: 'checkbox' }, downBox));
          }
+         if (this.reorderable) {
+            const orderControl = this.table.orderControl;
+            const handle = this.h.div(
+               { className: 'grab-handle', title: orderControl.title },
+               orderControl.label
+            );
+            cells.push(this.h.td(
+               { className: 'grab-handle-cell dropzone',
+                 ondragenter: this.dragEnterHandler,
+                 ondragleave: this.dragLeaveHandler,
+               }, handle
+            ));
+         }
          return cells;
+      }
+      renderHeaderCells() {
+         return [
+            this.h.th('Column'),
+            this.h.th('View'),
+            this.downloadable ? this.h.th('Download') : '',
+            this.reorderable  ? this.h.th('Order')    : ''
+         ];
       }
       renderForm() {
          this.downBoxes = [];
          this.viewBoxes = [];
-         const rows = [this.h.tr([
-            this.h.th('Column'),
-            this.h.th('View'),
-            this.downloadable ? this.h.th('Download') : ''
-         ])];
+         const rows = [this.h.tr(this.renderHeaderCells())];
          const sortOptions = [ this.h.option({ value: '' }, '[ Default ]') ];
          for (const column of this.table.columns) {
-            if (!column.cellTraits.includes('Checkbox'))
-               rows.push(this.h.tr(this.renderCells(column)));
+            if (!column.cellTraits.includes('Checkbox')) {
+               rows.push(this.h.tr(
+                  { draggable: true,
+                    id: 'preference-row.' + column.name,
+                    ondragover: this.dragOverHandler,
+                    ondragstart: this.dragStartHandler
+                  }, this.renderCells(column)
+               ));
+            }
             if (column.sortable) {
                const option = { value: column.name };
                if (column.name == this.rs.state('sortColumn'))
@@ -212,7 +294,11 @@ HStateTable.Role.Configurable = (function() {
             'accept-charset': 'utf-8', className: 'dialog-form',
             enctype: 'multipart/form-data', id: this.table.name + 'Prefs'
          }, [
-            this.h.table({ className: 'preference-columns' }, rows),
+            this.h.table({
+               className: 'preference-columns',
+               id: 'preference-table',
+               ondrop: this.dropHandler
+            }, rows),
             this.h.div({ className: 'dialog-input' }, [
                this.h.label({ htmlFor: 'sortBy' }, 'Sort by\xA0'),
                this.sortBy,
@@ -257,6 +343,7 @@ HStateTable.Role.Configurable = (function() {
             sortDesc: this.sortDesc.checked
          });
          const data = {
+            column_order: this.table.columns.map(col => col.name),
             columns: {},
             "page_size": this.pageSize.value,
             sort: {
@@ -638,6 +725,24 @@ HStateTable.Role.HighlightRow = (function() {
    return {
       initialise: function() {
          this.highlightRow = new HighlightRow(this, modifiedMethods);
+      },
+      around: modifiedMethods
+   };
+})();
+// Package HStateTable.Role.Reorderable
+HStateTable.Role.Reorderable = (function() {
+   class OrderControl {
+      constructor(table, methods) {
+         const config = table.roles['reorderable'];
+         this.table = table;
+         this.label = config['label'] || '+';
+         this.title = config['title'] || '';
+      }
+   }
+   const modifiedMethods = {};
+   return {
+      initialise: function() {
+         this.orderControl = new OrderControl(this, modifiedMethods);
       },
       around: modifiedMethods
    };
