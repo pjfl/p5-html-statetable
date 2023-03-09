@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Added sequence number to JS files
           - Completes reorderable
           - Adds reorderable role
           - Completes configurable updates of table and preferences
