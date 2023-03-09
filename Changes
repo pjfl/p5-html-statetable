@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Completes reorderable
           - Adds reorderable role
           - Completes configurable updates of table and preferences
           - Display tags appended to cell content

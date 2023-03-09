@@ -2,7 +2,7 @@ use utf8; # -*- coding: utf-8; -*-
 package HTML::StateTable::Role::Configurable;
 
 use HTML::StateTable::Constants qw( DOT EXCEPTION_CLASS FALSE TRUE );
-use HTML::StateTable::Types     qw( Bool Str );
+use HTML::StateTable::Types     qw( Bool HashRef Str );
 use Unexpected::Functions       qw( throw );
 use Try::Tiny;
 use Moo::Role;
@@ -14,23 +14,30 @@ has 'configurable_control_location' => is => 'ro', isa => Str,
 
 has 'configurable_label' => is => 'ro', isa => Str, default => '⚙';
 
+has 'configurable_params' => is => 'lazy', isa => HashRef, default => sub {
+   my $self = shift; return $self->param_value('config') || $self->_preference;
+};
+
+around '_apply_params' => sub {
+   my ($orig, $self) = @_;
+
+   return $orig->($self) unless $self->configurable && $self->has_context;
+
+   my $params = $self->configurable_params;
+
+   return $orig->($self) unless scalar keys %{$params};
+
+   $self->_apply_configurable_params($params);
+   $orig->($self);
+   return;
+};
+
 after 'BUILD' => sub {
    my $self = shift;
 
    return unless $self->configurable && $self->has_context;
 
    $self->add_role('configurable', __PACKAGE__);
-
-   my $params = $self->param_value('config') || $self->_preference;
-
-   if (scalar keys %{$params}) {
-      $self->_apply_configurable_params($params);
-      return;
-   }
-   else {
-      for my $column ($self->_get_meta->all_columns) { $column->position(0) }
-   }
-
    return;
 };
 
@@ -48,19 +55,6 @@ sub serialise_configurable {
 
 sub _apply_configurable_params {
    my ($self, $params) = @_;
-
-   my $index = 0;
-   my $position = {};
-
-   for my $column_name (@{$params->{column_order} // []}) {
-      $position->{$column_name} = $index++;
-   }
-
-   for my $column ($self->_get_meta->all_columns) {
-      if (exists $position->{$column->name}) {
-         $column->position($position->{$column->name});
-      }
-   }
 
    for my $column (@{$self->columns}) {
       if (my $col = $params->{columns}->{$column->name}) {

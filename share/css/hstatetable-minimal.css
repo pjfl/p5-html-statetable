@@ -118,10 +118,10 @@ div.state-table .preference-dialog {
    right: 0px;
 }
 div.state-table table.preference-columns {
-   user-select: none;
+   border: 2px transparent solid; user-select: none;
 }
 div.state-table .dropzone.dragover {
-  background: purple;
+  border: 2px orange solid;
 }
 div.state-table .dialog-buttons {
    text-align: right;

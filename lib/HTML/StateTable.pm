@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 18 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 19 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -35,7 +35,7 @@ has 'columns' =>
       my $self    = shift;
       my @columns = $self->_get_meta->all_columns;
 
-      return [ sort { $a->position <=> $b->position } @columns ];
+      return [ $self->sorted_columns(@columns) ];
    };
 
 has 'context' => is => 'ro', isa => Context, predicate => 'has_context';
@@ -390,6 +390,12 @@ sub sort_column {
    }
 
    return $self->get_column($self->sort_column_name);
+}
+
+sub sorted_columns {
+   my ($self, @columns) = @_;
+
+   return sort { $a->position <=> $b->position } @columns;
 }
 
 # Private methods

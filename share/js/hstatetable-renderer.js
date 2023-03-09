@@ -355,6 +355,7 @@ HStateTable.Renderer = (function() {
    class Table {
       constructor(container, config) {
          this.body = this.h.tbody();
+         this.columnIndex = {};
          this.columns = [];
          this.container = container;
          this.header = this.h.thead();
@@ -372,7 +373,9 @@ HStateTable.Renderer = (function() {
          this.applyRoles(true);
 
          for (const columnConfig of (config['columns'] || [])) {
-            this.columns.push(this.createColumn(columnConfig));
+            const column = this.createColumn(columnConfig);
+            this.columnIndex[column.name] = column;
+            this.columns.push(column);
          }
 
          this.applyRoles(false);
@@ -399,11 +402,7 @@ HStateTable.Renderer = (function() {
          this.pageSizeControl = new PageSizeControl(this);
          this.bottomLeftControl.append(this.pageSizeControl.list);
 
-         const content = [
-            this.topControl, this.titleControl, this.table,
-            this.creditControl, this.bottomControl
-         ];
-         this.appendContainer(container, content);
+         this.appendContainer(container, this.orderedContent());
       }
       appendContainer(container, content) {
          for (const el of content) { container.append(el); }
@@ -426,12 +425,6 @@ HStateTable.Renderer = (function() {
       createColumn(config) {
          return new Column(this, config);
       }
-      findColumn(columnName) {
-         for (const column of this.columns) {
-            if (columnName == column.name) return column;
-         }
-         return;
-      }
       async nextResult() {
          return await this.resultset.next();
       }
@@ -444,6 +437,13 @@ HStateTable.Renderer = (function() {
             this.applyTraits(row, rowTraits, [name]);
          }
          return row;
+      }
+      orderedContent() {
+         return [
+            this.topControl, this.titleControl,
+            this.table,
+            this.creditControl, this.bottomControl
+         ];
       }
       prepareURL(args) {
          args ||= {};

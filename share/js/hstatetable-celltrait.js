@@ -67,30 +67,29 @@ HStateTable.CellTrait.Tagable = (function() {
       around: {
          getValue: function(orig, attr) {
             const result = orig(attr);
-            if (result.tags && result.tags[0]) {
-               const table = this.column.table;
-               const searchColumn = table.tagControl.searchColumn;
-               const rs = table.resultset;
-               const handler = function(tag) {
-                  return function(event) {
-                     event.preventDefault();
-                     rs.search(
-                        { searchColumn: searchColumn, searchValue: tag }
-                     ).redraw();
-                  };
+            if (!result.tags || !result.tags[0]) return result;
+            const table = this.column.table;
+            const searchColumn = table.tagControl.searchColumn;
+            const rs = table.resultset;
+            const handler = function(tag) {
+               return function(event) {
+                  event.preventDefault();
+                  rs.search(
+                     { searchColumn: searchColumn, searchValue: tag }
+                  ).redraw();
                };
-               const content = this.h.ul({ className: 'cell-content-append' });
-               for (const tag of result.tags) {
-                  const arrow = this.h.span({ className: 'tag-arrow-left' });
-                  const value = this.h.span(
-                     { className: 'tag-value', onclick: handler(tag) }, tag
-                  );
-                  content.append(
-                     this.h.li({ className: 'cell-tag' }, [arrow, value])
-                  );
-               }
-               result.append = content;
+            };
+            const content = this.h.ul({ className: 'cell-content-append' });
+            for (const tag of result.tags) {
+               const arrow = this.h.span({ className: 'tag-arrow-left' });
+               const value = this.h.span(
+                  { className: 'tag-value', onclick: handler(tag) }, tag
+               );
+               content.append(
+                  this.h.li({ className: 'cell-tag' }, [arrow, value])
+               );
             }
+            result.append = content;
             return result;
          }
       }
@@ -103,7 +102,8 @@ HStateTable.CellTrait.Time = (function() {
          getValue: function(orig, attr) {
             const result = orig(attr);
             const options = { hour: "2-digit", minute: "2-digit" };
-            result.value = new Date(result.value).toLocaleTimeString([], options);
+            result.value
+               = new Date(result.value).toLocaleTimeString([], options);
             return result;
          }
       }

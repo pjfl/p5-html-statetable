@@ -133,6 +133,7 @@ sub _serialise_meta {
    my ($self, $table) = @_;
 
    $self->writer->($self->_json->encode({
+      column_order  => [ map { $_->name } @{$table->get_displayable_columns} ],
       displayed     => {
          map   { $_ => json_bool $table->displayable_columns->{$_}}
          keys %{$table->displayable_columns}
@@ -145,7 +146,6 @@ sub _serialise_meta {
       'sort-column' => $table->sort_column_name,
       'sort-desc'   => json_bool $table->sort_desc,
    }));
-
    return TRUE;
 }
 
