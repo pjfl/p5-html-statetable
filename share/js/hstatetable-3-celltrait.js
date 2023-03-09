@@ -11,9 +11,8 @@ HStateTable.CellTrait.Checkbox = (function() {
                col.table[col.table.formControl.control]();
             }.bind(this);
             const name = col.name + '.' + this.row.index;
-            const box = this.h.input({
-               id: name, name: name, onclick: handler,
-               type: 'checkbox', value: result.value
+            const box = this.h.checkbox({
+               id: name, name: name, onclick: handler, value: result.value
             });
             col.rowSelector[name] = box;
             return { value: box };

@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Configurable dialog clear/resets/saves row order
           - Added sequence number to JS files
           - Completes reorderable
           - Adds reorderable role

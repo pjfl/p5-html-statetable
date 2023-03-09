@@ -25,7 +25,7 @@ div.state-table .page-control li.disabled {
    cursor: text; text-decoration: line-through;
 }
 div.state-table .page-control li:first-letter {
-   text-transform:capitalize;
+   text-transform: capitalize;
 }
 div.state-table .page-size-control li.selected-page-size {
    text-decoration: underline;
@@ -35,7 +35,7 @@ div.state-table .status-messages {
    padding: 3px 5px; text-align: center;
 }
 div.state-table .status-messages a {
-   margin-left: 5px; text-decoration: underline;
+   cursor: pointer; margin-left: 5px; text-decoration: underline;
 }
 div.state-table .active-control,
 div.state-table .bottom-left-control,
@@ -114,6 +114,9 @@ div.state-table .preference-dialog {
    background: ivory; border: 1px solid; border-radius: 3px;
    position: absolute; top: 25px; z-index: 10;
 }
+div.state-table .filter-values {
+   height: 100px; overflow: auto;
+}
 div.state-table .preference-dialog {
    right: 0px;
 }
@@ -121,7 +124,7 @@ div.state-table table.preference-columns {
    border: 2px transparent solid; user-select: none;
 }
 div.state-table .dropzone.dragover {
-  border: 2px orange solid;
+  border: 2px green solid;
 }
 div.state-table .dialog-buttons {
    text-align: right;
@@ -131,7 +134,7 @@ div.state-table .dialog-button-download {
 }
 div.state-table .dialog-close {
    background: red; border-radius: 3px; color: white; cursor: pointer;
-   display: inline-block; font-family: sans-serif; font-size: smaller;
+   float: right; font-family: sans-serif; font-size: smaller;
    font-weight: bold; padding-left: 3px; padding-right: 3px;
 }
 div.state-table .dialog-form {
@@ -144,12 +147,20 @@ div.state-table .dialog-input button {
    margin-right: 3px;
 }
 div.state-table .dialog-title {
-   padding-bottom: 3px; padding-right: 3px; text-align: right;
+   background: linen; border-bottom: 1px orange solid; font-weight: bold;
+   padding: 3px; text-align: left;
 }
 div.state-table .filter-values {
-   font-weight: normal; list-style: none; margin-top: 3px; margin-bottom: 3px;
-   padding-left: 3px; padding-right: 3px; text-align: left;
+   font-size: smaller; font-weight: normal; list-style: none;
+   margin-top: 3px; margin-bottom: 3px; padding-left: 3px;
+   padding-right: 3px; text-align: left;
+}
+div.state-table .filter-value:hover {
+   color: blue;
 }
 div.state-table .grab-handle-cell {
-   text-align: center;
+   cursor: grab; text-align: center;
+}
+div.state-table .grab-handle-cell:hover {
+   background: green;
 }

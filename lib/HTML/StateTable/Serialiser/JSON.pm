@@ -133,18 +133,18 @@ sub _serialise_meta {
    my ($self, $table) = @_;
 
    $self->writer->($self->_json->encode({
-      column_order  => [ map { $_->name } @{$table->get_displayable_columns} ],
-      displayed     => {
-         map   { $_ => json_bool $table->displayable_columns->{$_}}
+      'column-order' => [ map { $_->name } @{$table->get_displayable_columns} ],
+      displayed      => {
+         map   { $_  => json_bool $table->displayable_columns->{$_}}
          keys %{$table->displayable_columns}
       },
-      downloadable  => {
-         map   { $_ => json_bool $table->serialisable_columns->{$_}}
+      downloadable   => {
+         map   { $_  => json_bool $table->serialisable_columns->{$_}}
          keys %{$table->serialisable_columns}
       },
-      'page-size'   => $table->page_size,
-      'sort-column' => $table->sort_column_name,
-      'sort-desc'   => json_bool $table->sort_desc,
+      'page-size'    => $table->page_size,
+      'sort-column'  => $table->sort_column_name,
+      'sort-desc'    => json_bool $table->sort_desc,
    }));
    return TRUE;
 }

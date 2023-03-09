@@ -51,20 +51,18 @@ HStateTable.Renderer = (function() {
          this.title = config['title'];
          this.traits = config['traits'] || [];
          this.width = config['width'] ? ('width:' + config['width'] + ';') : '';
+         this.sortHandler = function(event) {
+            event.preventDefault();
+            this.sortDesc = !this.sortDesc;
+            this.rs.search(
+               { sortColumn: this.name, sortDesc: this.sortDesc }
+            ).redraw();
+         }.bind(this);
       }
       createCell(row) {
          const cell = new Cell(this, row);
          this.applyTraits(cell, cellTraits, this.cellTraits);
          return cell;
-      }
-      sortHandler() {
-         return function(event) {
-            event.preventDefault();
-            this.sortDesc = !this.sortDesc;
-            this.rs.search({
-               sortColumn: this.name, sortDesc: this.sortDesc
-            }).redraw();
-         }.bind(this);
       }
       render() {
          this.rowSelector = {};
@@ -76,7 +74,7 @@ HStateTable.Renderer = (function() {
             if (this.rs.state('sortColumn') == this.name) {
                attr.className = 'active-sort-column';
             }
-            content = [this.h.a({ onclick: this.sortHandler() }, content[0])];
+            content = [this.h.a({ onclick: this.sortHandler }, content[0])];
          }
          this.header = this.h.th(attr, content);
          return this.header;

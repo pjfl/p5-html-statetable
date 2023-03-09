@@ -7,12 +7,17 @@ use Unexpected::Functions       qw( throw );
 use Try::Tiny;
 use Moo::Role;
 
-has 'configurable' => is => 'ro', isa => Bool, default => TRUE;
+has 'configurable' => is => 'ro', isa => Bool,
+   default => TRUE;
 
 has 'configurable_control_location' => is => 'ro', isa => Str,
    default => 'TopRight';
 
-has 'configurable_label' => is => 'ro', isa => Str, default => '⚙';
+has 'configurable_dialog_title' => is => 'ro', isa => Str,
+   default => 'Defaults';
+
+has 'configurable_label' => is => 'ro', isa => Str,
+   default => '⚙';
 
 has 'configurable_params' => is => 'lazy', isa => HashRef, default => sub {
    my $self = shift; return $self->param_value('config') || $self->_preference;
@@ -47,9 +52,10 @@ sub serialise_configurable {
    (my $url = $self->context->table_preference_url) =~ s{ \* }{$name}mx;
 
    return {
-      label    => $self->configurable_label,
-      location => { control => $self->configurable_control_location },
-      url      => $url,
+      dialog_title => $self->configurable_dialog_title,
+      label        => $self->configurable_label,
+      location     => { control => $self->configurable_control_location },
+      url          => $url,
    };
 }
 

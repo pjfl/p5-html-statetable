@@ -34,8 +34,20 @@ has 'searchable_control_location' => is => 'ro', isa => Str,
 
 has 'searchable_method' => is => 'ro', isa => Str;
 
+has 'searchable_message_all' => is => 'ro', isa => Str,
+   default => 'All Columns';
+
+has 'searchable_message_label' => is => 'ro', isa => Str,
+   default => 'Searching for';
+
 has 'searchable_message_location' => is => 'ro', isa => Str,
    default => 'Title';
+
+has 'searchable_placeholder' => is => 'ro', isa => Str,
+   default => 'Search table...';
+
+has 'searchable_remove_label' => is => 'ro', isa => Str,
+   default => 'Show all';
 
 after 'BUILD' => sub {
    my $self = shift;
@@ -99,6 +111,10 @@ sub serialise_searchable {
          control  => $self->searchable_control_location,
          messages => $self->searchable_message_location,
       },
+      message_all   => $self->searchable_message_all,
+      message_label => $self->searchable_message_label,
+      placeholder   => $self->searchable_placeholder,
+      remove_label  => $self->searchable_remove_label,
       searchable_columns => [ map { $_->name } @{$self->searchable_columns} ],
    };
 }

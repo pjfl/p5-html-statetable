@@ -17,9 +17,9 @@ HStateTable.ColumnTrait.CheckAll = (function() {
          const col = this.column;
          if (col.title) attr.title = col.title;
          if (col.width) attr.style = col.width;
-         col.checkAll = this.h.input(
-            { className: 'check-all', onclick: this.handler, type: 'checkbox' }
-         );
+         col.checkAll = this.h.checkbox({
+            className: 'check-all', onclick: this.handler
+         });
          return this.h.th(
             attr, this.h.span({ className: 'checkall-control' }, col.checkAll)
          );
@@ -42,6 +42,7 @@ HStateTable.ColumnTrait.Filterable = (function() {
          this.column = column;
          this.dialog;
          this.dialogState = false;
+         this.dialogTitle = args['dialogTitle'] || ' ';
          this.label = args['label'] || 'V';
          this.records;
          this.table = column.table;
@@ -64,13 +65,14 @@ HStateTable.ColumnTrait.Filterable = (function() {
          }.bind(this);
       }
       renderAnchor() {
-         return this.h.a(
-            { className: 'filter-control',
-              onclick: this.dialogHandler,
-              title: 'Filter' },
-            [ this.h.span({ className: 'sprite sprite-filter' }),
-              '\xA0' + this.label + '\xA0' ]
-         );
+         return this.h.a({
+            className: 'filter-control',
+            onclick: this.dialogHandler,
+            title: this.dialogTitle
+         }, [
+            this.h.span({ className: 'sprite sprite-filter' }),
+            '\xA0' + this.label + '\xA0'
+         ]);
       }
       async renderValues() {
          const url = this.table.prepareURL({
@@ -89,10 +91,12 @@ HStateTable.ColumnTrait.Filterable = (function() {
       }
       async render() {
          this.dialog = this.h.div({ className: 'filter-dialog' }, [
-            this.h.div(
-               { className: 'dialog-title', onclick: this.dialogHandler },
+            this.h.div({
+               className: 'dialog-title', onclick: this.dialogHandler
+            }, [
+               this.dialogTitle,
                this.h.span({ className: 'dialog-close' }, 'x' )
-            ),
+            ]),
             await this.renderValues()
          ]);
          this.column.header.append(this.dialog);

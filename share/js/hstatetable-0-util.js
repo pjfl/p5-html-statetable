@@ -2,6 +2,13 @@
 if (!window.HStateTable) window.HStateTable = {};
 if (!HStateTable.Util) HStateTable.Util = {};
 HStateTable.Util = (function() {
+   Object.assign(Object.prototype, {
+      appendValue: function(key, newValue) {
+         let existingValue = this[key] || '';
+         if (existingValue) existingValue += ' ';
+         return existingValue + newValue;
+      }
+   });
    const _typeof = function(x) {
       if (!x) return;
       if ((typeof x == 'object') && (x.nodeType == 1)
@@ -43,32 +50,33 @@ HStateTable.Util = (function() {
          }
          return el;
       }
-      a(attr, content)        { return this._tag('a', attr, content); }
-      button(attr, content)   { return this._tag('button', attr, content); }
-      div(attr, content)      { return this._tag('div', attr, content); }
-      form(attr, content)     { return this._tag('form', attr, content); }
-      input(attr, content)    { return this._tag('input', attr, content); }
-      label(attr, content)    { return this._tag('label', attr, content); };
-      li(attr, content)       { return this._tag('li', attr, content); }
-      option(attr, content)   { return this._tag('option', attr, content); }
-      select(attr, content)   { return this._tag('select', attr, content); }
-      span(attr, content)     { return this._tag('span', attr, content); }
-      strong(attr, content)   { return this._tag('strong', attr, content); }
-      table(attr, content)    { return this._tag('table', attr, content); }
-      tbody(attr, content)    { return this._tag('tbody', attr, content); }
-      td(attr, content)       { return this._tag('td', attr, content); }
-      th(attr, content)       { return this._tag('th', attr, content); }
-      tr(attr, content)       { return this._tag('tr', attr, content); }
-      thead(attr, content)    { return this._tag('thead', attr, content); }
-      ul(attr, content)       { return this._tag('ul', attr, content); }
-   }
-   Object.assign(Object.prototype, {
-      appendValue: function(key, newValue) {
-         let existingValue = this[key] || '';
-         if (existingValue) existingValue += ' ';
-         return existingValue + newValue;
+      a(attr, content)        { return this._tag('a', attr, content) }
+      button(attr, content)   { return this._tag('button', attr, content) }
+      div(attr, content)      { return this._tag('div', attr, content) }
+      form(attr, content)     { return this._tag('form', attr, content) }
+      input(attr, content)    { return this._tag('input', attr, content) }
+      label(attr, content)    { return this._tag('label', attr, content) }
+      li(attr, content)       { return this._tag('li', attr, content) }
+      option(attr, content)   { return this._tag('option', attr, content) }
+      select(attr, content)   { return this._tag('select', attr, content) }
+      span(attr, content)     { return this._tag('span', attr, content) }
+      strong(attr, content)   { return this._tag('strong', attr, content) }
+      table(attr, content)    { return this._tag('table', attr, content) }
+      tbody(attr, content)    { return this._tag('tbody', attr, content) }
+      td(attr, content)       { return this._tag('td', attr, content) }
+      th(attr, content)       { return this._tag('th', attr, content) }
+      tr(attr, content)       { return this._tag('tr', attr, content) }
+      thead(attr, content)    { return this._tag('thead', attr, content) }
+      ul(attr, content)       { return this._tag('ul', attr, content) }
+      checkbox(attr) {
+         attr['type'] = 'checkbox';
+         return this._tag('input', attr);
       }
-   });
+      text(attr) {
+         attr['type'] = 'text';
+         return this._tag('input', attr);
+      }
+   }
    const esc = encodeURIComponent;
    return {
       markup: { // A role

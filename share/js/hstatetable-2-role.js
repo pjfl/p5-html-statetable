@@ -37,19 +37,17 @@ HStateTable.Role.Active = (function() {
       }
       render(container) {
          const content = [ this.label ];
-         const box = this.h.input(
-            { checked: this.showInactive, name: 'showInactive',
-              onclick: this.handler, type: 'checkbox' }
-         );
+         const box = this.h.checkbox({
+            checked: this.showInactive, name: 'showInactive',
+            onclick: this.handler
+         });
          if (this.controlLocation.match(/Right/)) content.push(box);
          else content.unshift(box);
-         const activeForm = this.h.form(
-            { className: 'active-control', id: this.table.name + 'Active' },
-            this.h.label(
-               { className: 'active-control-label', htmlFor: 'showInactive' },
-               content
-            )
-         );
+         const activeForm = this.h.form({
+            className: 'active-control', id: this.table.name + 'Active'
+         }, this.h.label({
+            className: 'active-control-label', htmlFor: 'showInactive'
+         }, content));
          if (this.activeForm && container.contains(this.activeForm)) {
             container.replaceChild(activeForm, this.activeForm);
          }
@@ -90,38 +88,29 @@ HStateTable.Role.CheckAll = (function() {
 })();
 // Package HStateTable.Role.Configurable
 HStateTable.Role.Configurable = (function() {
-   class Preference {
-      constructor(table, control) {
-         this.control = control;
-         this.dialog;
-         this.downBoxes = [];
-         this.downloadable = table.roles['downloadable'] ? true : false;
-         this.pageSize;
-         this.preferenceTable;
-         this.reorderable = table.roles['reorderable'] ? true : false;
-         this.sortBy;
-         this.sortDesc;
-         this.table = table;
-         this.viewBoxes = [];
-         this.rs = table.resultset;
-         this.rs.extendState('tableMeta');
-         this.rs.nameMap('tableMeta', 'table_meta');
-         this.changeHandler = function(event) {
-            this.updateState();
+   class PreferenceHandlers{
+      constructor(preference) {
+         this.preference = preference;
+         this.control = preference.control;
+         this.rs = preference.rs;
+         this.table = preference.table;
+         this.functions = {};
+         this.functions['changeHandler'] = function(event) {
+            this.updatePreference();
             this.rs.redraw();
          }.bind(this);
-         this.clearHandler = function(event) {
+         this.functions['clearHandler'] = function(event) {
             event.preventDefault();
             this.control.dialogHandler(event);
-            this.resetState();
+            this.clearPreference();
          }.bind(this);
-         this.dragEnterHandler = function(event) {
-            this.preferenceTable.classList.add('dragover');
+         this.functions['dragEnterHandler'] = function(event) {
+            this.preferenceTable().classList.add('dragover');
          }.bind(this);
-         this.dragLeaveHandler = function(event) {
-            this.preferenceTable.classList.remove('dragover');
+         this.functions['dragLeaveHandler'] = function(event) {
+            this.preferenceTable().classList.remove('dragover');
          }.bind(this);
-         this.dragOverHandler = function(event) {
+         this.functions['dragOverHandler'] = function(event) {
             event.preventDefault();
             const id    = event.dataTransfer.getData('text');
             const moved = document.getElementById(id);
@@ -132,12 +121,12 @@ HStateTable.Role.Configurable = (function() {
             if (rows.indexOf(row) > rows.indexOf(moved)) row.after(moved);
             else row.before(moved);
          }.bind(this);
-         this.dragStartHandler = function(event) {
+         this.functions['dragStartHandler'] = function(event) {
             event.dataTransfer.setData('text', event.target.id);
          }.bind(this);
-         this.dropHandler = function(event) {
+         this.functions['dropHandler'] = function(event) {
             event.preventDefault();
-            this.dragLeaveHandler(event);
+            this.functions['dragLeaveHandler'](event);
             const cell = this.findCell(event.target);
             if (!cell) return;
             const row  = cell.parentNode;
@@ -145,17 +134,46 @@ HStateTable.Role.Configurable = (function() {
             this.table.columns = this.columnReorder(rows);
             this.rs.redraw();
          }.bind(this);
-         this.saveHandler = function(event) {
+         this.functions['resetHandler'] = function(event) {
             event.preventDefault();
-            this.control.dialogHandler(event);
-            this.rs.storeJSON(this.control.url, this.updateState());
+            this.resetPreference();
+            this.preference.render();
             this.rs.redraw();
          }.bind(this);
-         this.downloadHandler = function(event) {
+         this.functions['saveHandler'] = function(event) {
+            event.preventDefault();
+            this.control.dialogHandler(event);
+            this.savePreference();
+         }.bind(this);
+         this.functions['downloadHandler'] = function(event) {
             event.preventDefault();
             this.control.dialogHandler(event);
             this.table.downloadControl.downloadHandler(event);
          }.bind(this);
+      }
+      applyColumnOrder(order) {
+         const columns = [];
+         for (const columnName of order) {
+            const column = this.table.columnIndex[columnName];
+            if (column) columns.push(column);
+         }
+         this.table.columns = columns;
+      }
+      async clearPreference() {
+         await this.rs.storeJSON(this.control.url, '');
+         const url = this.table.prepareURL({ tableMeta: true });
+         const response = await this.rs.fetchJSON(url);
+         const order = response['column-order'];
+         if (order) this.applyColumnOrder(order);
+         for (const column of this.table.columns) {
+            column.displayed = response['displayed'][column.name];
+            column.downloadable = response['downloadable'][column.name];
+         }
+         this.rs.state('pageSize',   response['page-size']);
+         this.rs.state('sortColumn', response['sort-column']);
+         this.rs.state('sortDesc',   response['sort-desc']);
+         this.preference.form.initialState = this.preference.getState();
+         this.rs.redraw();
       }
       columnReorder(rows) {
          const header = rows.shift();
@@ -180,35 +198,106 @@ HStateTable.Role.Configurable = (function() {
          }
          return cell;
       }
-      isViewable(columnName) {
-         const column = this.table.columnIndex[columnName];
-         return column && column.displayed;
+      preferenceTable() {
+         return this.preference.form.preferenceTable;
       }
-      isDownloadable(columnName) {
-         const column = this.table.columnIndex[columnName];
-         return column && column.downloadable;
+      resetPreference() {
+         const form = this.preference.form;
+         const state = form.initialState;
+         const order = state['columnOrder'];
+         if (order) this.applyColumnOrder(order);
+         for (const column of this.table.columns) {
+            column.displayed = state['viewable'][column.name];
+            column.downloadable = state['download'][column.name];
+         }
+         this.rs.state('pageSize', state['pageSize']);
+         form.pageSize.value = state['pageSize'];
+         this.rs.state('sortColumn', state['sortColumn']);
+         form.sortBy.value = state['sortColumn'];
+         this.rs.state('sortDesc', state['sortDesc']);
+         form.sortDesc.checked = state['sortDesc'];
+      }
+      async savePreference() {
+         await this.rs.storeJSON(this.control.url, this.updatePreference());
+         this.preference.form.initialState = this.preference.getState();
+         this.rs.redraw();
+      }
+      updatePreference() {
+         const form = this.preference.form;
+         const pageSize = form.pageSize.value;
+         const sortBy = form.sortBy.value;
+         const sortDesc = form.sortDesc.checked;
+         this.rs.search({
+            pageSize: pageSize,
+            sortColumn: sortBy,
+            sortDesc: sortDesc
+         });
+         const data = {
+            column_order: this.table.columns.map(col => col.name),
+            columns: {},
+            page_size: pageSize,
+            sort: { column: sortBy, desc: sortDesc }
+         };
+         for (const box of form.downBoxes) {
+            const name = box.name.replace(/Down$/, '');
+            data.columns[name] ||= {};
+            data.columns[name]['download'] = box.checked;
+            this.table.columnIndex[name]['downloadable'] = box.checked;
+         }
+         for (const box of form.viewBoxes) {
+            const name = box.name.replace(/View$/, '');
+            data.columns[name] ||= {};
+            data.columns[name]['view'] = box.checked;
+            this.table.columnIndex[name]['displayed'] = box.checked;
+         }
+         return data;
+      }
+   }
+   class PreferenceForm {
+      constructor(preference) {
+         this.preference = preference;
+         this.handlers = preference.handlers.functions;
+         this.initialState = preference.getState();
+         this.table = preference.table;
+         this.downloadable = this.table.roles['downloadable'] ? true : false;
+         this.reorderable = this.table.roles['reorderable'] ? true : false;
+         this.downBoxes = [];
+         this.initialState;
+         this.pageSize;
+         this.preferenceTable;
+         this.sortBy;
+         this.sortDesc;
+         this.viewBoxes = [];
       }
       renderButtons () {
          return this.h.div({ className: 'dialog-input dialog-buttons' }, [
-            this.downloadable
-               ? this.h.button({ className: 'dialog-button-download',
-                                 onclick: this.downloadHandler,
-                                 type: 'submit' }, 'Download') : '',
-            this.h.button({ className: 'dialog-button-clear',
-                            onclick: this.clearHandler,
-                            type: 'submit' }, 'Clear'),
-            this.h.button({ className: 'dialog-button-reset',
-                            type: 'reset'  }, 'Reset'),
-            this.h.button({ className: 'dialog-button-save',
-                            onclick: this.saveHandler,
-                            type: 'submit' }, 'Save'),
+            this.downloadable ? this.h.button({
+               className: 'dialog-button-download',
+               onclick: this.handlers['downloadHandler'],
+               type: 'submit'
+            }, 'Download') : '',
+            this.h.button({
+               className: 'dialog-button-clear',
+               onclick: this.handlers['clearHandler'],
+               type: 'submit'
+            }, 'Clear'),
+            this.h.button({
+               className: 'dialog-button-reset',
+               onclick: this.handlers['resetHandler'],
+               type: 'reset'
+            }, 'Reset'),
+            this.h.button({
+               className: 'dialog-button-save',
+               onclick: this.handlers['saveHandler'],
+               type: 'submit'
+            }, 'Save'),
          ]);
       }
-      renderCells(column) {
-         const viewBox = this.h.input({
-            checked: this.isViewable(column.name), id: column.name + 'View',
-            name: column.name + 'View', onchange: this.changeHandler,
-            type: 'checkbox'
+      renderCells(state, column) {
+         const viewBox = this.h.checkbox({
+            checked: state['viewable'][column.name],
+            id: column.name + 'View', name: column.name + 'View',
+            onchange: this.handlers['changeHandler']
          });
          this.viewBoxes.push(viewBox);
          const cells = [
@@ -216,23 +305,20 @@ HStateTable.Role.Configurable = (function() {
             this.h.td({ className: 'checkbox' }, viewBox),
          ];
          if (this.downloadable) {
-            const downBox = this.h.input({
-               checked: this.isDownloadable(column.name),
+            const downBox = this.h.checkbox({
+               checked: state['download'][column.name],
                id: column.name + 'Down', name: column.name + 'Down',
-               onchange: this.changeHandler, type: 'checkbox'
             });
             this.downBoxes.push(downBox);
             cells.push(this.h.td({ className: 'checkbox' }, downBox));
          }
          if (this.reorderable) {
             const orderControl = this.table.orderControl;
-            const handle = this.h.div(
-               { className: 'grab-handle', title: orderControl.title },
-               orderControl.label
-            );
-            cells.push(this.h.td(
-               { className: 'grab-handle-cell' }, handle
-            ));
+            cells.push(this.h.td({
+               className: 'grab-handle-cell'
+            }, this.h.div({
+               className: 'grab-handle', title: orderControl.title
+            }, orderControl.label)));
          }
          return cells;
       }
@@ -244,24 +330,24 @@ HStateTable.Role.Configurable = (function() {
             this.reorderable  ? this.h.th('Order')    : ''
          ];
       }
-      renderForm() {
+      render(state) {
          this.downBoxes = [];
          this.viewBoxes = [];
          const rows = [this.h.tr(this.renderHeaderCells())];
          const sortOptions = [ this.h.option({ value: '' }, '[ Default ]') ];
-         for (const column of this.table.columns) {
+         for (const columnName of state['columnOrder']) {
+            const column = this.table.columnIndex[columnName];
             if (!column.cellTraits.includes('Checkbox')) {
-               rows.push(this.h.tr(
-                  { draggable: true,
-                    id: 'preference-row.' + column.name,
-                    ondragover: this.dragOverHandler,
-                    ondragstart: this.dragStartHandler
-                  }, this.renderCells(column)
-               ));
+               rows.push(this.h.tr({
+                  draggable: true,
+                  id: 'preference-row.' + column.name,
+                  ondragover: this.handlers['dragOverHandler'],
+                  ondragstart: this.handlers['dragStartHandler']
+               }, this.renderCells(state, column)));
             }
             if (column.sortable) {
                const option = { value: column.name };
-               if (column.name == this.rs.state('sortColumn'))
+               if (column.name == state['sortColumn'])
                   option.selected = 'selected';
                sortOptions.push(this.h.option(option, column.label));
             }
@@ -269,27 +355,27 @@ HStateTable.Role.Configurable = (function() {
          const sizeOptions = [];
          for (const size of [10, 20, 50, 100]) {
             const option = { value: size };
-            if (size == this.rs.state('pageSize')) option.selected = 'selected';
+            if (size == state['pageSize']) option.selected = 'selected';
             sizeOptions.push(this.h.option(option, size));
          }
-         this.pageSize = this.h.select(
-            { id: 'pageSize', name: 'pageSize', onchange: this.changeHandler },
-            sizeOptions
-         );
-         this.sortBy = this.h.select(
-            { id: 'sortBy', name: 'sortBy', onchange: this.changeHandler },
-            sortOptions
-         );
-         this.sortDesc = this.h.input(
-            { id:   'sortDesc', checked: this.rs.state('sortDesc'),
-              name: 'sortDesc', onchange: this.changeHandler, type: 'checkbox' }
-         );
+         this.pageSize = this.h.select({
+            id: 'pageSize', name: 'pageSize',
+            onchange: this.handlers['changeHandler']
+         }, sizeOptions);
+         this.sortBy = this.h.select({
+            id: 'sortBy', name: 'sortBy',
+            onchange: this.handlers['changeHandler']
+         }, sortOptions);
+         this.sortDesc = this.h.checkbox({
+            id:   'sortDesc', checked: state['sortDesc'],
+            name: 'sortDesc', onchange: this.handlers['changeHandler'],
+         });
          this.preferenceTable = this.h.table({
             className: 'preference-columns dropzone',
             id: 'preference-table',
-            ondragenter: this.dragEnterHandler,
-            ondragleave: this.dragLeaveHandler,
-            ondrop: this.dropHandler
+            ondragenter: this.handlers['dragEnterHandler'],
+            ondragleave: this.handlers['dragLeaveHandler'],
+            ondrop: this.handlers['dropHandler']
          }, rows);
          return this.h.form({
             'accept-charset': 'utf-8', className: 'dialog-form',
@@ -309,67 +395,60 @@ HStateTable.Role.Configurable = (function() {
             this.renderButtons()
          ]);
       }
-      render() {
-         this.dialog = this.h.div({ className: 'preference-dialog' }, [
-            this.h.div(
-               { className: 'dialog-title',
-                 onclick: this.control.dialogHandler },
-               this.h.span({ className: 'dialog-close' }, 'x')
-            ),
-            this.renderForm()
-         ]);
-         this.table.topControl.append(this.dialog);
+   }
+   Object.assign(PreferenceForm.prototype, HStateTable.Util.markup);
+   class Preference {
+      constructor(table, control) {
+         this.table = table;
+         this.rs = table.resultset;
+         this.control = control;
+         this.dialog;
+         this.rs.extendState('tableMeta');
+         this.rs.nameMap('tableMeta', 'table_meta');
+         this.handlers = new PreferenceHandlers(this);
+         this.form = new PreferenceForm(this);
       }
-      async resetState() {
-         await this.rs.storeJSON(this.control.url, '');
-         const url = this.table.prepareURL({ tableMeta: true });
-         const response = await this.rs.fetchJSON(url);
-         for (const column of this.table.columns) {
-            column.displayed = response['displayed'][column.name];
-            column.downloadable = response['downloadable'][column.name];
-         }
-         const order = response['column_order'];
-         if (order) {
-            const columns = [];
-            for (const columnName of order) {
-               const column = this.table.columnIndex[columnName];
-               if (column) columns.push(column);
-            }
-            this.table.columns = columns;
-         }
-         this.rs.state('pageSize',    response['page-size']);
-         this.rs.state('sortColumn',  response['sort-column']);
-         this.rs.state('sortDesc',    response['sort-desc']);
-         this.rs.redraw();
-      }
-      updateState() {
-         this.rs.search({
-            pageSize: this.pageSize.value,
-            sortColumn: this.sortBy.value,
-            sortDesc: this.sortDesc.checked
-         });
-         const data = {
-            column_order: this.table.columns.map(col => col.name),
-            columns: {},
-            "page_size": this.pageSize.value,
-            sort: {
-               column: this.sortBy.value,
-               desc: this.sortDesc.checked
-            }
+      getState() {
+         const rs = this.rs;
+         const state = {
+            columnOrder: this.table.columns.map(col => col.name),
+            download: {},
+            pageSize: rs.state('pageSize'),
+            sortColumn: rs.state('sortColumn'),
+            sortDesc: rs.state('sortDesc'),
+            viewable: {}
          };
-         for (const box of this.downBoxes) {
-            const name = box.name.replace(/Down$/, '');
-            data.columns[name] ||= {};
-            data.columns[name]['download'] = box.checked;
-            this.table.columnIndex[name]['downloadable'] = box.checked;
+         for (const column of this.table.columns) {
+            state['download'][column.name] = this.isDownloadable(column.name);
+            state['viewable'][column.name] = this.isViewable(column.name);
          }
-         for (const box of this.viewBoxes) {
-            const name = box.name.replace(/View$/, '');
-            data.columns[name] ||= {};
-            data.columns[name]['view'] = box.checked;
-            this.table.columnIndex[name]['displayed'] = box.checked;
+         return state;
+      }
+      isDownloadable(columnName) {
+         const column = this.table.columnIndex[columnName];
+         return column && column.downloadable;
+      }
+      isViewable(columnName) {
+         const column = this.table.columnIndex[columnName];
+         return column && column.displayed;
+      }
+      render() {
+         const dialog = this.h.div({ className: 'preference-dialog' }, [
+            this.h.div({
+               className: 'dialog-title',
+               onclick: this.control.dialogHandler
+            }, [
+               this.control.dialogTitle,
+               this.h.span({ className: 'dialog-close' }, 'x')
+            ]),
+            this.form.render(this.getState())
+         ]);
+         const container = this.table.topControl;
+         if (this.dialog && container.contains(this.dialog)) {
+            container.replaceChild(dialog, this.dialog);
          }
-         return data;
+         else { container.append(dialog) }
+         this.dialog = dialog;
       }
    }
    Object.assign(Preference.prototype, HStateTable.Util.markup);
@@ -378,6 +457,7 @@ HStateTable.Role.Configurable = (function() {
          const config = table.roles['configurable'];
          this.control;
          this.dialogState = false;
+         this.dialogTitle = config['dialog_title'] || '';
          this.label = config['label'] || 'V';
          this.location = config['location'];
          this.rs = table.resultset;
@@ -411,7 +491,7 @@ HStateTable.Role.Configurable = (function() {
          const control = this.h.a({
             className: 'preference-link',
             onclick: this.dialogHandler,
-            title: 'Preferences'
+            title: this.dialogTitle
          }, [
             this.h.span({ className: 'sprite sprite-preference' }),
             '\xA0' + this.label + '\xA0'
@@ -502,10 +582,11 @@ HStateTable.Role.Downloadable = (function() {
          }.bind(this);
       }
       render(container) {
-         const control = this.display ? this.h.a(
-            { className: 'download-link', onclick: this.downloadHandler },
-            [ this.h.span({ className: 'sprite sprite-download' }), this.label ]
-         ) : this.h.span();
+         const control = this.display ? this.h.a({
+            className: 'download-link', onclick: this.downloadHandler
+         }, [
+            this.h.span({ className: 'sprite sprite-download' }), this.label
+         ]) : this.h.span();
          if (this.control && container.contains(this.control)) {
             container.replaceChild(control, this.control);
          }
@@ -527,10 +608,13 @@ HStateTable.Role.Filterable = (function() {
    class FilterControl {
       constructor(table, methods) {
          const config = table.roles['filterable'];
+         this.dialogTitle = config['dialog_title'];
          this.label = config['label'];
          this.location = config['location'];
+         this.messageLabel = config['message_label'];
          this.messages;
          this.ns = HStateTable.ColumnTrait;
+         this.removeLabel = config['remove_label'];
          this.table = table;
          this.rs = table.resultset;
          this.rs.extendState('filterColumn');
@@ -540,7 +624,7 @@ HStateTable.Role.Filterable = (function() {
          methods['createColumn'] = function(orig, table, config) {
             const column = orig(table, config);
             if (column.filterable) {
-               const args = { label: this.label };
+               const args = { dialogTitle: this.dialogTitle, label: this.label};
                this.applyTraits(column, this.ns, ['Filterable'], args);
             }
             return column;
@@ -592,10 +676,10 @@ HStateTable.Role.Filterable = (function() {
             }.bind(this);
             messages.className = 'status-messages';
             messages.append(this.h.span({ className: 'filter-message' }, [
-               'Filtering on column\xA0',
+               this.messageLabel + '\xA0',
                this.h.strong('"' + this.table.columnIndex[column].label + '"'),
                '\xA0',
-               this.h.a({ onclick: handler }, 'Show all')
+               this.h.a({ onclick: handler }, this.removeLabel)
             ]));
          }
          if (this.messages && container.contains(this.messages)) {
@@ -693,12 +777,12 @@ HStateTable.Role.Form = (function() {
       render(container) {
          for (const buttonConfig of this.buttonConfig) {
             const action = buttonConfig['action'];
-            const button = this.h.button(
-               { className: buttonConfig['class'],
-                 disabled: this.is_disabled(buttonConfig),
-                 onclick: this.handlers[action],
-                 type: 'submit' }, buttonConfig['value']
-            );
+            const button = this.h.button({
+               className: buttonConfig['class'],
+               disabled: this.is_disabled(buttonConfig),
+               onclick: this.handlers[action],
+               type: 'submit'
+            }, buttonConfig['value']);
             if (this.buttons[action]
                 && container.contains(this.buttons[action])) {
                container.replaceChild(button, this.buttons[action]);
@@ -759,7 +843,11 @@ HStateTable.Role.Searchable = (function() {
       constructor(table, methods) {
          const config = table.roles['searchable'];
          this.location = config['location'];
+         this.messageAll = config['message_all'];
+         this.messageLabel = config['message_label'];
          this.messages;
+         this.placeholder = config['placeholder'];
+         this.removeLabel = config['remove_label'];
          this.searchControl;
          this.searchableColumns = [];
          this.table = table;
@@ -805,10 +893,9 @@ HStateTable.Role.Searchable = (function() {
          }.bind(this);
       }
       searchAction(text) {
-         return this.h.span(
-            { className: 'search-button' },
-            this.h.button({ type: 'submit' }, text)
-         );
+         return this.h.span({
+            className: 'search-button'
+         }, this.h.button({ type: 'submit' }, text));
       }
       searchHidden(selectElements) {
          const hidden = this.h.span({ className: 'search-hidden'});
@@ -816,12 +903,11 @@ HStateTable.Role.Searchable = (function() {
          return hidden;
       }
       searchInput() {
-         return this.h.input({
+         return this.h.text({
             className: 'search-field',
             name: this.rs.nameMap('searchValue'),
-            placeholder: 'Search table...',
+            placeholder: this.placeholder,
             size: 10,
-            type: 'text',
             value: this.rs.state('searchValue') || null
          });
       }
@@ -887,13 +973,13 @@ HStateTable.Role.Searchable = (function() {
                rs.search({ searchColumn: null, searchValue: null }).redraw();
             }.bind(this);
             const label = column ? column.label
-                   : ( searchCol ? this.ucfirst(searchCol) : 'All Columns');
+                   : ( searchCol ? this.ucfirst(searchCol) : this.messageAll);
             messages.className = 'status-messages';
             messages.append(this.h.span({ className: 'search-message' }, [
-               'Searching for\xA0',
+               this.messageLabel + '\xA0',
                this.h.strong('"' + value + '"'), '\xA0in\xA0',
                this.h.strong('"' + label + '"'),
-               this.h.a({ onclick: handler }, 'Show all')
+               this.h.a({ onclick: handler }, this.removeLabel)
             ]));
          }
          if (this.messages && container.contains(this.messages)) {

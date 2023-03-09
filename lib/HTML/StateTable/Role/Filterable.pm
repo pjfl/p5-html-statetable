@@ -10,10 +10,20 @@ use Ref::Util                   qw( is_coderef );
 use Unexpected::Functions       qw( throw );
 use Moo::Role;
 
-has 'filterable_label' => is => 'ro', isa => Str, default => '⛢'; # ↣ ↓ ⛢ ∀
+has 'filterable_dialog_title' => is => 'ro', isa => Str,
+   default => 'Filter';
+
+has 'filterable_label' => is => 'ro', isa => Str,
+   default => '⛢'; # ↣ ↓ ⛢ ∀
+
+has 'filterable_message_label' => is => 'ro', isa => Str,
+   default => 'Filtering on column';
 
 has 'filterable_message_location' => is => 'ro', isa => Str,
    default => 'Title';
+
+has 'filterable_remove_label' => is => 'ro', isa => Str,
+   default => 'Show all';
 
 after 'BUILD' => sub {
    my $self = shift;
@@ -138,9 +148,12 @@ sub serialise_filterable {
    my $self = shift;
 
    return {
-      apply    => { before => json_bool TRUE },
-      label    => $self->filterable_label,
-      location => { messages => $self->filterable_message_location }
+      apply         => { before => json_bool TRUE },
+      dialog_title  => $self->filterable_dialog_title,
+      label         => $self->filterable_label,
+      location      => { messages => $self->filterable_message_location },
+      message_label => $self->filterable_message_label,
+      remove_label  => $self->filterable_remove_label,
    };
 }
 
