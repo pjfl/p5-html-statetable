@@ -65,6 +65,59 @@ HStateTable.Role.Active = (function() {
       around: modifiedMethods
    };
 })();
+// Package HStateTable.Role.Chartable
+HStateTable.Role.Chartable = (function() {
+   class Chartable {
+      constructor(table, methods) {
+         const config = table.roles['chartable'];
+         this.columnNames = config['columns'] || [];
+         this.chartConfig = config['config'];
+         this.figureLocation = config['figure']['location'];
+         this.table = table;
+         methods['orderedContent'] = function(orig) {
+            const content = orig();
+            const display = this.h.div(this.h.figure({
+               className: 'highcharts-figure'
+            }, this.h.div({ id: 'chartable' })));
+            if (this.figureLocation == 'Top') content.unshift(display);
+            else content.push(display);
+            return content;
+         }.bind(this);
+         methods['renderRows'] = function(orig) {
+            this.render(orig);
+         }.bind(this);
+      }
+      async render(orig) {
+         await orig();
+         const config = this.chartConfig;
+         const series = [];
+         for (const colName of this.columnNames) {
+            const data = [];
+            for (const row of this.table.rows) {
+               const name = row.result.name.value;
+               data.push([ name, parseInt(row.result[colName]) ]);
+            }
+            const column = this.table.columnIndex[colName];
+            series.push({
+               data: data,
+               name: column.label,
+               pointStart: 0,
+               pointInterval: true
+            });
+         }
+         config['series'] = series;
+         Highcharts.chart('chartable', config);
+      }
+   }
+   Object.assign(Chartable.prototype, HStateTable.Util.markup);
+   const modifiedMethods = {};
+   return {
+      initialise: function() {
+         this.chartable = new Chartable(this, modifiedMethods);
+      },
+      around: modifiedMethods
+   };
+})();
 // Package HStateTable.Role.CheckAll
 HStateTable.Role.CheckAll = (function() {
    class CheckAllControl {

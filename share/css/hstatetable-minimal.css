@@ -74,13 +74,19 @@ div.state-table table tr.odd {
    background: linen;
 }
 div.state-table table tr.highlight {
-   background: DarkSeaGreen !important;
+   background: LightPink !important;
 }
 div.state-table table tr.inactive {
    background: Gainsboro !important;
 }
 div.state-table table td {
    padding-left: 5px; padding-right: 5px;
+}
+div.state-table table td a:link,
+div.state-table table td a:visited,
+div.state-table table td a:hover,
+div.state-table table td a:active {
+   color: green; text-decoration: none;
 }
 div.state-table table td.number {
    text-align: right;
@@ -163,4 +169,7 @@ div.state-table .grab-handle-cell {
 }
 div.state-table .grab-handle-cell:hover {
    background: green;
+}
+div.state-table .highcharts-figure {
+   margin-bottom: 10px; margin-left: 0; margin-right: 0; margin-top: 0;
 }

@@ -2,13 +2,6 @@
 if (!window.HStateTable) window.HStateTable = {};
 if (!HStateTable.Util) HStateTable.Util = {};
 HStateTable.Util = (function() {
-   Object.assign(Object.prototype, {
-      appendValue: function(key, newValue) {
-         let existingValue = this[key] || '';
-         if (existingValue) existingValue += ' ';
-         return existingValue + newValue;
-      }
-   });
    const _typeof = function(x) {
       if (!x) return;
       if ((typeof x == 'object') && (x.nodeType == 1)
@@ -53,6 +46,7 @@ HStateTable.Util = (function() {
       a(attr, content)        { return this._tag('a', attr, content) }
       button(attr, content)   { return this._tag('button', attr, content) }
       div(attr, content)      { return this._tag('div', attr, content) }
+      figure(attr, content)   { return this._tag('figure', attr, content) }
       form(attr, content)     { return this._tag('form', attr, content) }
       input(attr, content)    { return this._tag('input', attr, content) }
       label(attr, content)    { return this._tag('label', attr, content) }
@@ -81,6 +75,11 @@ HStateTable.Util = (function() {
    return {
       markup: { // A role
          h: new HtmlTiny(),
+         appendValue: function(obj, key, newValue) {
+            let existingValue = obj[key] || '';
+            if (existingValue) existingValue += ' ';
+            obj[key] = existingValue + newValue;
+         },
          createQueryString: function(obj) {
             if (!obj) return '';
             return Object.entries(obj)

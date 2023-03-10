@@ -5,8 +5,8 @@ HStateTable.CellTrait.Checkbox = (function() {
          getValue: function(orig, attr) {
             const result = orig(attr);
             const col = this.column;
-            attr.className = attr.appendValue('className', 'checkbox');
-            if (col.width) attr.style = attr.appendValue('style', col.width);
+            this.appendValue(attr, 'className', 'checkbox');
+            if (col.width) this.appendValue(attr, 'style', col.width);
             const handler = function(event) {
                col.table[col.table.formControl.control]();
             }.bind(this);
@@ -54,7 +54,7 @@ HStateTable.CellTrait.Numeric = (function() {
       around: {
          getValue: function(orig, attr) {
             const result = orig(attr);
-            attr.className = attr.appendValue('className', 'number');
+            this.appendValue(attr, 'className', 'number');
             return result;
          }
       }
