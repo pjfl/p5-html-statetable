@@ -1,13 +1,19 @@
 # Name
 
-HTML::StateTable - One-line description of the modules purpose
+HTML::StateTable - Displays tables from DBIC resultsets
 
 # Synopsis
 
     use HTML::StateTable;
-    # Brief but working code examples
 
 # Description
+
+A rich description of the required table is serialised to the browser via the
+data attributes of an empty `div` element. The JS running in the browser
+renders the table a fetches row data from the server which it also renders.
+User interactions with the table result in mutated query parameters on the
+request for row data to the server. New row data is rendered without any page
+reload
 
 # Configuration and Environment
 
@@ -103,32 +109,116 @@ Defines the following attributes;
     A lazy `Request` object supplied by the `context`
 
 - resultset
+
+    A [DBIx::Class::ResultSet](https://metacpan.org/pod/DBIx%3A%3AClass%3A%3AResultSet) object
+
 - row\_class
+
+    A lazy loadable class which defaults to `HTML::StateTable::Row`. The class
+    name for the row object
+
 - row\_count
+
+    The total row count as return by either the resultset pager object or the
+    prepared resultset count depending on whether paging is enabled
+
 - serialisable\_columns
+
+    A lazy hash reference of booleans keyed by column name. Indicates that the
+    column is serialisable
+
+    Handles `is_serialisable_column` via the hash trait
+
 - sort\_column\_name
+
+    A mutable simple string which defaults to the first sortable column name
+
 - sort\_desc
+
+    A mutable boolean which defaults to false. If true the sort will be in
+    descending order
+
 - sortable
+
+    A lazy boolean which is true if the number of sortable columns is greater
+    than zero
+
 - sortable\_columns
+
+    A lazy array reference of `Column` objects
+
 - visisble\_columns
+
+    A lazy array reference of `Column` objects that are not hidden.
+
+    Handles `all_visible_columns` via the array trait
 
 # Subroutines/Methods
 
 Defines the following methods;
 
 - BUILDARGS
+
+    Modifies the method in the base class. Allow the renderer to be specified
+    without a fully qualified package name
+
 - BUILD
-- add\_role
+
+    Called after object instantiation it applys parameters from the query string
+    in the request object if context has been provided
+
+- add\_role( role\_name, class\_name )
+
+    Called by the applied table roles this method registers the role and it's
+    class with the serialiser. Each role class is expected to implement a method
+    called "serialise\_&lt;role\_name>"
+
 - build\_prepared\_resultset
+
+    Applies column SQL, paging, and sorting to the supplied resultset
+
 - get\_displayable\_columns
+
+    Returns an array reference of displayable column objects
+
 - get\_serialisable\_columns
+
+    Returns an array reference of serialisable column objects
+
 - next\_result
+
+    Call `next` on the resultset and returns the result
+
 - next\_row
-- param\_value
+
+    Call `next_result` to obtain the next result object which it uses to
+    instantiate a row object which it returns
+
+- param\_value( name )
+
+    If context has been provided returns the named query parameter. Will look for
+    "&lt;table name>\_&lt;param name>" in the query parameters and return it if it
+    exists
+
 - reset\_resultset
-- serialiser
-- sort\_column
-- sorted\_columns
+
+    Resets the resultset so that `next` can be called again
+
+- serialiser( moniker, writer, args )
+
+    Returns the requested serialiser object. The `moniker` is the serialiser
+    class without the prefix. The `writer` is a code reference that is called
+    to write the serialised output. The `args` are passed to the constructor
+    call for the serialiser object
+
+- sort\_column( column\_name )
+
+    Accessor mutator for `sort_column_name` attribute. Returns the current sort
+    column object
+
+- sorted\_columns( @columns )
+
+    Returns the list of column objects sorted by their position attriute value
 
 # Diagnostics
 
@@ -136,7 +226,10 @@ None
 
 # Dependencies
 
+See `dist.ini` for full list
+
 - [Moo](https://metacpan.org/pod/Moo)
+- [Unexpected](https://metacpan.org/pod/Unexpected)
 
 # Incompatibilities
 
