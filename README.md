@@ -170,7 +170,7 @@ Defines the following methods;
 - add\_role( role\_name, class\_name )
 
     Called by the applied table roles this method registers the role and it's
-    class with the serialiser. Each role class is expected to implement a method
+    class with the serialiser. Each table role is expected to implement a method
     called "serialise\_&lt;role\_name>"
 
 - build\_prepared\_resultset
@@ -251,7 +251,7 @@ Peter Flanigan, `<pjfl@cpan.org>`
 
 # License and Copyright
 
-Copyright (c) 2021 Peter Flanigan. All rights reserved
+Copyright (c) 2023 Peter Flanigan. All rights reserved
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself. See [perlartistic](https://metacpan.org/pod/perlartistic)

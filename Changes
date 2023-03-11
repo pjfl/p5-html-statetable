@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Adds POD for column, row and cell classes
           - Updates README.md
           - Adds POD for state table class
           - Updates prereqs and meta data
