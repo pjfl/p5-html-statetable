@@ -1,9 +1,9 @@
 package HTML::StateTable::Column::Trait::Filterable;
 
-use HTML::StateTable::Constants qw( DOT EXCEPTION_CLASS FALSE TRUE );
+use HTML::StateTable::Constants qw( DOT FALSE TRUE );
 use HTML::StateTable::Types     qw( Bool CodeRef HashRef Str );
+use HTML::StateTable::Util      qw( throw );
 use Ref::Util                   qw( is_coderef is_scalarref );
-use Unexpected::Functions       qw( throw );
 use Moo::Role;
 
 has 'filter_column' => is => 'rwp', isa => Str,

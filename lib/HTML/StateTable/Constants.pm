@@ -10,6 +10,7 @@ use Sub::Exporter -setup => { exports => [ qw(
  SERIALISE_COLUMN_ATTR SERIALISE_TABLE_KEY SERIALISE_TABLE_VIEW SPC TABLE_META
  TABLE_META_CONFIG TRIGGER_CLASS TRUE TYPE_EXTENSION
 )]};
+use HTML::StateTable::Exception;
 
 sub CELL_TRAIT_PREFIX () { 'HTML::StateTable::Cell::Trait' }
 
@@ -33,7 +34,7 @@ sub ENCODE_ENTITIES () { q(<>&") }
 
 sub EOL () { "\r\n" }
 
-my $exception_class = 'File::DataClass::Exception';
+my $exception_class = 'HTML::StateTable::Exception';
 
 sub Exception_Class { # Validating accessor/mutator for class attribute
    my ($self, $class) = @_;

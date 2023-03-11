@@ -1,9 +1,9 @@
 use utf8; # -*- coding: utf-8; -*-
 package HTML::StateTable::Role::Configurable;
 
-use HTML::StateTable::Constants qw( DOT EXCEPTION_CLASS FALSE TRUE );
+use HTML::StateTable::Constants qw( DOT FALSE TRUE );
 use HTML::StateTable::Types     qw( Bool HashRef Str );
-use Unexpected::Functions       qw( throw );
+use HTML::StateTable::Util      qw( throw );
 use Try::Tiny;
 use Moo::Role;
 

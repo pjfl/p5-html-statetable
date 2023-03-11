@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 22 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 23 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -9,8 +9,8 @@ use HTML::StateTable::Types     qw( ArrayRef Bool ClassName Column Context
                                     HashRef LoadableClass NonEmptySimpleStr
                                     NonZeroPositiveInt Object PositiveInt
                                     Renderer Request ResultSet SimpleStr );
-use HTML::StateTable::Util      qw( foreign_sort throw trim );
-use File::DataClass::Functions  qw( ensure_class_loaded );
+use HTML::StateTable::Util      qw( ensure_class_loaded foreign_sort throw
+                                    trim );
 use List::Util                  qw( first );
 use Ref::Util                   qw( is_arrayref is_coderef is_hashref );
 use Scalar::Util                qw( blessed );
@@ -18,12 +18,46 @@ use Unexpected::Functions       qw( Unspecified );
 use Moo;
 use MooX::HandlesVia;
 
-# Public attributes
+=pod
+
+=encoding utf-8
+
+=head1 Name
+
+HTML::StateTable - One-line description of the modules purpose
+
+=head1 Synopsis
+
+   use HTML::StateTable;
+   # Brief but working code examples
+
+=head1 Description
+
+=head1 Configuration and Environment
+
+Defines the following attributes;
+
+=over 3
+
+=item cell_class
+
+A lazy loadable class that defaults to L<HTML::StateTable::Cell>
+
+=cut
+
 has 'cell_class' =>
    is      => 'lazy',
    isa     => LoadableClass,
    coerce  => TRUE,
    default => 'HTML::StateTable::Cell';
+
+=item columns
+
+A lazy privately mutable array reference of C<Column> objects in sorted order
+
+Handles C<all_columns> via array trait
+
+=cut
 
 has 'columns' =>
    is          => 'rwp',
@@ -38,7 +72,24 @@ has 'columns' =>
       return [ $self->sorted_columns(@columns) ];
    };
 
+=item context
+
+An optional C<Context> object passed to the constructor. If supplied it is
+expected to contain a request object. Some table roles require this to
+function
+
+=cut
+
 has 'context' => is => 'ro', isa => Context, predicate => 'has_context';
+
+=item displayable_columns
+
+A lazy hash reference of booleans keyed by column name. Indicates that the
+column is displayable
+
+Handles C<is_displayable_column> via the hash trait
+
+=cut
 
 has 'displayable_columns' =>
    is          => 'lazy',
@@ -49,14 +100,40 @@ has 'displayable_columns' =>
       return { map { $_->name => $_->displayed } shift->all_columns };
    };
 
+=item empty_text
+
+A string to display when there is no data
+
+=cut
+
 has 'empty_text' =>
    is      => 'ro',
    isa     => NonEmptySimpleStr,
    default => 'No data to display';
 
+=item is_filtered
+
+A mutable boolean that defaults to false. Is set to true by the C<Filterable>
+and C<Searchable> table roles
+
+=cut
+
 has 'is_filtered' => is => 'rw', isa => Bool, default => FALSE;
 
+=item max_page_size
+
+A non zero positive integer that defaults to 100. The hard limit on the
+C<page_size> attribute
+
+=cut
+
 has 'max_page_size' => is => 'ro', isa => NonZeroPositiveInt, default => 100;
+
+=item name
+
+A non empty simple string that defaults to one supplied by the meta class
+
+=cut
 
 has 'name' =>
    is      => 'lazy',
@@ -68,13 +145,35 @@ has 'name' =>
       return $meta->can('table_name') ? ($meta->table_name // q()) : q();
    };
 
+=item no_count
+
+A boolean which defaults to false. If set to true will prevent the counting
+of database table rows which in turn leads to the non displaying of the page
+count and the last link
+
+=cut
+
 has 'no_count' => is => 'ro', isa => Bool, default => FALSE;
+
+=item page
+
+A mutable non zero positive integer that defaults to 1. The number of the
+current page of data being displayed
+
+=cut
 
 has 'page' =>
    is      => 'rw',
    isa     => NonZeroPositiveInt,
    trigger => \&clear_prepared_resultset,
    default => 1;
+
+=item page_size
+
+A mutable non zero positive integer which defaults to 20. The number of rows
+to be displayed per page. This is settable from preferences
+
+=cut
 
 has 'page_size' =>
    is      => 'rw',
@@ -83,9 +182,31 @@ has 'page_size' =>
    trigger => \&clear_prepared_resultset,
    default => sub { shift->_default('page_size', 20) };
 
+=item pager
+
+The pager object on the prepared resultset
+
+=cut
+
 has 'pager' => is => 'lazy', default => sub { shift->prepared_resultset->pager};
 
+=item paging
+
+A mutable boolean which default to true. If false paging is disabled and no
+limit is placed on the number of rows retrieved from the database
+
+=cut
+
 has 'paging' => is => 'rw', isa => Bool, default => TRUE;
+
+=item prepared_resultset
+
+A required lazy C<ResultSet> built from the C<resultset> attribute. The
+builder method is C<build_prepared_resultset>. The prepared resultset restricts
+the row retrieved from the database to those requested by the C<Searchable> and
+C<Filterable> table roles
+
+=cut
 
 has 'prepared_resultset' =>
    is        => 'lazy',
@@ -94,6 +215,12 @@ has 'prepared_resultset' =>
    clearer   => 'clear_prepared_resultset',
    predicate => 'has_prepared_resultset',
    required  => TRUE;
+
+=item renderer
+
+The object used to render the table
+
+=cut
 
 has 'renderer' =>
    is      => 'lazy',
@@ -106,12 +233,30 @@ has 'renderer' =>
       return $self->renderer_class->new($args);
    };
 
+=item renderer_args
+
+A hash reference of arguments passed the renderer's constructor
+
+=cut
+
 has 'renderer_args' => is => 'lazy', isa => HashRef, default => sub { {} };
+
+=item renderer_class
+
+A lazy loadable class. The class name of the C<renderer> object
+
+=cut
 
 has 'renderer_class' =>
    is      => 'lazy',
    isa     => LoadableClass,
    default => sub { RENDERER_PREFIX . '::' . RENDERER_CLASS };
+
+=item request
+
+A lazy C<Request> object supplied by the C<context>
+
+=cut
 
 has 'request' =>
    is      => 'lazy',
@@ -123,6 +268,10 @@ has 'request' =>
 
       return $self->context->request;
    };
+
+=item resultset
+
+=cut
 
 has 'resultset' =>
    is      => 'lazy',
@@ -141,10 +290,18 @@ has 'resultset' =>
       return $callback->($self);
    };
 
+=item row_class
+
+=cut
+
 has 'row_class' =>
    is      => 'lazy',
    isa     => LoadableClass,
    default => 'HTML::StateTable::Row';
+
+=item row_count
+
+=cut
 
 has 'row_count' =>
    is       => 'lazy',
@@ -157,6 +314,10 @@ has 'row_count' =>
          ? $self->pager->total_entries : $self->prepared_resultset->count;
    };
 
+=item serialisable_columns
+
+=cut
+
 has 'serialisable_columns' =>
    is          => 'lazy',
    isa         => HashRef[Bool],
@@ -165,6 +326,10 @@ has 'serialisable_columns' =>
    default     => sub {
       return { map { $_->name => $_->serialised } shift->all_columns };
    };
+
+=item sort_column_name
+
+=cut
 
 has 'sort_column_name' =>
    is      => 'rw',
@@ -181,16 +346,28 @@ has 'sort_column_name' =>
       return $self->_default('sort_column_name', $default);
    };
 
+=item sort_desc
+
+=cut
+
 has 'sort_desc' =>
    is      => 'rw',
    isa     => Bool,
    default => sub { shift->_default('sort_desc', FALSE) };
+
+=item sortable
+
+=cut
 
 has 'sortable' =>
    is       => 'lazy',
    isa      => Bool,
    init_arg => undef,
    default  => sub { scalar @{shift->sortable_columns} > 0 };
+
+=item sortable_columns
+
+=cut
 
 has 'sortable_columns' =>
    is       => 'lazy',
@@ -199,6 +376,10 @@ has 'sortable_columns' =>
    default  => sub {
       return [ grep { $_->sortable && !ref $_->value } shift->all_columns ];
    };
+
+=item visisble_columns
+
+=cut
 
 has 'visible_columns' =>
    is          => 'lazy',
@@ -242,7 +423,18 @@ has '_role_order' =>
    handles     => { add_role_name => 'push', all_role_names => 'elements' },
    default     => sub { [] };
 
-# Construction
+=back
+
+=head1 Subroutines/Methods
+
+Defines the following methods;
+
+=over 3
+
+=item BUILDARGS
+
+=cut
+
 around 'BUILDARGS' => sub {
    my ($orig, $self, @args) = @_;
 
@@ -261,12 +453,20 @@ around 'BUILDARGS' => sub {
    return $args;
 };
 
+=item BUILD
+
+=cut
+
 sub BUILD {
    my $self = shift;
 
    $self->_apply_params if $self->has_context;
    return;
 }
+
+=item add_role
+
+=cut
 
 # Public methods
 sub add_role {
@@ -276,6 +476,10 @@ sub add_role {
    $self->add_role_name($role_name);
    return;
 }
+
+=item build_prepared_resultset
+
+=cut
 
 sub build_prepared_resultset {
    my $self      = shift;
@@ -304,6 +508,10 @@ sub build_prepared_resultset {
    return $resultset;
 }
 
+=item get_displayable_columns
+
+=cut
+
 sub get_displayable_columns {
    my $self = shift;
 
@@ -311,6 +519,10 @@ sub get_displayable_columns {
       grep { $self->displayable_columns->{$_->name} } @{$self->visible_columns}
    ];
 }
+
+=item get_serialisable_columns
+
+=cut
 
 sub get_serialisable_columns {
    my $self = shift;
@@ -320,9 +532,17 @@ sub get_serialisable_columns {
    ];
 }
 
+=item next_result
+
+=cut
+
 sub next_result {
    return shift->prepared_resultset->next;
 }
+
+=item next_row
+
+=cut
 
 sub next_row {
    my $self   = shift;
@@ -332,6 +552,10 @@ sub next_row {
 
    return $self->row_class->new( result => $result, table => $self );
 }
+
+=item param_value
+
+=cut
 
 sub param_value {
    my ($self, $name) = @_;
@@ -352,9 +576,17 @@ sub param_value {
    return trim $value;
 }
 
+=item reset_resultset
+
+=cut
+
 sub reset_resultset {
    return shift->prepared_resultset->reset;
 }
+
+=item serialiser
+
+=cut
 
 sub serialiser {
    my ($self, $moniker, $writer, $args) = @_;
@@ -379,6 +611,10 @@ sub serialiser {
    return $class->new($args);
 }
 
+=item sort_column
+
+=cut
+
 sub sort_column {
    my ($self, $column_name) = @_;
 
@@ -391,6 +627,10 @@ sub sort_column {
 
    return $self->get_column($self->sort_column_name);
 }
+
+=item sorted_columns
+
+=cut
 
 sub sorted_columns {
    my ($self, @columns) = @_;
@@ -518,38 +758,17 @@ use namespace::autoclean;
 
 __END__
 
-=pod
-
-=encoding utf-8
-
-=head1 Name
-
-HTML::StateTable - One-line description of the modules purpose
-
-=head1 Synopsis
-
-   use HTML::StateTable;
-   # Brief but working code examples
-
-=head1 Description
-
-=head1 Configuration and Environment
-
-Defines the following attributes;
-
-=over 3
-
 =back
 
-=head1 Subroutines/Methods
-
 =head1 Diagnostics
+
+None
 
 =head1 Dependencies
 
 =over 3
 
-=item L<Class::Usul>
+=item L<Moo>
 
 =back
 

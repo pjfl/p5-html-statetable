@@ -1,9 +1,9 @@
 package HTML::StateTable::Column::Trait::Searchable;
 
-use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE TRUE );
+use HTML::StateTable::Constants qw( FALSE TRUE );
 use HTML::StateTable::Types     qw( Bool CodeRef Str );
+use HTML::StateTable::Util      qw( throw );
 use Ref::Util                   qw( is_coderef );
-use Unexpected::Functions       qw( throw );
 use Moo::Role;
 
 has 'searchable' => is => 'ro', isa => Bool|CodeRef,

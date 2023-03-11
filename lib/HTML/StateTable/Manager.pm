@@ -4,9 +4,7 @@ use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE QUERY_KEY
                                     SERIALISE_TABLE_KEY SERIALISE_TABLE_VIEW
                                     TRUE );
 use HTML::StateTable::Types     qw( Str );
-use HTML::StateTable::Util      qw( throw );
-# TODO: Eliminate F::DC as a dependency
-use File::DataClass::Functions  qw( ensure_class_loaded );
+use HTML::StateTable::Util      qw( ensure_class_loaded throw );
 use Unexpected::Functions       qw( Unspecified );
 use Moo;
 

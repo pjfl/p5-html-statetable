@@ -1,9 +1,9 @@
 package HTML::StateTable::Role::Searchable;
 
-use HTML::StateTable::Constants qw( DOT EXCEPTION_CLASS FALSE TRUE );
+use HTML::StateTable::Constants qw( DOT FALSE TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Bool Column Str );
+use HTML::StateTable::Util      qw( throw );
 use Scalar::Util                qw( blessed );
-use Unexpected::Functions       qw( throw );
 use Moo::Role;
 use MooX::HandlesVia;
 

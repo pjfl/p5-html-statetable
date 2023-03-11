@@ -13,7 +13,7 @@ use Unexpected::Functions qw( inflate_message );
 
 use namespace::clean -except => 'meta';
 
-BEGIN { extends q(File::DataClass::Types) };
+BEGIN { extends 'Unexpected::Types' };
 
 class_type Column,             { class => 'HTML::StateTable::Column' };
 class_type Date,               { class => 'DateTime' };

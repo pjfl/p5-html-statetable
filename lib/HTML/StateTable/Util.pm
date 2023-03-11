@@ -4,11 +4,14 @@ use strictures;
 
 use HTML::Entities              qw( encode_entities );
 use HTML::StateTable::Constants qw( COL_INFO_TYPE_ATTR EXCEPTION_CLASS );
-use JSON qw();
+use Module::Runtime             qw( require_module );
+use Unexpected::Functions       qw( is_class_loaded );
+use Try::Tiny;
 
 use Sub::Exporter -setup => { exports => [
-   qw( dquote encode_only_entities escape_formula foreign_sort json_bool
-       quote_column_name quote_string squote throw trim unquote_string )
+   qw( dquote encode_only_entities ensure_class_loaded escape_formula
+       foreign_sort json_bool quote_column_name quote_string squote throw
+       trim unquote_string )
 ]};
 
 sub dquote ($) {
@@ -27,6 +30,21 @@ sub encode_only_entities {
    }ge;
 
    return $html;
+}
+
+sub ensure_class_loaded ($;$) {
+   my ($class, $opts) = @_;
+
+   $opts //= {};
+
+   return 1 if !$opts->{ignore_loaded} && is_class_loaded $class;
+
+   try { require_module($class) } catch { throw($_) };
+
+   throw( 'Class [_1] loaded but package undefined', [$class] )
+      unless is_class_loaded $class;
+
+   return 1;
 }
 
 sub escape_formula (@) {
@@ -105,7 +123,7 @@ sub _get_order {
 }
 
 sub json_bool ($) {
-   return (shift) ? JSON::true : JSON::false;
+   return (shift) ? \1 : \0;
 }
 
 sub quote_column_name (;@) {

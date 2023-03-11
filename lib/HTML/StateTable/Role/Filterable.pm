@@ -1,13 +1,11 @@
 use utf8; # -*- coding: utf-8; -*-
 package HTML::StateTable::Role::Filterable;
 
-use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE MAX_FILTER_ROWS
-                                    SERIALISE_TABLE_KEY SERIALISE_TABLE_VIEW
-                                    TRUE );
+use HTML::StateTable::Constants qw( FALSE MAX_FILTER_ROWS SERIALISE_TABLE_KEY
+                                    SERIALISE_TABLE_VIEW TRUE );
 use HTML::StateTable::Types     qw( Str );
-use HTML::StateTable::Util      qw( json_bool );
+use HTML::StateTable::Util      qw( json_bool throw );
 use Ref::Util                   qw( is_coderef );
-use Unexpected::Functions       qw( throw );
 use Moo::Role;
 
 has 'filterable_dialog_title' => is => 'ro', isa => Str,
