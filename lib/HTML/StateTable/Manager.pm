@@ -5,7 +5,7 @@ use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE QUERY_KEY
                                     TRUE );
 use HTML::StateTable::Types     qw( Str );
 use HTML::StateTable::Util      qw( ensure_class_loaded throw );
-use Unexpected::Functions       qw( Unspecified );
+use Unexpected::Functions       qw( UnknownView Unspecified );
 use Moo;
 
 has 'meta_key' => is => 'ro', isa => Str, default => 'table_meta';
@@ -34,6 +34,8 @@ sub table {
 
    my $class = $self->_renderer_class($options->{context});
 
+   $options->{download_view_name} = $self->view_name;
+   $options->{filterable_view_name} = $self->view_name;
    $options->{renderer_class} = $class if $class;
    $options->{renderer_args}->{query_key} = $self->query_key;
 
@@ -63,7 +65,6 @@ sub _is_data_call {
 
    throw Unspecified, ['context'] unless $context;
 
-   # TODO: Can do this with json in request accept header?
    my $requested_with = $context->request->header('X-Requested-With')
       || $context->request->header('x-requested-with');
 
@@ -89,7 +90,7 @@ sub _setup_view {
 
    my $context = $table->context;
 
-   throw 'Undefined view [_1]', [$self->view_name]
+   throw UnknownView, [$self->view_name]
       unless $context->view($self->view_name);
 
    my $params = $table->request->query_parameters;

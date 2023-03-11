@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 23 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 24 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -24,14 +24,20 @@ use MooX::HandlesVia;
 
 =head1 Name
 
-HTML::StateTable - One-line description of the modules purpose
+HTML::StateTable - Displays tables from DBIC resultsets
 
 =head1 Synopsis
 
    use HTML::StateTable;
-   # Brief but working code examples
 
 =head1 Description
+
+A rich description of the required table is serialised to the browser via the
+data attributes of an empty C<div> element. The JS running in the browser
+renders the table a fetches row data from the server which it also renders.
+User interactions with the table result in mutated query parameters on the
+request for row data to the server. New row data is rendered without any page
+reload
 
 =head1 Configuration and Environment
 
@@ -271,6 +277,8 @@ has 'request' =>
 
 =item resultset
 
+A L<DBIx::Class::ResultSet> object
+
 =cut
 
 has 'resultset' =>
@@ -281,9 +289,9 @@ has 'resultset' =>
       my $class = blessed $self;
       my $meta  = $self->_get_meta;
 
-      throw 'Must supply a resultset to [_1]', [$class]
+      throw Unspecified, ['resultset']
          unless $meta->can('has_resultset_callback')
-             && $meta->has_resultset_callback;
+         && $meta->has_resultset_callback;
 
       my $callback = $meta->resultset_callback;
 
@@ -291,6 +299,9 @@ has 'resultset' =>
    };
 
 =item row_class
+
+A lazy loadable class which defaults to C<HTML::StateTable::Row>. The class
+name for the row object
 
 =cut
 
@@ -300,6 +311,9 @@ has 'row_class' =>
    default => 'HTML::StateTable::Row';
 
 =item row_count
+
+The total row count as return by either the resultset pager object or the
+prepared resultset count depending on whether paging is enabled
 
 =cut
 
@@ -316,6 +330,11 @@ has 'row_count' =>
 
 =item serialisable_columns
 
+A lazy hash reference of booleans keyed by column name. Indicates that the
+column is serialisable
+
+Handles C<is_serialisable_column> via the hash trait
+
 =cut
 
 has 'serialisable_columns' =>
@@ -328,6 +347,8 @@ has 'serialisable_columns' =>
    };
 
 =item sort_column_name
+
+A mutable simple string which defaults to the first sortable column name
 
 =cut
 
@@ -348,6 +369,9 @@ has 'sort_column_name' =>
 
 =item sort_desc
 
+A mutable boolean which defaults to false. If true the sort will be in
+descending order
+
 =cut
 
 has 'sort_desc' =>
@@ -356,6 +380,9 @@ has 'sort_desc' =>
    default => sub { shift->_default('sort_desc', FALSE) };
 
 =item sortable
+
+A lazy boolean which is true if the number of sortable columns is greater
+than zero
 
 =cut
 
@@ -366,6 +393,8 @@ has 'sortable' =>
    default  => sub { scalar @{shift->sortable_columns} > 0 };
 
 =item sortable_columns
+
+A lazy array reference of C<Column> objects
 
 =cut
 
@@ -378,6 +407,10 @@ has 'sortable_columns' =>
    };
 
 =item visisble_columns
+
+A lazy array reference of C<Column> objects that are not hidden.
+
+Handles C<all_visible_columns> via the array trait
 
 =cut
 
@@ -433,6 +466,9 @@ Defines the following methods;
 
 =item BUILDARGS
 
+Modifies the method in the base class. Allow the renderer to be specified
+without a fully qualified package name
+
 =cut
 
 around 'BUILDARGS' => sub {
@@ -455,6 +491,9 @@ around 'BUILDARGS' => sub {
 
 =item BUILD
 
+Called after object instantiation it applys parameters from the query string
+in the request object if context has been provided
+
 =cut
 
 sub BUILD {
@@ -464,11 +503,14 @@ sub BUILD {
    return;
 }
 
-=item add_role
+=item add_role( role_name, class_name )
+
+Called by the applied table roles this method registers the role and it's
+class with the serialiser. Each role class is expected to implement a method
+called "serialise_<role_name>"
 
 =cut
 
-# Public methods
 sub add_role {
    my ($self, $role_name, $class_name) = @_;
 
@@ -478,6 +520,8 @@ sub add_role {
 }
 
 =item build_prepared_resultset
+
+Applies column SQL, paging, and sorting to the supplied resultset
 
 =cut
 
@@ -510,6 +554,8 @@ sub build_prepared_resultset {
 
 =item get_displayable_columns
 
+Returns an array reference of displayable column objects
+
 =cut
 
 sub get_displayable_columns {
@@ -521,6 +567,8 @@ sub get_displayable_columns {
 }
 
 =item get_serialisable_columns
+
+Returns an array reference of serialisable column objects
 
 =cut
 
@@ -534,6 +582,8 @@ sub get_serialisable_columns {
 
 =item next_result
 
+Call C<next> on the resultset and returns the result
+
 =cut
 
 sub next_result {
@@ -541,6 +591,9 @@ sub next_result {
 }
 
 =item next_row
+
+Call C<next_result> to obtain the next result object which it uses to
+instantiate a row object which it returns
 
 =cut
 
@@ -553,7 +606,11 @@ sub next_row {
    return $self->row_class->new( result => $result, table => $self );
 }
 
-=item param_value
+=item param_value( name )
+
+If context has been provided returns the named query parameter. Will look for
+"<table name>_<param name>" in the query parameters and return it if it
+exists
 
 =cut
 
@@ -578,13 +635,20 @@ sub param_value {
 
 =item reset_resultset
 
+Resets the resultset so that C<next> can be called again
+
 =cut
 
 sub reset_resultset {
    return shift->prepared_resultset->reset;
 }
 
-=item serialiser
+=item serialiser( moniker, writer, args )
+
+Returns the requested serialiser object. The C<moniker> is the serialiser
+class without the prefix. The C<writer> is a code reference that is called
+to write the serialised output. The C<args> are passed to the constructor
+call for the serialiser object
 
 =cut
 
@@ -611,7 +675,10 @@ sub serialiser {
    return $class->new($args);
 }
 
-=item sort_column
+=item sort_column( column_name )
+
+Accessor mutator for C<sort_column_name> attribute. Returns the current sort
+column object
 
 =cut
 
@@ -628,7 +695,9 @@ sub sort_column {
    return $self->get_column($self->sort_column_name);
 }
 
-=item sorted_columns
+=item sorted_columns( @columns )
+
+Returns the list of column objects sorted by their position attriute value
 
 =cut
 
@@ -684,7 +753,7 @@ sub _apply_pageing {
 sub _apply_params {
    my $self = shift;
 
-   throw 'Applying parameters needs a context object' unless $self->has_context;
+   throw Unspecified, ['context'] unless $self->has_context;
 
    my $sort = $self->param_value('sort');
 
@@ -766,9 +835,13 @@ None
 
 =head1 Dependencies
 
+See F<dist.ini> for full list
+
 =over 3
 
 =item L<Moo>
+
+=item L<Unexpected>
 
 =back
 

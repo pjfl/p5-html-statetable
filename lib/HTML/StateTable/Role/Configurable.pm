@@ -3,7 +3,6 @@ package HTML::StateTable::Role::Configurable;
 
 use HTML::StateTable::Constants qw( DOT FALSE TRUE );
 use HTML::StateTable::Types     qw( Bool HashRef Str );
-use HTML::StateTable::Util      qw( throw );
 use Try::Tiny;
 use Moo::Role;
 

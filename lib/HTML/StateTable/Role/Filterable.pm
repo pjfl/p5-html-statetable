@@ -1,11 +1,13 @@
 use utf8; # -*- coding: utf-8; -*-
 package HTML::StateTable::Role::Filterable;
 
-use HTML::StateTable::Constants qw( FALSE MAX_FILTER_ROWS SERIALISE_TABLE_KEY
-                                    SERIALISE_TABLE_VIEW TRUE );
+use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE MAX_FILTER_ROWS
+                                    SERIALISE_TABLE_KEY SERIALISE_TABLE_VIEW
+                                    TRUE );
 use HTML::StateTable::Types     qw( Str );
 use HTML::StateTable::Util      qw( json_bool throw );
 use Ref::Util                   qw( is_coderef );
+use Unexpected::Functions       qw( UnknownView );
 use Moo::Role;
 
 has 'filterable_dialog_title' => is => 'ro', isa => Str,
@@ -23,6 +25,9 @@ has 'filterable_message_location' => is => 'ro', isa => Str,
 has 'filterable_remove_label' => is => 'ro', isa => Str,
    default => 'Show all';
 
+has 'filterable_view_name' => is => 'ro', isa => Str,
+   default => SERIALISE_TABLE_VIEW;
+
 after 'BUILD' => sub {
    my $self = shift;
 
@@ -30,9 +35,9 @@ after 'BUILD' => sub {
 
    $self->add_role('filterable', __PACKAGE__);
 
-   my $view = SERIALISE_TABLE_VIEW;
+   my $view = $self->filterable_view_name;
 
-   throw 'Undefined view [_1]', [$view] unless $self->context->view($view);
+   throw UnknownView, [$view] unless $self->context->view($view);
 
    if (my $column_name = $self->param_value('filter_column_values')) {
       $self->context->stash(

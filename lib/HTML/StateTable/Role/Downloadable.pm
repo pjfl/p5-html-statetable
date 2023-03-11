@@ -1,9 +1,10 @@
 package HTML::StateTable::Role::Downloadable;
 
-use HTML::StateTable::Constants qw( FALSE SERIALISE_TABLE_KEY
+use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE SERIALISE_TABLE_KEY
                                     SERIALISE_TABLE_VIEW TRUE );
 use HTML::StateTable::Types     qw( Bool Str );
 use HTML::StateTable::Util      qw( json_bool throw );
+use Unexpected::Functions       qw( UnknownView );
 use Moo::Role;
 
 has 'downloadable' => is => 'ro', isa => Bool, default => TRUE;
@@ -39,7 +40,7 @@ after 'BUILD' => sub {
 
    $self->add_role('downloadable', __PACKAGE__);
 
-   throw 'Undefined view [_1]', [$self->download_view_name]
+   throw UnknownView, [$self->download_view_name]
       unless $self->context->view($self->download_view_name);
 
    if (my $format = $self->param_value('download')) {

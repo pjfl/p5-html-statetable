@@ -9,19 +9,23 @@ BEGIN { extends 'Catalyst' }
 __PACKAGE__->setup();
 
 {
-	my $table_manager = HTML::StateTable::Manager->new(
-		namespace => 'MyApp::Table',
-	);
+   my $table_manager = HTML::StateTable::Manager->new(
+      namespace => 'MyApp::Table', view_name => 'SerialiseTable'
+   );
 
-	sub table {
-		my ($c, $table_name, $options) = @_;
+   sub table {
+      my ($c, $table_name, $options) = @_;
 
-		$options //= {};
-		$options = { resultset => $options } if blessed $options;
-		$options->{context} = $c;
+      $options //= {};
+      $options = { resultset => $options } if blessed $options;
+      $options->{context} = $c;
 
-		return $table_manager->table($table_name, $options);
-	}
+      return $table_manager->table($table_name, $options);
+   }
+
+   sub verification_token {
+      return 'Love';
+   }
 }
 
 1;

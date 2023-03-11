@@ -3,7 +3,7 @@ package HTML::StateTable::Util;
 use strictures;
 
 use HTML::Entities              qw( encode_entities );
-use HTML::StateTable::Constants qw( COL_INFO_TYPE_ATTR EXCEPTION_CLASS );
+use HTML::StateTable::Constants qw( COL_INFO_TYPE_ATTR DOT EXCEPTION_CLASS );
 use Module::Runtime             qw( require_module );
 use Unexpected::Functions       qw( is_class_loaded );
 use Try::Tiny;
@@ -13,6 +13,10 @@ use Sub::Exporter -setup => { exports => [
        foreign_sort json_bool quote_column_name quote_string squote throw
        trim unquote_string )
 ]};
+
+sub throw (;@) {
+   EXCEPTION_CLASS->throw(@_);
+}
 
 sub dquote ($) {
    my $string = shift;
@@ -39,9 +43,9 @@ sub ensure_class_loaded ($;$) {
 
    return 1 if !$opts->{ignore_loaded} && is_class_loaded $class;
 
-   try { require_module($class) } catch { throw($_) };
+   try { require_module($class) } catch { throw $_ };
 
-   throw( 'Class [_1] loaded but package undefined', [$class] )
+   throw 'Class [_1] loaded but package undefined', [$class]
       unless is_class_loaded $class;
 
    return 1;
@@ -75,9 +79,9 @@ sub foreign_sort ($$$) {
          my $relation_class = $relation_info->{class};
          my $accessor       = $relation_info->{attrs}{accessor};
 
-         throw('Relationship [_1] -> [_2] must be single, not [_3]',
+         throw 'Relationship [_1] -> [_2] must be single, not [_3]',
             (ref($source) || $source), $relation_class, $accessor
-         ) unless $accessor eq 'single' or $accessor eq 'filter';
+            unless $accessor eq 'single' or $accessor eq 'filter';
 
          $source = $relation_class;
       }
@@ -130,20 +134,20 @@ sub quote_column_name (;@) {
    my @parts = @_;
 
    for my $part (@parts) {
-      throw('Column must not be empty') unless $part;
-      throw('Column name contains invalid double quote') if $part =~ m{ \" }mx;
+      throw 'Column must not be empty' unless $part;
+      throw 'Column name contains invalid double quote' if $part =~ m{ \" }mx;
       $part = dquote($part);
    }
 
-   return join q(.), @parts;
+   return join DOT, @parts;
 }
 
 sub quote_string ($$) {
    my ($quote, $string) = @_;
 
    unless (defined $quote and length $quote <= 2 and length $quote >= 1) {
-      throw('Quote characters [_1] must be a single character, or a pair of '
-            . 'characters', [$quote // q()]);
+      throw 'Quote characters [_1] must be a single character, or a pair of '
+          . 'characters', [$quote // q()];
    }
 
    my ($start_quote, $end_quote) = split m{}mx, $quote;
@@ -163,10 +167,6 @@ sub squote ($) {
    my $string = shift;
 
    return quote_string("'", $string);
-}
-
-sub throw (;@) {
-   EXCEPTION_CLASS->throw(@_);
 }
 
 sub trim (;$$) {

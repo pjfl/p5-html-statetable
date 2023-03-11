@@ -1,7 +1,6 @@
 package MyApp::Table::MyTable;
 
-use namespace::autoclean;
-
+use HTML::StateTable::Constants qw( TABLE_META );
 use Moo;
 use HTML::StateTable::Moo;
 
@@ -14,14 +13,10 @@ set_defaults {
    page_size => 50,
 };
 
-setup_resultset sub {
-   my $self = shift;
-
-   return;
-};
-
 has_column 'bar', sortable => 1;
 
 has_column 'baz', displayed => 0, options => { check_all => 1 };
+
+use namespace::autoclean -except => TABLE_META;
 
 1;

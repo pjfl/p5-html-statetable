@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Adds POD for state table class
           - Updates prereqs and meta data
           - Adds chartable table role. Uses HighCharts.js
           - Configurable dialog clear/resets/saves row order

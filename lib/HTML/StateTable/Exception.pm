@@ -13,6 +13,9 @@ has '+class' => default => $class;
 
 has_exception $class;
 
+has_exception 'UnknownView' => parents => [ $class ],
+   error => 'View [_1] unknown';
+
 use namespace::autoclean;
 
 1;

@@ -17,8 +17,7 @@ sub process {
 
    $config //= $context->stash->{$key};
 
-   throw 'No config hashref in the [_1] stash key', [$key]
-      unless defined $config && is_hashref $config;
+   throw Unspecified, ['config'] unless defined $config && is_hashref $config;
 
    my $filename = $config->{filename};
 
@@ -26,7 +25,7 @@ sub process {
 
    my $mime_type = $self->_get_mime_type($config, $filename);
 
-   throw 'No mime type specified or inferrable' unless $mime_type;
+   throw Unspecified, ['mime_type'] unless $mime_type;
 
    my $object = $config->{object} || throw Unspecified, ['object'];
    my $object_type = $config->{type}
