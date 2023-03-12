@@ -67,17 +67,10 @@ around 'serialise_row' => sub {
       if $self->table->does('HTML::StateTable::Role::Active');
 
    $row = $self->_json->encode($data);
-
    $row = ",${row}" unless $index == 0;
 
    return $row;
 };
-
-sub skip_serialise_cell {
-   my ($self, $cell) = @_;
-
-   return $cell->column->append_to || $cell->column->hidden($self->table);
-}
 
 sub serialise_cell {
    my ($self, $cell, $data) = @_;
@@ -97,6 +90,13 @@ sub serialise_cell {
    return;
 }
 
+sub skip_serialise_cell {
+   my ($self, $cell) = @_;
+
+   return $cell->column->append_to || $cell->column->hidden($self->table);
+}
+
+# Private methods
 sub _extract_tags {
    my ($self, $row) = @_;
 
@@ -120,9 +120,7 @@ sub _serialise_filter {
 
    my $records = $table->filter_column_values($self->filter_column);
 
-   $self->writer->($self->_json->encode({
-      'records' => $records, 'total-records' => scalar @{$records},
-   }));
+   $self->writer->($self->_json->encode({ records => $records }));
 
    return TRUE;
 }

@@ -5,6 +5,14 @@ use Moo;
 
 extends 'HTML::StateTable::Serialiser';
 
+sub serialise_cell {
+   my ($self, $cell, $data) = @_;
+
+   $data->{$cell->column->label} = $cell->value;
+
+   return;
+}
+
 sub serialise_row {
    my ($self, $row, $index) = @_;
 
@@ -27,14 +35,6 @@ sub skip_serialise_cell {
    return TRUE if $cell->column->hidden($table);
    return TRUE unless $table->serialisable_columns->{$cell->column->name};
    return FALSE;
-}
-
-sub serialise_cell {
-   my ($self, $cell, $data) = @_;
-
-   $data->{$cell->column->label} = $cell->value;
-
-   return;
 }
 
 use namespace::autoclean;

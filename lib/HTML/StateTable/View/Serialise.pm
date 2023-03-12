@@ -13,21 +13,20 @@ extends 'HTML::StateTable::View::Download';
 sub process {
    my ($self, $context) = @_;
 
-   my $key     = SERIALISE_TABLE_KEY;
+   my $key     = SERIALISE_TABLE_KEY();
    my $stashed = $context->stash->{$key};
 
    throw 'No config hashref in the [_1] stash key', [$key] unless $stashed;
 
-   my $table  = $stashed->{table};
    my $format = $stashed->{format};
-   my $args   = $stashed->{serialiser_args};
-
    my $serialiser_class = SERIALISERS->{$format};
 
    throw 'Unknown serialiser [_1]', [$format] unless $serialiser_class;
 
    my $response   = $context->response;
    my $writer     = sub { $response->write(encode_utf8(join NUL, @_)) };
+   my $table      = $stashed->{table};
+   my $args       = $stashed->{serialiser_args};
    my $serialiser = $table->serialiser($serialiser_class, $writer, $args);
    my $filename   = $stashed->{no_filename}
       ? NUL : $stashed->{filename} || $table->download_filename;
@@ -40,9 +39,8 @@ sub process {
    $config->{mime_type} = $serialiser->mime_type if $serialiser->has_mime_type;
    $config->{extension} = $serialiser->extension if $serialiser->has_extension;
 
-   $context->stash->{ITERATOR_DOWNLOAD_KEY()} = $config; # Belt
-
-   return $self->next::method($context, $config); # and braces
+   $context->stash->{ITERATOR_DOWNLOAD_KEY()} = $config;
+   return $self->next::method($context);
 }
 
 sub guess_object_type {
@@ -55,9 +53,7 @@ sub guess_object_type {
 }
 
 sub output_statetable {
-   my ($self, $context, $serialiser) = @_;
-
-   return $serialiser->serialise;
+   my ($self, $context, $serialiser) = @_; return $serialiser->serialise;
 }
 
 use namespace::autoclean;

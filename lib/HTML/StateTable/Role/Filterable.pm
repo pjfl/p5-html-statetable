@@ -151,12 +151,12 @@ sub serialise_filterable {
    my $self = shift;
 
    return {
-      apply         => { before => json_bool TRUE },
-      dialog_title  => $self->filterable_dialog_title,
-      label         => $self->filterable_label,
-      location      => { messages => $self->filterable_message_location },
-      message_label => $self->filterable_message_label,
-      remove_label  => $self->filterable_remove_label,
+      'apply'         => { before => json_bool TRUE },
+      'dialog-title'  => $self->filterable_dialog_title,
+      'label'         => $self->filterable_label,
+      'location'      => { messages => $self->filterable_message_location },
+      'message-label' => $self->filterable_message_label,
+      'remove-label'  => $self->filterable_remove_label,
    };
 }
 

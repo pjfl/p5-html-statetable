@@ -11,11 +11,9 @@ use Unexpected::Functions       qw( Unspecified );
 use Moo;
 
 sub process {
-   my ($self, $context, $config) = @_;
+   my ($self, $context) = @_;
 
-   my $key = ITERATOR_DOWNLOAD_KEY;
-
-   $config //= $context->stash->{$key};
+   my $config = $context->stash->{ITERATOR_DOWNLOAD_KEY()};
 
    throw Unspecified, ['config'] unless defined $config && is_hashref $config;
 
@@ -100,6 +98,7 @@ sub output_string {
    return;
 }
 
+# Private methods
 sub _get_mime_type {
    my ($self, $config, $filename) = @_;
 

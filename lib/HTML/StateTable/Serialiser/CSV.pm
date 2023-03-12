@@ -16,6 +16,11 @@ has 'columns' =>
    isa     => ArrayRef[Str],
    default => sub { [ map { $_->name } @{shift->_serialisable_columns} ] };
 
+has 'headers' =>
+   is      => 'lazy',
+   isa     => ArrayRef[Str],
+   default => sub { [ map { $_->label } @{shift->_serialisable_columns} ] };
+
 has '_csv' =>
    is      => 'ro',
    isa     => class_type('Text::CSV_XS'),
@@ -29,11 +34,6 @@ has '_csv' =>
          sep_char     => COMMA,
       });
    };
-
-has 'headers' =>
-   is      => 'lazy',
-   isa     => ArrayRef[Str],
-   default => sub { [ map { $_->label } @{shift->_serialisable_columns} ] };
 
 has '_serialisable_columns' =>
    is      => 'lazy',

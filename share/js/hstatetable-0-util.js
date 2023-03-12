@@ -44,7 +44,6 @@ HStateTable.Util = (function() {
          return el;
       }
       a(attr, content)        { return this._tag('a', attr, content) }
-      button(attr, content)   { return this._tag('button', attr, content) }
       div(attr, content)      { return this._tag('div', attr, content) }
       figure(attr, content)   { return this._tag('figure', attr, content) }
       form(attr, content)     { return this._tag('form', attr, content) }
@@ -62,6 +61,14 @@ HStateTable.Util = (function() {
       tr(attr, content)       { return this._tag('tr', attr, content) }
       thead(attr, content)    { return this._tag('thead', attr, content) }
       ul(attr, content)       { return this._tag('ul', attr, content) }
+      button(attr, content) {
+         if (_typeof(attr) == 'object') attr['type'] ||= 'submit';
+         else {
+            content = attr;
+            attr = { type: 'submit' };
+         }
+         return this._tag('button', attr, content);
+      }
       checkbox(attr) {
          attr['type'] = 'checkbox';
          return this._tag('input', attr);

@@ -59,13 +59,13 @@ after 'BUILD' => sub {
 sub serialise_downloadable {
    my $self = shift;
 
-   return $self->downloadable ? {
+   return {
       display  => json_bool $self->download_display,
       filename => $self->download_filename,
       label    => $self->download_label,
       location => { control => $self->download_control_location },
       method   => $self->download_method,
-   } : undef;
+   };
 }
 
 use namespace::autoclean;

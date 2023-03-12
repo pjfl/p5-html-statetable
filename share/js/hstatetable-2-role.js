@@ -304,12 +304,9 @@ HStateTable.Role.Configurable = (function() {
             sortColumn: sortBy,
             sortDesc: sortDesc
          });
-         const data = {
-            column_order: this.table.columns.map(col => col.name),
-            columns: {},
-            page_size: pageSize,
-            sort: { column: sortBy, desc: sortDesc }
-         };
+         const data = { columns: {}, sort: { column: sortBy, desc: sortDesc } };
+         data['column_order'] = this.table.columns.map(col => col.name);
+         data['page_size'] = pageSize;
          for (const box of form.downBoxes) {
             const name = box.name.replace(/Down$/, '');
             data.columns[name] ||= {};
@@ -345,13 +342,11 @@ HStateTable.Role.Configurable = (function() {
          return this.h.div({ className: 'dialog-input dialog-buttons' }, [
             this.downloadable ? this.h.button({
                className: 'dialog-button-download',
-               onclick: this.handlers['downloadHandler'],
-               type: 'submit'
+               onclick: this.handlers['downloadHandler']
             }, 'Download') : '',
             this.h.button({
                className: 'dialog-button-clear',
-               onclick: this.handlers['clearHandler'],
-               type: 'submit'
+               onclick: this.handlers['clearHandler']
             }, 'Clear'),
             this.h.button({
                className: 'dialog-button-reset',
@@ -360,8 +355,7 @@ HStateTable.Role.Configurable = (function() {
             }, 'Reset'),
             this.h.button({
                className: 'dialog-button-save',
-               onclick: this.handlers['saveHandler'],
-               type: 'submit'
+               onclick: this.handlers['saveHandler']
             }, 'Save'),
          ]);
       }
@@ -439,8 +433,8 @@ HStateTable.Role.Configurable = (function() {
             onchange: this.handlers['changeHandler']
          }, sortOptions);
          this.sortDesc = this.h.checkbox({
-            id:   'sortDesc', checked: state['sortDesc'],
-            name: 'sortDesc', onchange: this.handlers['changeHandler'],
+            id: 'sortDesc', name: 'sortDesc',
+            checked: state['sortDesc'], onchange: this.handlers['changeHandler']
          });
          this.preferenceTable = this.h.table({
             className: 'preference-columns dropzone',
@@ -525,7 +519,7 @@ HStateTable.Role.Configurable = (function() {
          const config = table.roles['configurable'];
          this.control;
          this.dialogState = false;
-         this.dialogTitle = config['dialog_title'] || '';
+         this.dialogTitle = config['dialog-title'] || '';
          this.label = config['label'] || 'V';
          this.location = config['location'];
          this.rs = table.resultset;
@@ -668,13 +662,13 @@ HStateTable.Role.Filterable = (function() {
    class FilterControl {
       constructor(table, methods) {
          const config = table.roles['filterable'];
-         this.dialogTitle = config['dialog_title'];
+         this.dialogTitle = config['dialog-title'];
          this.label = config['label'];
          this.location = config['location'];
-         this.messageLabel = config['message_label'];
+         this.messageLabel = config['message-label'];
          this.messages;
          this.ns = HStateTable.ColumnTrait;
-         this.removeLabel = config['remove_label'];
+         this.removeLabel = config['remove-label'];
          this.table = table;
          this.rs = table.resultset;
          this.rs.extendState('filterColumn');
@@ -808,7 +802,7 @@ HStateTable.Role.Form = (function() {
          }
          return { action: buttonConfig['action'], selector: selector };
       }
-      is_disabled(buttonConfig) {
+      isDisabled(buttonConfig) {
          if (buttonConfig['selection'] == 'disable_on_select')
             return this.anyChecked(buttonConfig);
          if (buttonConfig['selection'] == 'select_one')
@@ -835,9 +829,8 @@ HStateTable.Role.Form = (function() {
             const action = buttonConfig['action'];
             const button = this.h.button({
                className: buttonConfig['class'],
-               disabled: this.is_disabled(buttonConfig),
-               onclick: this.handlers[action],
-               type: 'submit'
+               disabled: this.isDisabled(buttonConfig),
+               onclick: this.handlers[action]
             }, buttonConfig['value']);
             if (this.buttons[action]
                 && container.contains(this.buttons[action])) {
@@ -899,11 +892,11 @@ HStateTable.Role.Searchable = (function() {
       constructor(table, methods) {
          const config = table.roles['searchable'];
          this.location = config['location'];
-         this.messageAll = config['message_all'];
-         this.messageLabel = config['message_label'];
+         this.messageAll = config['message-all'];
+         this.messageLabel = config['message-label'];
          this.messages;
          this.placeholder = config['placeholder'];
-         this.removeLabel = config['remove_label'];
+         this.removeLabel = config['remove-label'];
          this.searchControl;
          this.searchableColumns = [];
          this.table = table;
@@ -912,7 +905,7 @@ HStateTable.Role.Searchable = (function() {
          this.rs.nameMap('searchColumn', 'search_column');
          this.rs.extendState('searchValue');
          this.rs.nameMap('searchValue', 'search');
-         for (const columnName of config['searchable_columns']) {
+         for (const columnName of config['searchable-columns']) {
             const column = this.table.columnIndex[columnName];
             if (column) this.searchableColumns.push(column);
          }
@@ -949,9 +942,7 @@ HStateTable.Role.Searchable = (function() {
          }.bind(this);
       }
       searchAction(text) {
-         return this.h.span({
-            className: 'search-button'
-         }, this.h.button({ type: 'submit' }, text));
+         return this.h.span({ className: 'search-button' },this.h.button(text));
       }
       searchHidden(selectElements) {
          const hidden = this.h.span({ className: 'search-hidden'});

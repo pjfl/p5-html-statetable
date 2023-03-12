@@ -107,15 +107,15 @@ sub serialise_searchable {
    return unless $self->has_searchable_columns;
 
    return {
-      location => {
+      'location' => {
          control  => $self->searchable_control_location,
          messages => $self->searchable_message_location,
       },
-      message_all   => $self->searchable_message_all,
-      message_label => $self->searchable_message_label,
-      placeholder   => $self->searchable_placeholder,
-      remove_label  => $self->searchable_remove_label,
-      searchable_columns => [ map { $_->name } @{$self->searchable_columns} ],
+      'message-all'   => $self->searchable_message_all,
+      'message-label' => $self->searchable_message_label,
+      'placeholder'   => $self->searchable_placeholder,
+      'remove-label'  => $self->searchable_remove_label,
+      'searchable-columns' => [ map { $_->name } @{$self->searchable_columns} ],
    };
 }
 

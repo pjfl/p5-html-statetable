@@ -11,7 +11,7 @@ after 'BUILD' => sub {
 };
 
 sub serialise_checkall {
-   return { apply => { before => json_bool TRUE }, role_name => 'CheckAll' };
+   return { apply => { before => json_bool TRUE }, 'role-name' => 'CheckAll' };
 }
 
 use namespace::autoclean;

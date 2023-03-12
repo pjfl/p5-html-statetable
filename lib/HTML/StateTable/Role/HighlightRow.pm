@@ -9,7 +9,7 @@ after 'BUILD' => sub {
 };
 
 sub serialise_highlightrow {
-   return { role_name => 'HighlightRow' };
+   return { 'role-name' => 'HighlightRow' };
 }
 
 use namespace::autoclean;

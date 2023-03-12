@@ -51,10 +51,10 @@ sub serialise_configurable {
    (my $url = $self->context->table_preference_url) =~ s{ \* }{$name}mx;
 
    return {
-      dialog_title => $self->configurable_dialog_title,
-      label        => $self->configurable_label,
-      location     => { control => $self->configurable_control_location },
-      url          => $url,
+      'dialog-title' => $self->configurable_dialog_title,
+      'label'        => $self->configurable_label,
+      'location'     => { control => $self->configurable_control_location },
+      'url'          => $url,
    };
 }
 

@@ -361,7 +361,7 @@ HStateTable.Renderer = (function() {
          this.properties = config['properties'];
          this.roles = config['roles'];
          this.rows = [];
-         this.rowTraits = config['row_traits'] || {};
+         this.rowTraits = config['row-traits'] || {};
          this.rowCount = 0;
          this.table = this.h.table({ id: this.name });
          this.resultset = new Resultset(this);
@@ -416,7 +416,7 @@ HStateTable.Renderer = (function() {
             const apply = config['apply'] ? config['apply'] : {};
             if (before && !apply['before']) continue;
             if (!before && apply['before']) continue;
-            const name = config['role_name'] || this.ucfirst(roleName);
+            const name = config['role-name'] || this.ucfirst(roleName);
             this.applyTraits(this, tableRoles, [name]);
          }
       }
@@ -431,7 +431,7 @@ HStateTable.Renderer = (function() {
          if (!result) return undefined;
          const row = new Row(this, result, index);
          for (const [traitName, config] of Object.entries(this.rowTraits)) {
-            const name = config['role_name'] || this.ucfirst(traitName);
+            const name = config['role-name'] || this.ucfirst(traitName);
             this.applyTraits(row, rowTraits, [name]);
          }
          return row;
