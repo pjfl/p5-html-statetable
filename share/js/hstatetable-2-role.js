@@ -48,15 +48,11 @@ HStateTable.Role.Active = (function() {
          }, this.h.label({
             className: 'active-control-label', htmlFor: 'showInactive'
          }, content));
-         if (this.activeForm && container.contains(this.activeForm)) {
-            container.replaceChild(activeForm, this.activeForm);
-         }
-         else { container.append(activeForm) }
-         this.activeForm = activeForm;
+         this.activeForm = this.reshow(container, 'activeForm', activeForm);
       }
    }
-   Object.assign(Active.prototype, HStateTable.Util.markup);
-   Object.assign(Active.prototype, HStateTable.Util.modifiers);
+   Object.assign(Active.prototype, HStateTable.Util.Markup);
+   Object.assign(Active.prototype, HStateTable.Util.Modifiers);
    const modifiedMethods = {};
    return {
       initialise: function() {
@@ -73,7 +69,10 @@ HStateTable.Role.Chartable = (function() {
          this.columnNames = config['columns'] || [];
          this.chartConfig = config['config'];
          this.figureLocation = config['figure']['location'];
+         this.initialState;
+         this.series = config['series'] || {};
          this.table = table;
+         this.rs = table.resultset;
          methods['orderedContent'] = function(orig) {
             const content = orig();
             const display = this.h.div(this.h.figure({
@@ -83,33 +82,53 @@ HStateTable.Role.Chartable = (function() {
             else content.push(display);
             return content;
          }.bind(this);
-         methods['renderRows'] = function(orig) {
-            this.render(orig);
-         }.bind(this);
+         methods['renderRows'] = function(orig){ this.render(orig) }.bind(this);
+      }
+      getState() {
+         const rs = this.rs;
+         const state = {
+            filterColumn: rs.state('filterColumn') || '',
+            filterValue:  rs.state('filterValue')  || '',
+            searchColumn: rs.state('searchColumn') || '',
+            searchValue:  rs.state('searchValue')  || ''
+         };
+         return state;
+      }
+      stateChanged(state) {
+         if (this.initialState.filterColumn != state.filterColumn) return true;
+         if (this.initialState.filterValue  != state.filterValue)  return true;
+         if (this.initialState.searchColumn != state.searchColumn) return true;
+         if (this.initialState.searchValue  != state.searchValue)  return true;
+         return false;
       }
       async render(orig) {
          await orig();
-         const config = this.chartConfig;
+         const state = this.getState();
+         if (!this.initialState) this.initialState = state;
+         else if (!this.stateChanged(state)) return;
+         this.initialState = state;
+         const enablePaging = this.rs.enablePaging;
+         this.rs.enablePaging = false;
+         const url = this.table.prepareURL();
+         this.rs.enablePaging = enablePaging;
+         const response = await this.rs.fetchJSON(url);
+         const results = response['records'];
          const series = [];
          for (const colName of this.columnNames) {
             const data = [];
-            for (const row of this.table.rows) {
-               const name = row.result.name.value;
-               data.push([ name, parseInt(row.result[colName]) ]);
+            for (const result of results) {
+               const name = result.name.value;
+               data.push([ name, parseInt(result[colName]) ]);
             }
             const column = this.table.columnIndex[colName];
-            series.push({
-               data: data,
-               name: column.label,
-               pointStart: 0,
-               pointInterval: true
-            });
+            series.push({ ...this.series, data: data, name: column.label });
          }
+         const config = this.chartConfig;
          config['series'] = series;
          Highcharts.chart('chartable', config);
       }
    }
-   Object.assign(Chartable.prototype, HStateTable.Util.markup);
+   Object.assign(Chartable.prototype, HStateTable.Util.Markup);
    const modifiedMethods = {};
    return {
       initialise: function() {
@@ -130,7 +149,7 @@ HStateTable.Role.CheckAll = (function() {
          };
       }
    }
-   Object.assign(CheckAllControl.prototype, HStateTable.Util.modifiers);
+   Object.assign(CheckAllControl.prototype, HStateTable.Util.Modifiers);
    const modifiedMethods = {};
    return {
       initialise: function() {
@@ -449,7 +468,7 @@ HStateTable.Role.Configurable = (function() {
          ]);
       }
    }
-   Object.assign(PreferenceForm.prototype, HStateTable.Util.markup);
+   Object.assign(PreferenceForm.prototype, HStateTable.Util.Markup);
    class Preference {
       constructor(table, control) {
          this.table = table;
@@ -497,14 +516,10 @@ HStateTable.Role.Configurable = (function() {
             this.form.render(this.getState())
          ]);
          const container = this.table.topControl;
-         if (this.dialog && container.contains(this.dialog)) {
-            container.replaceChild(dialog, this.dialog);
-         }
-         else { container.append(dialog) }
-         this.dialog = dialog;
+         this.dialog = this.reshow(container, 'dialog', dialog);
       }
    }
-   Object.assign(Preference.prototype, HStateTable.Util.markup);
+   Object.assign(Preference.prototype, HStateTable.Util.Markup);
    class ConfigControl {
       constructor(table, methods) {
          const config = table.roles['configurable'];
@@ -549,14 +564,10 @@ HStateTable.Role.Configurable = (function() {
             this.h.span({ className: 'sprite sprite-preference' }),
             '\xA0' + this.label + '\xA0'
          ]);
-         if (this.control && container.contains(this.control)) {
-            container.replaceChild(control, this.control);
-         }
-         else { container.append(control) }
-         this.control = control;
+         this.control = this.reshow(container, 'control', control);
       }
    }
-   Object.assign(ConfigControl.prototype, HStateTable.Util.markup);
+   Object.assign(ConfigControl.prototype, HStateTable.Util.Markup);
    const modifiedMethods = {};
    return {
       initialise: function() {
@@ -592,7 +603,7 @@ HStateTable.Role.Downloadable = (function() {
          this.clickLink(await this.createLink(url, filename));
       }
    }
-   Object.assign(Downloader.prototype, HStateTable.Util.markup); // Apply role
+   Object.assign(Downloader.prototype, HStateTable.Util.Markup); // Apply role
    class DownloadControl {
       constructor(table, methods) {
          const config = table.roles['downloadable'];
@@ -640,14 +651,10 @@ HStateTable.Role.Downloadable = (function() {
          }, [
             this.h.span({ className: 'sprite sprite-download' }), this.label
          ]) : this.h.span();
-         if (this.control && container.contains(this.control)) {
-            container.replaceChild(control, this.control);
-         }
-         else { container.append(control) }
-         this.control = control;
+         this.control = this.reshow(container, 'control', control);
       }
    }
-   Object.assign(DownloadControl.prototype, HStateTable.Util.markup);
+   Object.assign(DownloadControl.prototype, HStateTable.Util.Markup);
    const modifiedMethods = {};
    return {
       initialise: function() {
@@ -735,15 +742,11 @@ HStateTable.Role.Filterable = (function() {
                this.h.a({ onclick: handler }, this.removeLabel)
             ]));
          }
-         if (this.messages && container.contains(this.messages)) {
-            container.replaceChild(messages, this.messages);
-         }
-         else { container.append(messages) }
-         this.messages = messages;
+         this.messages = this.reshow(container, 'messages', messages);
       }
    }
-   Object.assign(FilterControl.prototype, HStateTable.Util.markup);
-   Object.assign(FilterControl.prototype, HStateTable.Util.modifiers);
+   Object.assign(FilterControl.prototype, HStateTable.Util.Markup);
+   Object.assign(FilterControl.prototype, HStateTable.Util.Modifiers);
    const modifiedMethods = {};
    return {
       initialise: function() {
@@ -845,8 +848,8 @@ HStateTable.Role.Form = (function() {
          }
       }
    }
-   Object.assign(FormControl.prototype, HStateTable.Util.markup);
-   Object.assign(FormControl.prototype, HStateTable.Util.modifiers);
+   Object.assign(FormControl.prototype, HStateTable.Util.Markup);
+   Object.assign(FormControl.prototype, HStateTable.Util.Modifiers);
    const modifiedMethods = {};
    return {
       initialise: function() {
@@ -863,7 +866,7 @@ HStateTable.Role.HighlightRow = (function() {
          this.table.rowTraits['highlightRow'] = {};
       }
    }
-   Object.assign(HighlightRow.prototype, HStateTable.Util.modifiers);
+   Object.assign(HighlightRow.prototype, HStateTable.Util.Modifiers);
    const modifiedMethods = {};
    return {
       initialise: function() {
@@ -1008,11 +1011,7 @@ HStateTable.Role.Searchable = (function() {
          const control = this.h.form({
             className: 'search-box', method: 'get', onsubmit: handler
          }, wrapper);
-         if (this.searchControl && container.contains(this.searchControl)) {
-            container.replaceChild(control, this.searchControl);
-         }
-         else { container.append(control) }
-         this.searchControl = control;
+         this.searchControl = this.reshow(container, 'searchControl', control);
       }
       renderMessages(container) {
          const rs = this.rs;
@@ -1035,14 +1034,10 @@ HStateTable.Role.Searchable = (function() {
                this.h.a({ onclick: handler }, this.removeLabel)
             ]));
          }
-         if (this.messages && container.contains(this.messages)) {
-            container.replaceChild(messages, this.messages);
-         }
-         else { container.append(messages) }
-         this.messages = messages;
+         this.messages = this.reshow(container, 'messages', messages);
       }
    }
-   Object.assign(SearchControl.prototype, HStateTable.Util.markup);
+   Object.assign(SearchControl.prototype, HStateTable.Util.Markup);
    const modifiedMethods = {};
    return {
       initialise: function() {
@@ -1056,15 +1051,44 @@ HStateTable.Role.Tagable = (function() {
    class TagControl {
       constructor(table, methods) {
          const config = table.roles['tagable'];
-         this.appendTo = config['append_to'];
-         this.enablePopular = config['enable_popular'];
-         this.location = config['location'];
-         this.searchColumn = config['search_column'];
-         this.table = table;
+         this.appendTo = config['append-to'];
+         this.enablePopular = config['enable-popular'];
+         this.location = config['location']['control'];
+         this.searchColumn = config['search-column'];
          this.tags = config['tags'];
-         this.table.columnIndex[this.appendTo].cellTraits.push('Tagable');
+         this.table = table;
+         this.rs = table.resultset;
+         if (this.appendTo)
+            this.table.columnIndex[this.appendTo].cellTraits.push('Tagable');
+         else {
+            const handler = function(tag) {
+               return function(event) {
+                  event.preventDefault();
+                  this.rs.search(
+                     { searchColumn: this.searchColumn, searchValue: tag }
+                  ).redraw();
+               }.bind(this);
+            }.bind(this);
+            const content = this.h.ul({ className: 'cell-content-append' });
+            for (const tag of this.tags) {
+               const arrow = this.h.span({ className: 'tag-arrow-left' });
+               const value = this.h.span(
+                  { className: 'tag-value', onclick: handler(tag) }, tag
+               );
+               content.append(
+                  this.h.li({ className: 'cell-tag' }, [arrow, value])
+               );
+            }
+            methods['render' + this.location + 'Control'] = function(orig) {
+               const container = orig();
+               const control = this.h.div({ className: 'tag-control' },content);
+               this.tagControl = this.reshow(container, 'tagControl', control);
+               return container;
+            }.bind(this);
+         }
       }
    }
+   Object.assign(TagControl.prototype, HStateTable.Util.Markup);
    const modifiedMethods = {};
    return {
       initialise: function() {

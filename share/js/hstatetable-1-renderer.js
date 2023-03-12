@@ -31,8 +31,8 @@ HStateTable.Renderer = (function() {
          return this.h.td(attr, [link, append]);
       }
    };
-   Object.assign(Cell.prototype, tableUtils.markup); // Apply role
-   Object.assign(Cell.prototype, tableUtils.modifiers); // Apply another role
+   Object.assign(Cell.prototype, tableUtils.Markup); // Apply role
+   Object.assign(Cell.prototype, tableUtils.Modifiers); // Apply another role
    class Column {
       constructor(table, config) {
          this.table = table;
@@ -80,8 +80,8 @@ HStateTable.Renderer = (function() {
          return this.header;
       }
    };
-   Object.assign(Column.prototype, tableUtils.markup);
-   Object.assign(Column.prototype, tableUtils.modifiers);
+   Object.assign(Column.prototype, tableUtils.Markup);
+   Object.assign(Column.prototype, tableUtils.Modifiers);
    class Row {
       constructor(table, result, index) {
          this.cells = [];
@@ -103,8 +103,8 @@ HStateTable.Renderer = (function() {
          return row;
       }
    };
-   Object.assign(Row.prototype, tableUtils.markup);
-   Object.assign(Row.prototype, tableUtils.modifiers);
+   Object.assign(Row.prototype, tableUtils.Markup);
+   Object.assign(Row.prototype, tableUtils.Modifiers);
    class PageControl {
       constructor(table) {
          this.className = 'page-control';
@@ -201,7 +201,7 @@ HStateTable.Renderer = (function() {
          return this.table.properties['total-records'];
       }
    }
-   Object.assign(PageControl.prototype, tableUtils.markup);
+   Object.assign(PageControl.prototype, tableUtils.Markup);
    class PageSizeControl {
       constructor(table) {
          this.className = 'page-size-control';
@@ -238,7 +238,7 @@ HStateTable.Renderer = (function() {
          this.list = list;
       }
    }
-   Object.assign(PageSizeControl.prototype, tableUtils.markup);
+   Object.assign(PageSizeControl.prototype, tableUtils.Markup);
    class ParameterMap {
       constructor() {
          this._nameMap = {
@@ -349,7 +349,7 @@ HStateTable.Renderer = (function() {
          return await response.json();
       }
    };
-   Object.assign(Resultset.prototype, tableUtils.markup);
+   Object.assign(Resultset.prototype, tableUtils.Markup);
    class Table {
       constructor(container, config) {
          this.body = this.h.tbody();
@@ -536,8 +536,8 @@ HStateTable.Renderer = (function() {
          return this.topRightControl;
       }
    };
-   Object.assign(Table.prototype, tableUtils.markup);
-   Object.assign(Table.prototype, tableUtils.modifiers);
+   Object.assign(Table.prototype, tableUtils.Markup);
+   Object.assign(Table.prototype, tableUtils.Modifiers);
    class Manager {
       constructor() {
          this.tables = {};

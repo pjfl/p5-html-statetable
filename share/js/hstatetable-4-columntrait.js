@@ -25,7 +25,7 @@ HStateTable.ColumnTrait.CheckAll = (function() {
          );
       }
    }
-   Object.assign(CheckAll.prototype, HStateTable.Util.markup);
+   Object.assign(CheckAll.prototype, HStateTable.Util.Markup);
    const modifiedMethods = {};
    return {
       initialise: function() {
@@ -111,7 +111,7 @@ HStateTable.ColumnTrait.Filterable = (function() {
          }.bind(this);
       }
    }
-   Object.assign(Filterable.prototype, HStateTable.Util.markup);
+   Object.assign(Filterable.prototype, HStateTable.Util.Markup);
    const modifiedMethods = {};
    return {
       initialise: function(args) {

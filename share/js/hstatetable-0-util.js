@@ -73,7 +73,7 @@ HStateTable.Util = (function() {
    }
    const esc = encodeURIComponent;
    return {
-      markup: { // A role
+      Markup: { // A role
          h: new HtmlTiny(),
          appendValue: function(obj, key, newValue) {
             let existingValue = obj[key] || '';
@@ -89,11 +89,18 @@ HStateTable.Util = (function() {
                }, [])
                .join('&');
          },
+         reshow: function(container, attribute, obj) {
+            if (this[attribute] && container.contains(this[attribute])) {
+               container.replaceChild(obj, this[attribute]);
+            }
+            else { container.append(obj) }
+            return obj;
+         },
          ucfirst: function(s) {
             return s && s[0].toUpperCase() + s.slice(1) || '';
          }
       },
-      modifiers: { // Another role
+      Modifiers: { // Another role
          applyTraits: function(obj, namespace, traits, args) {
             for (const trait of traits) {
                if (!namespace[trait]) {

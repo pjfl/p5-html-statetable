@@ -7,7 +7,7 @@ sub force_row_limit {
    my $pager = $self->pager;
    my $rows  = $pager->entries_on_this_page;
 
-   return unless $rows < $pager->entries_per_page;
+   return unless $rows < $pager->entries_per_page && $self->page == 1;
 
    my $rs = $self->prepared_resultset;
 

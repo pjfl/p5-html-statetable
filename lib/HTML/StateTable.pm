@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 26 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 27 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -546,7 +546,7 @@ sub build_prepared_resultset {
    }
 
    $resultset = $self->_apply_column_sql($resultset);
-   $resultset = $self->_apply_pageing($resultset) if $self->paging;
+   $resultset = $self->_apply_pageing($resultset);
    $resultset = $self->_apply_sorting($resultset) if $self->sortable;
 
    return $resultset;
@@ -742,12 +742,11 @@ sub _apply_column_sql {
 }
 
 sub _apply_pageing {
-   my ($self, $resultset) = @_;
+   my ($self, $rs) = @_;
 
-   return $resultset->search(undef, {
-      page => $self->page,
-      rows => $self->page_size,
-   });
+   return $rs->search(undef, { page => $self->page }) unless $self->paging;
+
+   return $rs->search(undef, { page => $self->page, rows => $self->page_size });
 }
 
 sub _apply_params {

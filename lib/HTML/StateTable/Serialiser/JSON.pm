@@ -35,8 +35,7 @@ around 'serialise' => sub {
    my $table = $self->table;
 
    return $self->_serialise_filter($table) if $self->filter_column;
-
-   return $self->_serialise_meta($table) if $self->serialise_meta;
+   return $self->_serialise_meta($table)   if $self->serialise_meta;
 
    if ($self->serialise_as_hashref) {
       my $total = $table->no_count ? q() : $table->row_count // q();
@@ -49,7 +48,6 @@ around 'serialise' => sub {
    my $index = $orig->($self);
 
    $self->writer->(']');
-
    $self->writer->('}') if $self->serialise_as_hashref;
 
    return $index;
@@ -123,7 +121,7 @@ sub _serialise_filter {
    my $records = $table->filter_column_values($self->filter_column);
 
    $self->writer->($self->_json->encode({
-      records => $records, 'total-records' => scalar @{$records},
+      'records' => $records, 'total-records' => scalar @{$records},
    }));
 
    return TRUE;
@@ -134,11 +132,11 @@ sub _serialise_meta {
 
    $self->writer->($self->_json->encode({
       'column-order' => [ map { $_->name } @{$table->get_displayable_columns} ],
-      displayed      => {
+      'displayed'    => {
          map   { $_  => json_bool $table->displayable_columns->{$_}}
          keys %{$table->displayable_columns}
       },
-      downloadable   => {
+      'downloadable' => {
          map   { $_  => json_bool $table->serialisable_columns->{$_}}
          keys %{$table->serialisable_columns}
       },

@@ -1,15 +1,14 @@
 package HTML::StateTable::View::Serialise;
 
 use HTML::StateTable::Constants qw( FALSE ITERATOR_DOWNLOAD_KEY
-                                    NUL SERIALISE_TABLE_KEY );
+                                    NUL SERIALISE_TABLE_KEY
+                                    SERIALISERS );
 use HTML::StateTable::Util      qw( throw );
 use Encode                      qw( encode_utf8 );
 use Scalar::Util                qw( blessed );
 use Moo;
 
 extends 'HTML::StateTable::View::Download';
-
-my $serialisers = { csv => 'CSV', json => 'JSON' };
 
 sub process {
    my ($self, $context) = @_;
@@ -23,7 +22,7 @@ sub process {
    my $format = $stashed->{format};
    my $args   = $stashed->{serialiser_args};
 
-   my $serialiser_class = $serialisers->{$format};
+   my $serialiser_class = SERIALISERS->{$format};
 
    throw 'Unknown serialiser [_1]', [$format] unless $serialiser_class;
 

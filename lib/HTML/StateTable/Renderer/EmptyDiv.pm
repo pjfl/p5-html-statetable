@@ -12,7 +12,28 @@ use Moo;
 
 extends 'HTML::StateTable::Renderer';
 
-# Public attributes
+=pod
+
+=encoding utf-8
+
+=head1 Name
+
+HTML::StateTable::Renderer::EmptyDiv - Renders the table as an empty div
+
+=head1 Synopsis
+
+   use HTML::StateTable::Renderer::EmptyDiv;
+
+=head1 Description
+
+Table render class
+
+=head1 Configuration and Environment
+
+Defines no attributes
+
+=cut
+
 has '+container_tag' => default => 'div';
 
 has '+data' => default => sub {
@@ -50,6 +71,14 @@ has '_tags' =>
 
       return \%tags;
    };
+
+=back
+
+=head1 Subroutines/Methods
+
+Defines no methods
+
+=cut
 
 # Private functions
 sub _trait_names ($$$) {
@@ -198,3 +227,54 @@ sub _serialise_roles {
 use namespace::autoclean;
 
 1;
+
+__END__
+
+=head1 Diagnostics
+
+None
+
+=head1 Dependencies
+
+=over 3
+
+=item L<Moo>
+
+=back
+
+=head1 Incompatibilities
+
+There are no known incompatibilities in this module
+
+=head1 Bugs and Limitations
+
+There are no known bugs in this module. Please report problems to
+http://rt.cpan.org/NoAuth/Bugs.html?Dist=HTML-StateTable.
+Patches are welcome
+
+=head1 Acknowledgements
+
+Larry Wall - For the Perl programming language
+
+=head1 Author
+
+Peter Flanigan, C<< <pjfl@cpan.org> >>
+
+=head1 License and Copyright
+
+Copyright (c) 2023 Peter Flanigan. All rights reserved
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself. See L<perlartistic>
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE
+
+=cut
+
+# Local Variables:
+# mode: perl
+# tab-width: 3
+# End:
+# vim: expandtab shiftwidth=3:

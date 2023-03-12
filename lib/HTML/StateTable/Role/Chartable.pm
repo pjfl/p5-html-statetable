@@ -42,7 +42,8 @@ has '_chartable_configs' => is => 'lazy', isa => HashRef, default => sub {
             y               => 80,
          },
          plotOptions => {
-            bar      => { dataLabels => { enabled => json_bool TRUE } }
+            bar      => { dataLabels => { enabled => json_bool TRUE } },
+            %{$self->chartable_plot_options}
          },
          credits     => { enabled => json_bool FALSE },
       },
@@ -88,7 +89,8 @@ has '_chartable_configs' => is => 'lazy', isa => HashRef, default => sub {
                   enabled => json_bool TRUE,
                   format  => '<b>{point.name}</b>: {point.percentage:.1f} %'
                }
-            }
+            },
+            %{$self->chartable_plot_options}
          },
          tooltip => {
             pointFormat => '{series.name}: <b>{point.percentage:.1f}%</b>'
@@ -102,13 +104,16 @@ has 'chartable_location' => is => 'ro', isa => Str, default => 'Top';
 has 'chartable_plot_options' => is => 'lazy', isa => HashRef,
    default => sub { {} };
 
+has 'chartable_series' => is => 'ro', isa => HashRef, default => sub {
+   return { pointStart => 0, pointInterval => json_bool TRUE };
+};
+
 has 'chartable_subtitle_link' => is => 'lazy', default => NUL;
 
 has 'chartable_subtitle_text' => is => 'lazy', isa => Str, default => sub {
-   my $self    = shift;
-   my $context = $self->context;
-   my $uri     = $self->chartable_subtitle_link;
-   my $name    = ucfirst $self->name;
+   my $self = shift;
+   my $uri  = $self->chartable_subtitle_link;
+   my $name = ucfirst $self->name;
 
    return 'Source: <a href="' . $uri . '" target="_blank">' . $name . '</a>';
 };
@@ -140,6 +145,7 @@ sub serialise_chartable {
       columns => $self->chartable_columns,
       config  => $self->chartable_config,
       figure  => { location => $self->chartable_location },
+      series  => $self->chartable_series
    };
 }
 

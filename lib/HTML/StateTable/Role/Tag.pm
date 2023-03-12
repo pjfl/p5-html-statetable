@@ -97,13 +97,18 @@ sub serialise_tagable {
       while (my $tag = $self->tag_all->next) { push @tags, $tag->$name }
    }
 
-   return {
-      append_to      => $self->get_column($self->tag_search_column)->append_to,
-      enable_popular => json_bool $self->tag_enable_popular,
-      location       => { control => $self->tag_control_location },
-      search_column  => $self->tag_search_column,
-      tags           => \@tags,
+   my $data = {
+      'enable-popular' => json_bool $self->tag_enable_popular,
+      'location'       => { control => $self->tag_control_location },
+      'search-column'  => $self->tag_search_column,
+      'tags'           => \@tags,
    };
+
+   if (my $append_col = $self->get_column($self->tag_search_column)) {
+      $data->{'append-to'} = $append_col->append_to;
+   }
+
+   return $data;
 }
 
 use namespace::autoclean;
