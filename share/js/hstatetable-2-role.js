@@ -73,14 +73,22 @@ HStateTable.Role.Chartable = (function() {
          this.series = config['series'] || {};
          this.table = table;
          this.rs = table.resultset;
-         methods['orderedContent'] = function(orig) {
-            const content = orig();
-            const display = this.h.div(this.h.figure({
-               className: 'highcharts-figure'
-            }, this.h.div({ id: 'chartable' })));
-            if (this.figureLocation == 'Top') content.unshift(display);
+         methods['appendContainer'] = function(orig, container, content) {
+            const location = this.figureLocation;
+            const attr = { className: 'chart-container' };
+            if (location == 'Left' || location == 'Right') {
+               this.appendValue(attr, 'className', 'inline');
+               const tableContainer = this.table.tableContainer;
+               this.appendValue(tableContainer, 'className', 'inline');
+            }
+            const display = this.h.div(attr, this.h.figure(
+               { className: 'highcharts-figure' },
+               this.h.div({ id: 'chartable' })
+            ));
+            if (location == 'Top' || location == 'Left')
+               content.unshift(display);
             else content.push(display);
-            return content;
+            orig(container, content);
          }.bind(this);
          methods['renderRows'] = function(orig){ this.render(orig) }.bind(this);
       }
@@ -757,6 +765,7 @@ HStateTable.Role.Form = (function() {
          this.buttonConfig = config['buttons'];
          this.buttons = {};
          this.confirm = config['confirm'];
+         this.form;
          this.handlers = {};
          this.location = config['location'];
          this.control = 'render' + this.location['control'] + 'Control';
@@ -771,11 +780,10 @@ HStateTable.Role.Form = (function() {
                this.postForm(buttonConfig);
             }.bind(this);
          }
-         methods['appendContainer'] = function(orig, container, content) {
-            const form = this.h.form({ className: 'table-form' });
-            orig(form, content);
-            container.append(form);
-         };
+         methods['orderedContent'] = function(orig) {
+            this.form = this.h.form({ className: 'table-form' }, orig());
+            return this.form;
+         }.bind(this);
          methods[this.control] = function(orig) {
             const container = orig();
             this.render(container);

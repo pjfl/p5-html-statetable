@@ -170,6 +170,13 @@ div.state-table .grab-handle-cell {
 div.state-table .grab-handle-cell:hover {
    background: green;
 }
+div.state-table .table-container.inline {
+   padding-top: 10px;
+}
+div.state-table .chart-container.inline,
+div.state-table .table-container.inline {
+   display: inline-block; vertical-align: top;
+}
 div.state-table .highcharts-figure {
    margin-bottom: 10px; margin-left: 0; margin-right: 0; margin-top: 0;
 }

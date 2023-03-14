@@ -270,7 +270,6 @@ HStateTable.Renderer = (function() {
          this.maxPageSize = table.properties['max-page-size'] || null;
          this.records = [];
          this.table = table;
-         this.totalRecords = 0;
          this.parameterMap = new ParameterMap();
          this._state = new State(table);
       }
@@ -305,7 +304,6 @@ HStateTable.Renderer = (function() {
          if (this.index > 0) return this.records[this.index++];
          const response = await this.fetchJSON(this.table.prepareURL());
          this.records = response['records'];
-         this.totalRecords = response['total-records'];
          return this.records[this.index++];
       }
       redraw() {
@@ -400,7 +398,10 @@ HStateTable.Renderer = (function() {
          this.pageSizeControl = new PageSizeControl(this);
          this.bottomLeftControl.append(this.pageSizeControl.list);
 
-         this.appendContainer(container, this.orderedContent());
+         this.tableContainer = this.h.div(
+            { className: 'table-container' }, this.orderedContent()
+         );
+         this.appendContainer(container, [this.tableContainer]);
       }
       appendContainer(container, content) {
          for (const el of content) { container.append(el); }

@@ -7,6 +7,8 @@ use Ref::Util                   qw( is_hashref );
 use Scalar::Util                qw( blessed );
 use Moo::Role;
 
+has 'form_action' => is => 'ro', isa => Str, default => 'api/table_action';
+
 has 'form_buttons' => is => 'lazy', isa => ArrayRef[HashRef|Str],
    default => sub { [] };
 
@@ -28,16 +30,15 @@ after 'BUILD' => sub {
 };
 
 sub serialise_form {
-   my $self    = shift;
-   my $name    = $self->name;
-   (my $url    = $self->context->table_action_url) =~ s{ \* }{$name}mx;
+   my $self = shift;
+   my $name = $self->name;
 
    return {
       buttons  => $self->_serialise_buttons,
       confirm  => $self->form_confirm_message,
       hidden   => $self->form_hidden,
       location => { control => $self->form_control_location },
-      url      => $url,
+      url      => $self->context->uri_for_action($self->form_action, [$name]),
    };
 }
 

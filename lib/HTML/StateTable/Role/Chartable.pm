@@ -99,7 +99,7 @@ has '_chartable_configs' => is => 'lazy', isa => HashRef, default => sub {
    };
 };
 
-has 'chartable_location' => is => 'ro', isa => Str, default => 'Top';
+has 'chartable_location' => is => 'ro', isa => Str, default => 'Left';
 
 has 'chartable_plot_options' => is => 'lazy', isa => HashRef,
    default => sub { {} };

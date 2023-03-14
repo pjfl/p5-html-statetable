@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Charts can locates left and right too
           - Tidies up naming of serialised keys
           - Charts refresh only when their state changes
           - Adds POD for column, row and cell classes

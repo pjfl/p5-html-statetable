@@ -9,6 +9,9 @@ use Moo::Role;
 has 'configurable' => is => 'ro', isa => Bool,
    default => TRUE;
 
+has 'configurable_action' => is => 'ro', isa => Str,
+   default => 'api/table_preference';
+
 has 'configurable_control_location' => is => 'ro', isa => Str,
    default => 'TopRight';
 
@@ -46,18 +49,19 @@ after 'BUILD' => sub {
 };
 
 sub serialise_configurable {
-   my $self = shift;
-   my $name = $self->name;
-   (my $url = $self->context->table_preference_url) =~ s{ \* }{$name}mx;
+   my $self   = shift;
+   my $name   = $self->name;
+   my $action = $self->configurable_action;
 
    return {
       'dialog-title' => $self->configurable_dialog_title,
       'label'        => $self->configurable_label,
       'location'     => { control => $self->configurable_control_location },
-      'url'          => $url,
+      'url'          => $self->context->uri_for_action($action, [$name]),
    };
 }
 
+# Private methods
 sub _apply_configurable_params {
    my ($self, $params) = @_;
 
@@ -96,8 +100,9 @@ sub _preference {
 
    return unless $self->has_context;
 
+   my $rs   = $self->context->model('Preference');
    my $name = 'table' . DOT . $self->name . DOT . 'preference';
-   my $pref = $self->context->preference($name);
+   my $pref = $rs->find({ name => $name }, { key => 'preference_name' });
 
    return $pref ? $pref->value : {};
 }

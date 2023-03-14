@@ -38,9 +38,7 @@ around 'serialise' => sub {
    return $self->_serialise_meta($table)   if $self->serialise_meta;
 
    if ($self->serialise_as_hashref) {
-      my $total = $table->no_count ? q() : $table->row_count // q();
-
-      $self->writer->('{"total-records":"' . $total . '","records":');
+      $self->writer->('{"records":');
    }
 
    $self->writer->('[');
