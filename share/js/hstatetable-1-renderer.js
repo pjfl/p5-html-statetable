@@ -153,6 +153,11 @@ HStateTable.Renderer = (function() {
          }
          return await response.json();
       }
+      getState(attrs) {
+         const state = {};
+         for (const attr of attrs) { state[attr] = this.state(attr) || '' }
+         return state;
+      }
       nameMap(key, value) {
          if (typeof key == 'undefined') return this.parameterMap;
          if (typeof value != 'undefined') this.parameterMap[key] = value;
@@ -184,15 +189,19 @@ HStateTable.Renderer = (function() {
          }
          return this._state[key];
       }
+      stateChanged(previousState) {
+         for (const [key, previous] of Object.entries(previousState)) {
+            const current = this.state(key) || '';
+            if (previous != current) return true;
+         }
+         return false;
+      }
       async storeJSON(url, args) {
-         const body = this.createQueryString({
-            data: JSON.stringify(args),
-            _verify: this.table.properties['verify-token']
+         const body = JSON.stringify({
+            data: args, _verify: this.table.properties['verify-token']
          });
          const headers = new Headers();
-         headers.set(
-            'Content-Type', 'application/x-www-form-urlencoded; charset=utf-8'
-         );
+         headers.set('Content-Type', 'application/json');
          headers.set('X-Requested-With', 'XMLHttpRequest');
          const options = {
             body: body, cache: 'no-store', credentials: 'same-origin',
@@ -205,7 +214,6 @@ HStateTable.Renderer = (function() {
          return await response.json();
       }
    };
-   Object.assign(Resultset.prototype, tableUtils.Markup);
    class Table {
       constructor(container, config) {
          this.body = this.h.tbody();

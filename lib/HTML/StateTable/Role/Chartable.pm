@@ -108,6 +108,10 @@ has 'chartable_series' => is => 'ro', isa => HashRef, default => sub {
    return { pointStart => 0, pointInterval => json_bool TRUE };
 };
 
+has 'chartable_state_attr' => is => 'ro', isa => ArrayRef, default => sub {
+   return [ 'filterColumn', 'filterValue', 'searchColumn', 'searchValue' ];
+};
+
 has 'chartable_subtitle_link' => is => 'lazy', default => NUL;
 
 has 'chartable_subtitle_text' => is => 'lazy', isa => Str, default => sub {
@@ -142,10 +146,11 @@ sub serialise_chartable {
    my $self = shift;
 
    return {
-      columns => $self->chartable_columns,
-      config  => $self->chartable_config,
-      figure  => { location => $self->chartable_location },
-      series  => $self->chartable_series
+      'columns'    => $self->chartable_columns,
+      'config'     => $self->chartable_config,
+      'figure'     => { location => $self->chartable_location },
+      'series'     => $self->chartable_series,
+      'state-attr' => $self->chartable_state_attr,
    };
 }
 

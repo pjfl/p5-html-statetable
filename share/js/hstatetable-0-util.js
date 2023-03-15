@@ -86,16 +86,7 @@ HStateTable.Util = (function() {
             if (existingValue) existingValue += ' ';
             obj[key] = existingValue + newValue;
          },
-         createQueryString: function(obj) {
-            if (!obj) return '';
-            return Object.entries(obj)
-               .filter(([key, val]) => val)
-               .reduce((acc, [k, v]) => {
-                  return acc.concat(`${esc(k)}=${esc(v)}`);
-               }, [])
-               .join('&');
-         },
-         reshow: function(container, attribute, obj) {
+         display: function(container, attribute, obj) {
             if (this[attribute] && container.contains(this[attribute])) {
                container.replaceChild(obj, this[attribute]);
             }
