@@ -876,6 +876,173 @@ HStateTable.Role.HighlightRow = (function() {
       around: modifiedMethods
    };
 })();
+// Package HStateTable.Role.Pageable
+HStateTable.Role.Pageable = (function() {
+   class PageControl {
+      constructor(table, methods) {
+         const config = table.roles['pageable'];
+         this.className = 'page-control';
+         this.enablePaging = table.properties['enable-paging'];
+         this.list = this.h.ul();
+         this.list.className = this.className;
+         this.location = config['location'];
+         this.pagingText = 'Page %current_page of %last_page';
+         this.rs = table.resultset;
+         this.table = table;
+         const messages = 'render' + this.location['control'] + 'Control';
+         methods[messages] = function(orig) {
+            const container = orig();
+            this.pageControl.render(container);
+            return container;
+         };
+      }
+      firstPage() {
+         return 1;
+      }
+      handler(text) {
+         return function(event) {
+            event.preventDefault();
+            let page = this.rs.state('page');
+            const lastPage = this.lastPage();
+            if (text == 'first') { page = this.firstPage() }
+            else if (text == 'prev' && page > 1) { page -= 1 }
+            else if (text == 'next' && page < lastPage) { page += 1 }
+            else if (text == 'last') { page = lastPage }
+            this.rs.search({ page: page }).redraw();
+         }.bind(this);
+      }
+      interpolatePageText() {
+         let text = this.pagingText;
+         text = text.replace(/\%current_page/, this.rs.state('page'));
+         text = text.replace(/\%last_page/, this.lastPage());
+         return text;
+      }
+      lastPage() {
+         let pages = this.totalRecords() / this.rs.state('pageSize');
+         let lastPage;
+         if (pages == Math.floor(pages)) { lastPage = pages }
+         else { lastPage = 1 + Math.floor(pages) }
+         if (lastPage < 1) lastPage = 1;
+         return lastPage;
+      }
+      render(container) {
+         if (!this.enablePaging) return;
+         if (!this.table.properties['no-count']) {
+            this.renderPageControl(container);
+         }
+         else { this.renderPageControlNoCount(container) }
+      }
+      renderPageControl(container) {
+         const currentPage = this.rs.state('page');
+         const atFirst = !!(currentPage <= this.firstPage());
+         const atLast  = !!(currentPage >= this.lastPage());
+         const list = this.h.ul({ className: this.className });
+         for (const text of ['first', 'prev', 'page', 'next', 'last']) {
+            let item;
+            if (text == 'page') {
+               item = this.h.li(this.interpolatePageText());
+            }
+            else if (((text == 'first' || text == 'prev') && atFirst)
+                     ||((text == 'next' || text == 'last') && atLast)) {
+               item = this.h.li({ className: 'disabled' }, text);
+            }
+            else {
+               item = this.h.li({ onclick: this.handler(text) }, text);
+            }
+            list.append(item);
+            list.append(document.createTextNode('\xA0'));
+         }
+         this.list = this.reshow(container, 'list', list);
+      }
+      renderPageControlNoCount(container) {
+         const currentPage = this.rs.state('page');
+         const atFirst = !!(currentPage <= this.firstPage());
+         const atLast  = !!(currentPage >= this.table.rowCount);
+         const list = this.h.ul({ className: this.className });
+         for (const text of ['first', 'prev', 'page', 'next']) {
+            let item;
+            if (text == 'page') {
+               item = this.h.li('Page\xA0' + currentPage);
+            }
+            else if (((text == 'first' || text == 'prev') && atFirst)
+                     || (text == 'next' && atLast)) {
+               item = this.h.li({ className: 'disabled' }, text);
+            }
+            else {
+               item = this.h.li({ onclick: this.handler(text) }, text);
+            }
+            list.append(item);
+            list.append(document.createTextNode('\xA0'));
+         }
+         this.list = this.reshow(container, 'list', list);
+      }
+      totalRecords() {
+         return this.table.properties['total-records'];
+      }
+   }
+   Object.assign(PageControl.prototype, HStateTable.Util.Markup);
+   const modifiedMethods = {};
+   return {
+      initialise: function() {
+         this.pageControl = new PageControl(this, modifiedMethods);
+      },
+      around: modifiedMethods
+   };
+})();
+// Package HStateTable.Role.PageSize
+HStateTable.Role.PageSize = (function() {
+   class PageSizeControl {
+      constructor(table, methods) {
+         const config = table.roles['pagesize'];
+         this.className = 'page-size-control';
+         this.enablePaging = table.properties['enable-paging'];
+         this.list = this.h.ul();
+         this.list.className = this.className;
+         this.location = config['location'];
+         this.rs = table.resultset;
+         this.table = table;
+         const messages = 'render' + this.location['control'] + 'Control';
+         methods[messages] = function(orig) {
+            const container = orig();
+            this.pageSizeControl.render(container);
+            return container;
+         };
+      }
+      handler(size) {
+         return function(event) {
+            event.preventDefault();
+            this.rs.search({ pageSize: size }).redraw();
+         }.bind(this);
+      }
+      render(container) {
+         if (!this.enablePaging) return;
+         const sizes = [10, 20, 50, 100];
+         const maxPageSize = this.table.properties['max-page-size'] || 0;
+         if (maxPageSize > 100) sizes.push(maxPageSize);
+         const attr = { className: this.className };
+         const list = this.h.ul(attr, this.h.li('Showing up to\xA0'));
+         for (const size of sizes) {
+            const attr = {};
+            if (size == this.rs.state('pageSize'))
+               attr.className = 'selected-page-size'
+            const handler = this.handler(size);
+            list.append(this.h.li(attr, this.h.a({ onclick: handler }, size)));
+            if (size != sizes.slice(-1))
+               list.append(document.createTextNode(',\xA0'));
+         }
+         list.append(this.h.li('\xA0rows'));
+         this.list = this.reshow(container, 'list', list);
+      }
+   }
+   Object.assign(PageSizeControl.prototype, HStateTable.Util.Markup);
+   const modifiedMethods = {};
+   return {
+      initialise: function() {
+         this.pageSizeControl = new PageSizeControl(this, modifiedMethods);
+      },
+      around: modifiedMethods
+   };
+})();
 // Package HStateTable.Role.Reorderable
 HStateTable.Role.Reorderable = (function() {
    class OrderControl {

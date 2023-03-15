@@ -105,155 +105,6 @@ HStateTable.Renderer = (function() {
    };
    Object.assign(Row.prototype, tableUtils.Markup);
    Object.assign(Row.prototype, tableUtils.Modifiers);
-   class PageControl {
-      constructor(table) {
-         this.className = 'page-control';
-         this.enablePaging = table.properties['enable-paging'];
-         this.list = this.h.ul();
-         this.list.className = this.className;
-         this.pagingText = 'Page %current_page of %last_page';
-         this.rs = table.resultset;
-         this.table = table;
-      }
-      firstPage() {
-         return 1;
-      }
-      handler(text) {
-         return function(event) {
-            event.preventDefault();
-            let page = this.rs.state('page');
-            const lastPage = this.lastPage();
-            if (text == 'first') { page = this.firstPage() }
-            else if (text == 'prev' && page > 1) { page -= 1 }
-            else if (text == 'next' && page < lastPage) { page += 1 }
-            else if (text == 'last') { page = lastPage }
-            this.rs.search({ page: page }).redraw();
-         }.bind(this);
-      }
-      interpolatePageText() {
-         let text = this.pagingText;
-         text = text.replace(/\%current_page/, this.rs.state('page'));
-         text = text.replace(/\%last_page/, this.lastPage());
-         return text;
-      }
-      lastPage() {
-         let pages = this.totalRecords() / this.rs.state('pageSize');
-         let lastPage;
-         if (pages == Math.floor(pages)) { lastPage = pages }
-         else { lastPage = 1 + Math.floor(pages) }
-         if (lastPage < 1) lastPage = 1;
-         return lastPage;
-      }
-      render(container) {
-         if (!this.enablePaging) return;
-         if (!this.table.properties['no-count']) {
-            this.renderPageControl(container);
-         }
-         else { this.renderPageControlNoCount(container) }
-      }
-      renderPageControl(container) {
-         const currentPage = this.rs.state('page');
-         const atFirst = !!(currentPage <= this.firstPage());
-         const atLast  = !!(currentPage >= this.lastPage());
-         const list = this.h.ul({ className: this.className });
-         for (const text of ['first', 'prev', 'page', 'next', 'last']) {
-            let item;
-            if (text == 'page') {
-               item = this.h.li(this.interpolatePageText());
-            }
-            else if (((text == 'first' || text == 'prev') && atFirst)
-                     ||((text == 'next' || text == 'last') && atLast)) {
-               item = this.h.li({ className: 'disabled' }, text);
-            }
-            else {
-               item = this.h.li({ onclick: this.handler(text) }, text);
-            }
-            list.append(item);
-            list.append(document.createTextNode('\xA0'));
-         }
-         container.replaceChild(list, this.list);
-         this.list = list;
-      }
-      renderPageControlNoCount(container) {
-         const currentPage = this.rs.state('page');
-         const atFirst = !!(currentPage <= this.firstPage());
-         const atLast  = !!(currentPage >= this.table.rowCount);
-         const list = this.h.ul({ className: this.className });
-         for (const text of ['first', 'prev', 'page', 'next']) {
-            let item;
-            if (text == 'page') {
-               item = this.h.li('Page\xA0' + currentPage);
-            }
-            else if (((text == 'first' || text == 'prev') && atFirst)
-                     || (text == 'next' && atLast)) {
-               item = this.h.li({ className: 'disabled' }, text);
-            }
-            else {
-               item = this.h.li({ onclick: this.handler(text) }, text);
-            }
-            list.append(item);
-            list.append(document.createTextNode('\xA0'));
-         }
-         container.replaceChild(list, this.list);
-         this.list = list;
-      }
-      totalRecords() {
-         return this.table.properties['total-records'];
-      }
-   }
-   Object.assign(PageControl.prototype, tableUtils.Markup);
-   class PageSizeControl {
-      constructor(table) {
-         this.className = 'page-size-control';
-         this.enablePaging = table.properties['enable-paging'];
-         this.list = this.h.ul();
-         this.list.className = this.className;
-         this.rs = table.resultset;
-         this.table = table;
-      }
-      handler(size) {
-         return function(event) {
-            event.preventDefault();
-            this.rs.search({ pageSize: size }).redraw();
-         }.bind(this);
-      }
-      render(container) {
-         if (!this.enablePaging) return;
-         const sizes = [10, 20, 50, 100];
-         const maxPageSize = this.table.properties['max-page-size'] || 0;
-         if (maxPageSize > 100) sizes.push(maxPageSize);
-         const attr = { className: this.className };
-         const list = this.h.ul(attr, this.h.li('Showing up to\xA0'));
-         for (const size of sizes) {
-            const attr = {};
-            if (size == this.rs.state('pageSize'))
-               attr.className = 'selected-page-size'
-            const handler = this.handler(size);
-            list.append(this.h.li(attr, this.h.a({ onclick: handler }, size)));
-            if (size != sizes.slice(-1))
-               list.append(document.createTextNode(',\xA0'));
-         }
-         list.append(this.h.li('\xA0rows'));
-         container.replaceChild(list, this.list);
-         this.list = list;
-      }
-   }
-   Object.assign(PageSizeControl.prototype, tableUtils.Markup);
-   class ParameterMap {
-      constructor() {
-         this._nameMap = {
-            page: 'page',
-            pageSize: 'page_size',
-            sortColumn: 'sort',
-            sortDesc: 'desc'
-         };
-      }
-      nameMap(key, value) {
-         if (typeof key == 'undefined') return this._nameMap;
-         if (typeof value != 'undefined') this._nameMap[key] = value;
-         return this._nameMap[key];
-      }
-   }
    class State {
       constructor(table) {
          this.page = 1;
@@ -270,7 +121,12 @@ HStateTable.Renderer = (function() {
          this.maxPageSize = table.properties['max-page-size'] || null;
          this.records = [];
          this.table = table;
-         this.parameterMap = new ParameterMap();
+         this.parameterMap = {
+            page: 'page',
+            pageSize: 'page_size',
+            sortColumn: 'sort',
+            sortDesc: 'desc'
+         };
          this._state = new State(table);
       }
       extendState(key, value) {
@@ -298,7 +154,9 @@ HStateTable.Renderer = (function() {
          return await response.json();
       }
       nameMap(key, value) {
-         return this.parameterMap.nameMap(key, value);
+         if (typeof key == 'undefined') return this.parameterMap;
+         if (typeof value != 'undefined') this.parameterMap[key] = value;
+         return this.parameterMap[key];
       }
       async next() {
          if (this.index > 0) return this.records[this.index++];
@@ -392,11 +250,6 @@ HStateTable.Renderer = (function() {
          this.bottomControl.append(this.bottomRightControl);
 
          this.creditControl = this.h.div({ className: 'credit-control'});
-
-         this.pageControl = new PageControl(this);
-         this.bottomRightControl.append(this.pageControl.list);
-         this.pageSizeControl = new PageSizeControl(this);
-         this.bottomLeftControl.append(this.pageSizeControl.list);
 
          this.tableContainer = this.h.div(
             { className: 'table-container' }, this.orderedContent()
@@ -492,12 +345,10 @@ HStateTable.Renderer = (function() {
          this.header = thead;
       }
       renderBottomLeftControl() {
-         this.pageSizeControl.render(this.bottomLeftControl);
-         return this.pageSizeControl.list;
+         return this.bottomLeftControl;
       }
       renderBottomRightControl() {
-         this.pageControl.render(this.bottomRightControl);
-         return this.pageControl.list;
+         return this.bottomRightControl;
       }
       renderCreditControl() {
          return this.creditControl;

@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 29 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 30 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -174,6 +174,16 @@ has 'page' =>
    trigger => \&clear_prepared_resultset,
    default => 1;
 
+=item page_control_location
+
+An immutable non empty simple string which defaults to 'BottomRight'. The
+location of the page control
+
+=cut
+
+has 'page_control_location' => is => 'ro', isa => NonEmptySimpleStr,
+   default => 'BottomLeft';
+
 =item page_size
 
 A mutable non zero positive integer which defaults to 20. The number of rows
@@ -187,6 +197,16 @@ has 'page_size' =>
    lazy    => TRUE,
    trigger => \&clear_prepared_resultset,
    default => sub { shift->_default('page_size', 20) };
+
+=item page_size_control_location
+
+An immutable non empty simple string which defaults to 'BottomLeft'. The
+location of the page size control
+
+=cut
+
+has 'page_size_control_location' => is => 'ro', isa => NonEmptySimpleStr,
+   default => 'BottomRight';
 
 =item pager
 

@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Page and page size now table roles
           - Charts can locates left and right too
           - Tidies up naming of serialised keys
           - Charts refresh only when their state changes

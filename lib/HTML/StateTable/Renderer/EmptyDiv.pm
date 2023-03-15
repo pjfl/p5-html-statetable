@@ -195,11 +195,13 @@ sub _serialise_properties {
       'max-page-size'   => $table->max_page_size,
       'sort-column'     => $table->sort_column_name,
       'sort-desc'       => json_bool $table->sort_desc,
-      'verify-token'    => $table->context->verification_token,
    };
 
    if ($table->no_count) { $data->{'no-count'} = json_bool TRUE }
    else { $data->{'total-records'} = $table->row_count }
+
+   $data->{'verify-token'} = $table->context->verification_token
+      if $table->has_context;
 
    return $data;
 }
@@ -209,6 +211,19 @@ sub _serialise_roles {
    my $table = $self->table;
    my $roles = {};
    my $index = 0;
+
+   if ($table->paging) {
+      $roles->{'pageable'} = {
+         'location'   => { control => $table->page_control_location },
+         'role-index' => $index++,
+         'role-name'  => 'Pageable',
+      };
+      $roles->{'pagesize'} = {
+         'location'   => { control => $table->page_size_control_location },
+         'role-index' => $index++,
+         'role-name'  => 'PageSize',
+      };
+   }
 
    for my $role_name ($table->all_role_names) {
       next unless $table->does($table->get_role($role_name));
