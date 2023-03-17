@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Renderer captures render errors and returns them as text
           - StateChanged now a resultset method
           - Page and page size now table roles
           - Charts can locates left and right too

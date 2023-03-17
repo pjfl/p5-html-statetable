@@ -28,7 +28,8 @@ subtype Context => as Object;
 subtype Request => as Object;
 
 subtype Iterable => as Object, where {
-      $_->can('next')
+      $_->can('get_column')
+   && $_->can('next')
    && $_->can('pager')
    && $_->can('reset')
    && $_->can('search')

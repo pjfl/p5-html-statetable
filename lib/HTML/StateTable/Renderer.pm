@@ -4,6 +4,7 @@ use HTML::StateTable::Constants qw( TRUE );
 use HTML::StateTable::Types     qw( ArrayRef HashRef Str Table );
 use Type::Utils                 qw( class_type );
 use HTML::Tiny;
+use Try::Tiny;
 use Moo;
 
 has 'container_tag' => is => 'ro', isa => Str, default => 'table';
@@ -30,7 +31,13 @@ has '_html' =>
    default => sub { HTML::Tiny->new };
 
 sub render {
-   my $self = shift;	return $self->container;
+   my $self = shift;
+   my $output;
+
+   try   { $output = $self->container }
+   catch { $output = $_ };
+
+   return $output;
 }
 
 use namespace::autoclean;
