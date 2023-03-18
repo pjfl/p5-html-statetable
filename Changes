@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Fixes table row count usage
           - Warn of errors calling column info in foreign sort
           - Renderer captures render errors and returns them as text
           - StateChanged now a resultset method

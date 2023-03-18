@@ -154,7 +154,7 @@ div.state-table .dialog-input button {
 }
 div.state-table .dialog-title {
    background: linen; border-bottom: 1px orange solid; font-weight: bold;
-   padding: 3px; text-align: left;
+   min-width: 80px; padding: 3px; text-align: left;
 }
 div.state-table .filter-values {
    font-size: smaller; font-weight: normal; list-style: none;

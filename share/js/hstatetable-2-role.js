@@ -903,7 +903,7 @@ HStateTable.Role.Pageable = (function() {
          return text;
       }
       lastPage() {
-         let pages = this.totalRecords() / this.rs.state('pageSize');
+         let pages = this.rs.rowCount / this.rs.state('pageSize');
          let lastPage;
          if (pages == Math.floor(pages)) { lastPage = pages }
          else { lastPage = 1 + Math.floor(pages) }
@@ -960,9 +960,6 @@ HStateTable.Role.Pageable = (function() {
             list.append(document.createTextNode('\xA0'));
          }
          this.list = this.display(container, 'list', list);
-      }
-      totalRecords() {
-         return this.table.properties['total-records'];
       }
    }
    Object.assign(PageControl.prototype, HStateTable.Util.Markup);

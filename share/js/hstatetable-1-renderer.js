@@ -120,6 +120,7 @@ HStateTable.Renderer = (function() {
          this.index = 0;
          this.maxPageSize = table.properties['max-page-size'] || null;
          this.records = [];
+         this.rowCount = 0;
          this.table = table;
          this.parameterMap = {
             page: 'page',
@@ -167,6 +168,7 @@ HStateTable.Renderer = (function() {
          if (this.index > 0) return this.records[this.index++];
          const response = await this.fetchJSON(this.table.prepareURL());
          this.records = response['records'];
+         this.rowCount = parseInt(response['row-count']);
          return this.records[this.index++];
       }
       redraw() {
@@ -333,12 +335,12 @@ HStateTable.Renderer = (function() {
       redraw() {
          this.render();
       }
-      render() {
+      async render() {
+         this.renderHeader();
+         await this.renderRows();
          this.renderTopLeftControl();
          this.renderTopRightControl();
          this.renderTitleControl();
-         this.renderHeader();
-         this.renderRows();
          this.renderCreditControl();
          this.renderBottomLeftControl();
          this.renderBottomRightControl();

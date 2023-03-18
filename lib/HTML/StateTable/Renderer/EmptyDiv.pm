@@ -189,16 +189,13 @@ sub _serialise_properties {
    my $data = {
       'data-url'        => $uri->as_string,
       'enable-paging'   => json_bool $table->paging,
+      'max-page-size'   => $table->max_page_size,
       'no-count'        => json_bool $table->no_count,
       'no-data-message' => $table->empty_text,
       'page-size'       => $table->page_size,
-      'max-page-size'   => $table->max_page_size,
       'sort-column'     => $table->sort_column_name,
       'sort-desc'       => json_bool $table->sort_desc,
    };
-
-   if ($table->no_count) { $data->{'no-count'} = json_bool TRUE }
-   else { $data->{'total-records'} = $table->row_count }
 
    $data->{'verify-token'} = $table->context->verification_token
       if $table->has_context;

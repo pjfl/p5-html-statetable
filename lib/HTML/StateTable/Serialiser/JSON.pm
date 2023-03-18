@@ -1,6 +1,6 @@
 package HTML::StateTable::Serialiser::JSON;
 
-use HTML::StateTable::Constants qw( FALSE PIPE TRUE );
+use HTML::StateTable::Constants qw( FALSE NUL PIPE TRUE );
 use HTML::StateTable::Types     qw( Bool HashRef Object Str );
 use HTML::StateTable::Util      qw( json_bool );
 use Ref::Util                   qw( is_hashref );
@@ -38,7 +38,9 @@ around 'serialise' => sub {
    return $self->_serialise_meta($table)   if $self->serialise_meta;
 
    if ($self->serialise_as_hashref) {
-      $self->writer->('{"records":');
+      my $total = $table->no_count ? 0 : $table->row_count;
+
+      $self->writer->('{"row-count":' . $total . ',"records":');
    }
 
    $self->writer->('[');
