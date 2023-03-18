@@ -1,9 +1,9 @@
 use utf8; # -*- coding: utf-8; -*-
 package HTML::StateTable::Role::Filterable;
 
-use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE MAX_FILTER_ROWS
-                                    SERIALISE_TABLE_KEY SERIALISE_TABLE_VIEW
-                                    TRUE );
+use HTML::StateTable::Constants qw( COL_INFO_TYPE_ATTR EXCEPTION_CLASS FALSE
+                                    MAX_FILTER_ROWS SERIALISE_TABLE_KEY
+                                    SERIALISE_TABLE_VIEW TRUE );
 use HTML::StateTable::Types     qw( Str );
 use HTML::StateTable::Util      qw( json_bool throw );
 use Ref::Util                   qw( is_coderef );
@@ -123,8 +123,9 @@ sub filter_column_values {
       });
 
       my $info = $rs->result_source->column_info($column->filter_field);
+      my $attr = COL_INFO_TYPE_ATTR;
 
-      $order = 'text' eq lc $info->{data_type} ? \qq{lower($order)} : \$order;
+      $order = 'text' eq lc $info->{$attr} ? \qq{lower($order)} : \$order;
       $rs = $rs->search(undef, { order_by => $order });
    }
    else {

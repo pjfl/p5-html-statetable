@@ -173,14 +173,16 @@ sub foreign_sort ($$$) {
 }
 
 sub _get_column_info {
-   my ($source, $order_column) = @_;
+   my ($source, $name) = @_;
 
-   my $info = eval { $source->column_info($order_column) };
-   my $attr = COL_INFO_TYPE_ATTR;
+   my $info;
 
-   return { $attr => 'INTEGER' } unless $info;
+   try   { $info = $source->column_info($name) }
+   catch { warn "Foreign sort failed to get column info for ${name}: ${_}\n" };
 
-   return $info;
+   return $info if $info;
+
+   return { COL_INFO_TYPE_ATTR() => 'INTEGER' };
 }
 
 sub _get_order {

@@ -36,7 +36,7 @@ sub import {
          $meta = HTML::StateTable::Meta->new($attr);
          install_sub { as => $method, into => $target, code => sub {
             return $meta;
-         }, };
+         }};
       }
    }
    else {

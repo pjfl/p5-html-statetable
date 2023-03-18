@@ -32,6 +32,7 @@ subtype Iterable => as Object, where {
    && $_->can('next')
    && $_->can('pager')
    && $_->can('reset')
+   && $_->can('result_source')
    && $_->can('search')
 };
 
