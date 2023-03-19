@@ -65,7 +65,7 @@ div.state-table table th.active-sort-column {
 }
 div.state-table table th a.filter-control {
    color: gray; display: inline-block; font-weight: normal;
-   -webkit-transform: rotateX(180deg); transform: rotateX(180deg);
+/*   -webkit-transform: rotateX(180deg); transform: rotateX(180deg); */
 }
 div.state-table table th:last-child {
    border-right: 0px;
@@ -162,7 +162,7 @@ div.state-table .filter-values {
    padding-right: 3px; text-align: left;
 }
 div.state-table .filter-value:hover {
-   color: blue;
+   color: green;
 }
 div.state-table .grab-handle-cell {
    cursor: grab; text-align: center;

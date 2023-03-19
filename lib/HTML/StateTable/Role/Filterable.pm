@@ -14,7 +14,7 @@ has 'filterable_dialog_title' => is => 'ro', isa => Str,
    default => 'Filter';
 
 has 'filterable_label' => is => 'ro', isa => Str,
-   default => '⛢'; # ↣ ↓ ⛢ ∀
+   default => '∇'; # ↣ ↓ ⛢ ∀ ∇
 
 has 'filterable_message_label' => is => 'ro', isa => Str,
    default => 'Filtering on column';

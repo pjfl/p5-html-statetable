@@ -40,9 +40,11 @@ HStateTable.CellTrait.DateTime = (function() {
             const result = orig(attr);
             const datetime = new Date(result.value);
             const date = datetime.toLocaleDateString();
-            const options = { hour: "2-digit", minute: "2-digit" };
-            const time = datetime.toLocaleTimeString([], options);
-            result.value = date + ' ' + time;
+            if (date != 'Invalid Date') {
+               const options = { hour: "2-digit", minute: "2-digit" };
+               const time = datetime.toLocaleTimeString([], options);
+               result.value = date + ' ' + time;
+            }
             return result;
          }
       }

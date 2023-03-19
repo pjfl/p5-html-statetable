@@ -15,7 +15,7 @@ HStateTable.Renderer = (function() {
    class Cell {
       constructor(column, row) {
          this.column = column;
-         this.row = row;
+         this.row    = row;
       }
       getValue(attr) {
          const value = this.row.result[this.column.name];
@@ -35,28 +35,29 @@ HStateTable.Renderer = (function() {
    Object.assign(Cell.prototype, tableUtils.Modifiers); // Apply another role
    class Column {
       constructor(table, config) {
-         this.table = table;
-         this.rs = table.resultset;
-         this.cellTraits = config['cell_traits'] || [];
-         this.displayed = config['displayed'];
+         this.table        = table;
+         this.rs           = table.resultset;
+         this.cellTraits   = config['cell_traits'] || [];
+         this.displayed    = config['displayed'];
          this.downloadable = config['downloadable'];
-         this.filterable = config['filterable'];
+         this.filterable   = config['filterable'];
+         this.label        = config['label'];
+         this.name         = config['name'];
+         this.options      = config['options'] || {};
+         this.sortable     = config['sortable'];
+         this.title        = config['title'];
+         this.traits       = config['traits'] || [];
+         this.width        = config['width']
+            ? ('width:' + config['width'] + ';') : '';
          this.header;
-         this.label = config['label'];
-         this.name = config['name'];
-         this.options = config['options'] || {};
-         this.rowSelector = {};
-         this.sortable = config['sortable'];
-         this.sortDesc = this.rs.state('sortDesc');
-         this.title = config['title'];
-         this.traits = config['traits'] || [];
-         this.width = config['width'] ? ('width:' + config['width'] + ';') : '';
-         this.sortHandler = function(event) {
+         this.rowSelector  = {};
+         this.sortDesc     = this.rs.state('sortDesc');
+         this.sortHandler  = function(event) {
             event.preventDefault();
             this.sortDesc = !this.sortDesc;
-            this.rs.search(
-               { sortColumn: this.name, sortDesc: this.sortDesc }
-            ).redraw();
+            this.rs.search({
+               sortColumn: this.name, sortDesc: this.sortDesc
+            }).redraw();
          }.bind(this);
       }
       createCell(row) {
@@ -84,11 +85,11 @@ HStateTable.Renderer = (function() {
    Object.assign(Column.prototype, tableUtils.Modifiers);
    class Row {
       constructor(table, result, index) {
-         this.cells = [];
+         this.table   = table;
+         this.result  = result;
+         this.index   = index;
+         this.cells   = [];
          this.columns = table.columns;
-         this.index = index;
-         this.result = result;
-         this.table = table;
 
          for (const column of this.columns) {
             this.cells.push(column.createCell(this));
@@ -107,21 +108,21 @@ HStateTable.Renderer = (function() {
    Object.assign(Row.prototype, tableUtils.Modifiers);
    class State {
       constructor(table) {
-         this.page = 1;
-         this.pageSize = table.properties['page-size'];
+         this.page       = 1;
+         this.pageSize   = table.properties['page-size'];
          this.sortColumn = table.properties['sort-column'];
-         this.sortDesc = table.properties['sort-desc'];
+         this.sortDesc   = table.properties['sort-desc'];
       }
    }
    class Resultset {
       constructor(table) {
-         this.dataURL = table.properties['data-url'];
+         this.table        = table;
+         this.dataURL      = table.properties['data-url'];
          this.enablePaging = table.properties['enable-paging'];
-         this.index = 0;
-         this.maxPageSize = table.properties['max-page-size'] || null;
-         this.records = [];
-         this.rowCount = 0;
-         this.table = table;
+         this.maxPageSize  = table.properties['max-page-size'] || null;
+         this.index        = 0;
+         this.records      = [];
+         this.rowCount     = 0;
          this.parameterMap = {
             page: 'page',
             pageSize: 'page_size',
@@ -218,25 +219,26 @@ HStateTable.Renderer = (function() {
    };
    class Table {
       constructor(container, config) {
-         this.body = this.h.tbody();
+         this.container   = container;
+         this.columnConf  = config['columns'] || [];
+         this.name        = config['name'];
+         this.properties  = config['properties'];
+         this.roles       = config['roles'];
+         this.rowTraits   = config['row-traits'] || {};
+         this.body        = this.h.tbody();
          this.columnIndex = {};
-         this.columns = [];
-         this.container = container;
-         this.header = this.h.thead();
-         this.name = config['name'];
-         this.properties = config['properties'];
-         this.roles = config['roles'];
-         this.rows = [];
-         this.rowTraits = config['row-traits'] || {};
-         this.rowCount = 0;
-         this.table = this.h.table({ id: this.name });
-         this.resultset = new Resultset(this);
+         this.columns     = [];
+         this.header      = this.h.thead();
+         this.rows        = [];
+         this.rowCount    = 0;
+         this.table       = this.h.table({ id: this.name });
+         this.resultset   = new Resultset(this);
 
          this.table.append(this.header);
          this.table.append(this.body);
          this.applyRoles(true);
 
-         for (const columnConfig of (config['columns'] || [])) {
+         for (const columnConfig of this.columnConf) {
             const column = this.createColumn(columnConfig);
             this.columnIndex[column.name] = column;
             this.columns.push(column);
@@ -261,9 +263,10 @@ HStateTable.Renderer = (function() {
 
          this.creditControl = this.h.div({ className: 'credit-control'});
 
-         this.tableContainer = this.h.div(
-            { className: 'table-container' }, this.orderedContent()
-         );
+         this.tableContainer = this.h.div({
+            className: 'table-container'
+         }, this.orderedContent());
+
          this.appendContainer(container, [this.tableContainer]);
       }
       appendContainer(container, content) {

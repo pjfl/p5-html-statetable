@@ -23,7 +23,8 @@ has 'data' => is => 'lazy', isa => HashRef, default => sub { {} };
 
 has 'rows' => is => 'lazy', isa => ArrayRef, default => sub { [] };
 
-has 'table' => is => 'ro', isa => Table, required => TRUE, weak_ref => TRUE;
+has 'table' => is => 'ro', isa => Table, required => TRUE,
+   weak_ref => TRUE;
 
 has '_html' =>
    is      => 'ro',
