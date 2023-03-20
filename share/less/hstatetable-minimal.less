@@ -1,0 +1,208 @@
+#colours() {
+    active-column: bisque;
+    contrast: white;
+    control-text: gray;
+    header-border: gray;
+    link: green;
+    close-background: red;
+    message-background: khaki;
+    panel-background: ivory;
+    row-highlight: lightpink;
+    row-inactive: gainsboro;
+    row-odd: linen;
+    search-tag: gray;
+    title-background: linen;
+    title-border: orange;
+}
+.state-table {
+    display: inline-block;
+    .page-control li, .page-size-control li {
+        display: inline-block;
+    }
+    .download-link,
+    .filter-value,
+    .page-control a,
+    .page-size-control a,
+    .preference-link,
+    th a {
+        cursor: pointer;
+    }
+    .active-control-label {
+        color: #colours[control-text]; font-size: small;
+    }
+    .page-control,
+    .page-size-control {
+        color: #colours[control-text]; font-size: small; margin: 0;
+        padding-left: 0;
+    }
+    .page-control li {
+        cursor: pointer;
+    }
+    .page-control li.disabled {
+        cursor: text; text-decoration: line-through;
+    }
+    .page-control li:first-letter {
+        text-transform: capitalize;
+    }
+    .page-size-control li.selected-page-size {
+        text-decoration: underline;
+    }
+    .status-messages {
+        background: #colours[message-background]; border-radius: 3px;
+        margin-top: 5px; padding: 3px 5px; text-align: center;
+    }
+    .status-messages a {
+        cursor: pointer; margin-left: 5px; text-decoration: underline;
+    }
+    .active-control,
+    .bottom-left-control,
+    .bottom-right-control,
+    .search-box,
+    .top-left-control,
+    .top-right-control {
+        display: inline-block;
+    }
+    .bottom-right-control,
+    .top-right-control {
+        float: right; padding-top: 2px; text-align: right;
+    }
+    .top-control {
+        position: relative;
+    }
+    table {
+        border-collapse: collapse; display: block; margin-bottom: 5px;
+        margin-top: 5px; position: relative; width: 100%;
+    }
+    table th {
+        background: #colours[panel-background]; border-right: 1px solid;
+        border-color: #colours[header-border]; font-family: sans-serif;
+        font-weight: normal; padding-left: 5px; padding-right: 5px;
+    }
+    table th.active-sort-column {
+        background: #colours[active-column];
+    }
+    table th a.filter-control {
+        color: #colours[control-text]; display: inline-block;
+        font-weight: normal;
+        /*   -webkit-transform: rotateX(180deg); transform: rotateX(180deg); */
+    }
+    table th:last-child {
+        border-right: 0px;
+    }
+    table tr.odd {
+        background: #colours[row-odd];
+    }
+    table tr.highlight {
+        background: #colours[row-highlight];
+    }
+    table tr.inactive {
+        background: #colours[row-inactive];
+    }
+    table td {
+        padding-left: 5px; padding-right: 5px;
+    }
+    table td a {
+        color: #colours[link];
+    }
+    table td a:link, table td a:visited {
+        text-decoration: none;
+    }
+    table td a:active, table td a:hover {
+        font-style: italic;
+    }
+    table td.number {
+        text-align: right;
+    }
+    td.checkbox {
+        text-align: center;
+    }
+    .cell-content-append {
+        display: block; list-style: none; margin-top: 0;
+        margin-bottom: 0; padding-left: 3px; padding-right: 3px;
+    }
+    .cell-tag {
+        display: inline-block; margin-right: 5px;
+        padding-left: 3px; padding-right: 3px;
+    }
+    .cell-tag .tag-arrow-left {
+        display: inline-block; border-top: 8px solid transparent;
+        border-bottom: 8px solid transparent; border-right: 8px solid;
+        border-right-color: #colours[search-tag]; height: 0;
+        vertical-align: middle; width: 0;
+    }
+    .cell-tag .tag-value {
+        background: #colours[search-tag];
+        border-bottom-right-radius: 3px; border-top-right-radius: 3px;
+        color: #colours[contrast]; cursor: pointer; display: inline-block;
+        font-size: x-small; padding-bottom: 1px; padding-left: 3px;
+        padding-right: 3px; padding-top: 2px;
+        vertical-align: middle;
+    }
+    .filter-dialog,
+    .preference-dialog {
+        background: #colours[panel-background]; border: 1px solid;
+        border-radius: 3px; position: absolute; top: 25px; z-index: 10;
+    }
+    .filter-values {
+        height: 100px; overflow: auto;
+    }
+    .preference-dialog {
+        right: 0px;
+    }
+    table.preference-columns {
+        border: 2px transparent solid; user-select: none;
+    }
+    .dropzone.dragover {
+        border: 2px solid; border-color: #colours[link];
+    }
+    .dialog-buttons {
+        text-align: right;
+    }
+    .dialog-button-download {
+        float: left;
+    }
+    .dialog-close {
+        background: #colours[close-background]; border-radius: 3px;
+        color: #colours[contrast]; cursor: pointer; float: right;
+        font-family: sans-serif; font-size: smaller; font-weight: bold;
+        padding-left: 3px; padding-right: 3px;
+    }
+    .dialog-form {
+        padding-left: 3px; padding-right: 3px;
+    }
+    .dialog-input {
+        padding-bottom: 3px; padding-top: 3px;
+    }
+    .dialog-input button {
+        margin-right: 3px;
+    }
+    .dialog-title {
+        background: #colours[title-background];
+        border-bottom: 1px solid; border-color: #colours[title-border];
+        font-weight: bold; min-width: 80px; padding: 3px; text-align: left;
+    }
+    .filter-values {
+        font-size: smaller; font-weight: normal; list-style: none;
+        margin-top: 3px; margin-bottom: 3px; padding-left: 3px;
+        padding-right: 3px; text-align: left;
+    }
+    .filter-value:hover {
+        color: #colours[link];
+    }
+    .grab-handle-cell {
+        cursor: grab; text-align: center;
+    }
+    .grab-handle-cell:hover {
+        background: #colours[link];
+    }
+    .table-container.inline {
+        padding-top: 15px;
+    }
+    .chart-container.inline,
+    .table-container.inline {
+        display: inline-block; vertical-align: top;
+    }
+    .highcharts-figure {
+        margin-bottom: 10px; margin-left: 0; margin-right: 0; margin-top: 0;
+    }
+}

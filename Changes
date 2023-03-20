@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Switched to using less
           - Changed filterable control character
           - Fixes table row count usage
           - Warn of errors calling column info in foreign sort
