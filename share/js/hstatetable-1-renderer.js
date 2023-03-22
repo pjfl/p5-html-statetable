@@ -233,6 +233,7 @@ HStateTable.Renderer = (function() {
          this.rowCount    = 0;
          this.table       = this.h.table({ id: this.name });
          this.resultset   = new Resultset(this);
+         this.topContent  = false;
 
          this.table.append(this.header);
          this.table.append(this.body);
@@ -247,7 +248,9 @@ HStateTable.Renderer = (function() {
          this.applyRoles(false);
          this.titleControl = this.h.div({ className: 'title-control' });
 
-         this.topControl = this.h.div({ className: 'top-control' });
+         let className = 'top-control';
+         if (this.topContent) className += ' visible';
+         this.topControl = this.h.div({ className: className });
          this.topLeftControl = this.h.div({ className: 'top-left-control' });
          this.topControl.append(this.topLeftControl);
          this.topRightControl = this.h.div({ className: 'top-right-control' });

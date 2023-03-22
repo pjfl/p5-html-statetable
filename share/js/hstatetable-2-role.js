@@ -18,6 +18,7 @@ HStateTable.Role.Active = (function() {
             this.showInactive = !this.showInactive;
             this.rs.search({ showInactive: this.showInactive }).redraw();
          }.bind(this);
+         if (this.controlLocation.match(/Top/)) this.table.topContent = true;
          const name = 'render' + this.controlLocation + 'Control';
          methods[name] = function(orig) {
             const container = orig();
@@ -514,6 +515,7 @@ HStateTable.Role.Configurable = (function() {
          this.dialogTitle = config['dialog-title'] || '';
          this.label = config['label'] || 'V';
          this.location = config['location'];
+         this.controlLocation = this.location['control'];
          this.rs = table.resultset;
          this.table = table;
          this.url = new URL(config['url']);
@@ -524,7 +526,8 @@ HStateTable.Role.Configurable = (function() {
             else this.preference.dialog.remove();
          }.bind(this);
          this.preference = new Preference(table, this);
-         const name = 'render' + this.location['control'] + 'Control';
+         if (this.controlLocation.match(/Top/)) this.table.topContent = true;
+         const name = 'render' + this.controlLocation + 'Control';
          methods[name] = function(orig) {
             const container = orig();
             this.configControl.render(container);
@@ -599,6 +602,7 @@ HStateTable.Role.Downloadable = (function() {
          this.filename = config['filename'];
          this.label = config['label'];
          this.location = config['location'];
+         this.controlLocation = this.location['control'];
          this.method = config['method'];
          this.rs = table.resultset;
          this.table = table;
@@ -610,7 +614,8 @@ HStateTable.Role.Downloadable = (function() {
             this.downloader.handler(url, this.filename);
             this.rs.reset();
          }.bind(this);
-         const name = 'render' + this.location['control'] + 'Control';
+         if (this.controlLocation.match(/Top/)) this.table.topContent = true;
+         const name = 'render' + this.controlLocation + 'Control';
          methods[name] = function(orig) {
             const container = orig();
             this.downloadControl.render(container);
@@ -767,6 +772,7 @@ HStateTable.Role.Form = (function() {
             this.form = this.h.form({ className: 'table-form' }, orig());
             return this.form;
          }.bind(this);
+         if (this.control.match(/Top/)) this.table.topContent = true;
          methods[this.control] = function(orig) {
             const container = orig();
             this.render(container);
@@ -1048,15 +1054,15 @@ HStateTable.Role.Searchable = (function() {
    class SearchControl {
       constructor(table, methods) {
          const config = table.roles['searchable'];
-         this.control;
+         this.table = table;
          this.location = config['location'];
          this.messageAll = config['message-all'];
          this.messageLabel = config['message-label'];
-         this.messages;
          this.placeholder = config['placeholder'];
          this.removeLabel = config['remove-label'];
+         this.control;
+         this.messages;
          this.searchableColumns = [];
-         this.table = table;
          this.rs = table.resultset;
          this.rs.extendState('searchColumn');
          this.rs.nameMap('searchColumn', 'search_column');
@@ -1067,6 +1073,7 @@ HStateTable.Role.Searchable = (function() {
             if (column) this.searchableColumns.push(column);
          }
          const search = 'render' + this.location['control'] + 'Control';
+         if (search.match(/Top/)) this.table.topContent = true;
          methods[search] = function(orig) {
             const container = orig();
             this.renderSearch(container);
@@ -1227,7 +1234,9 @@ HStateTable.Role.Tagable = (function() {
                this.h.li({ className: 'cell-tag' }, [arrow, value])
             );
          }
-         methods['render' + this.location + 'Control'] = function(orig) {
+         const location = 'render' + this.location + 'Control';
+         if (location.match(/Top/)) this.table.topContent = true;
+         methods[location] = function(orig) {
             const container = orig();
             const control = this.h.div({ className: 'tag-control' }, content);
             this.control = this.display(container, 'control', control);

@@ -15,7 +15,7 @@
     title-border: orange;
 }
 .state-table {
-    display: inline-block;
+    display: inline-block; text-align: left;
     .page-control li, .page-size-control li {
         display: inline-block;
     }
@@ -32,8 +32,8 @@
     }
     .page-control,
     .page-size-control {
-        color: #colours[control-text]; font-size: small; margin: 0;
-        padding-left: 0;
+        color: #colours[control-text]; font-family: sans-serif;
+        font-size: small; margin: 0; padding-left: 0;
     }
     .page-control li {
         cursor: pointer;
@@ -67,7 +67,10 @@
         float: right; padding-top: 2px; text-align: right;
     }
     .top-control {
-        position: relative;
+        display: none; position: relative;
+    }
+    .top-control.visible {
+        display: block;
     }
     table {
         border-collapse: collapse; display: block; margin-bottom: 5px;
@@ -195,14 +198,20 @@
     .grab-handle-cell:hover {
         background: #colours[link];
     }
-    .table-container.inline {
-        padding-top: 15px;
-    }
     .chart-container.inline,
     .table-container.inline {
         display: inline-block; vertical-align: top;
     }
+    .table-container.inline {
+        padding-top: 10px;
+    }
+    .chart-container.inline {
+        padding-top: 3px;
+    }
     .highcharts-figure {
-        margin-bottom: 10px; margin-left: 0; margin-right: 0; margin-top: 0;
+        margin: 0;
+    }
+    .highcharts-legend.highcharts-no-tooltip {
+        display: none;
     }
 }
