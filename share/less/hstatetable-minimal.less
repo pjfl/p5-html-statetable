@@ -87,7 +87,6 @@
     table th a.filter-control {
         color: #colours[control-text]; display: inline-block;
         font-weight: normal;
-        /*   -webkit-transform: rotateX(180deg); transform: rotateX(180deg); */
     }
     table th:last-child {
         border-right: 0px;
@@ -165,10 +164,15 @@
         float: left;
     }
     .dialog-close {
+        align-items: center;
         background: #colours[close-background]; border-radius: 3px;
-        color: #colours[contrast]; cursor: pointer; float: right;
+        box-shadow: 3px 3px 3px gray; color: #colours[contrast];
+        cursor: pointer; display: flex; float: right;
         font-family: sans-serif; font-size: smaller; font-weight: bold;
-        padding-left: 3px; padding-right: 3px;
+        height: 100%; padding-left: 3px; padding-right: 3px;
+    }
+    .dialog-close:hover {
+        filter: sepia(66%);
     }
     .dialog-form {
         padding-left: 3px; padding-right: 3px;

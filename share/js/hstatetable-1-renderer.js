@@ -120,9 +120,9 @@ HStateTable.Renderer = (function() {
          this.dataURL      = table.properties['data-url'];
          this.enablePaging = table.properties['enable-paging'];
          this.maxPageSize  = table.properties['max-page-size'] || null;
+         this.rowCount     = table.properties['row-count'];
          this.index        = 0;
          this.records      = [];
-         this.rowCount     = 0;
          this.parameterMap = {
             page: 'page',
             pageSize: 'page_size',

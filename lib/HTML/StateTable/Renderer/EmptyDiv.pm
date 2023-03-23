@@ -193,9 +193,12 @@ sub _serialise_properties {
       'no-count'        => json_bool $table->no_count,
       'no-data-message' => $table->empty_text,
       'page-size'       => $table->page_size,
+      'row-count'       => 0,
       'sort-column'     => $table->sort_column_name,
       'sort-desc'       => json_bool $table->sort_desc,
    };
+
+   $data->{'row-count'} = $table->row_count unless $table->no_count;
 
    $data->{'verify-token'} = $table->context->verification_token
       if $table->has_context;
