@@ -69,6 +69,7 @@ HStateTable.Role.Chartable = (function() {
          this.columnNames = config['columns'] || [];
          this.chartConfig = config['config'];
          this.figureLocation = config['figure']['location'];
+         this.chartable;
          this.previousState;
          this.series = config['series'] || {};
          this.stateAttr = config['state-attr'] || [];
@@ -82,27 +83,24 @@ HStateTable.Role.Chartable = (function() {
                const tableContainer = this.table.tableContainer;
                this.appendValue(tableContainer, 'className', 'inline');
             }
+            this.chartable = this.h.div({ id: 'chartable' });
             const display = this.h.div(attr, this.h.figure(
-               { className: 'highcharts-figure' },
-               this.h.div({ id: 'chartable' })
+               { className: 'highcharts-figure' }, this.chartable
             ));
             if (location == 'Top' || location == 'Left')
                content.unshift(display);
             else content.push(display);
             orig(container, content);
          }.bind(this);
-         methods['renderRows'] = function(orig){ this.render(orig) }.bind(this);
+         methods['render'] = function(orig){ this.render(orig) }.bind(this);
       }
       async render(orig) {
-         await orig();
+         orig();
          const state = this.rs.getState(this.stateAttr);
          if (!this.previousState) this.previousState = state;
          else if (!this.rs.stateChanged(this.previousState)) return;
          this.previousState = state;
-         const enablePaging = this.rs.enablePaging;
-         this.rs.enablePaging = false;
-         const url = this.table.prepareURL();
-         this.rs.enablePaging = enablePaging;
+         const url = this.table.prepareURL({ disablePaging: true });
          const response = await this.rs.fetchJSON(url);
          const results = response['records'];
          const series = [];
@@ -117,7 +115,7 @@ HStateTable.Role.Chartable = (function() {
          }
          const config = this.chartConfig;
          config['series'] = series;
-         Highcharts.chart('chartable', config);
+         Highcharts.chart(this.chartable, config);
       }
    }
    Object.assign(Chartable.prototype, HStateTable.Util.Markup);

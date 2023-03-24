@@ -49,10 +49,17 @@
     }
     .status-messages {
         background: #colours[message-background]; border-radius: 3px;
-        margin-top: 5px; padding: 3px 5px; text-align: center;
+        font-family: sans-serif; margin-top: 5px; padding: 3px 5px;
+        text-align: center;
     }
     .status-messages a {
-        cursor: pointer; margin-left: 5px; text-decoration: underline;
+        color: #colours[link]; cursor: pointer; margin-left: 5px;
+    }
+    .status-messages a:hover {
+        font-style: italic;
+    }
+    .status-messages strong {
+        font-family: serif;
     }
     .active-control,
     .bottom-left-control,

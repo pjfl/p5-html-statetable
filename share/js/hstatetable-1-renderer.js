@@ -7,11 +7,11 @@ if (!HStateTable.Role) HStateTable.Role = {};
 HStateTable.Renderer = (function() {
    const dsName       = 'tableConfig';
    const triggerClass = 'state-table';
-   const cellTraits   = HStateTable.CellTrait;
-   const columnTraits = HStateTable.ColumnTrait;
-   const rowTraits    = HStateTable.RowTrait;
-   const tableRoles   = HStateTable.Role;
-   const tableUtils   = HStateTable.Util;
+   const CellTraits   = HStateTable.CellTrait;
+   const ColumnTraits = HStateTable.ColumnTrait;
+   const RowTraits    = HStateTable.RowTrait;
+   const TableRoles   = HStateTable.Role;
+   const TableUtils   = HStateTable.Util;
    class Cell {
       constructor(column, row) {
          this.column = column;
@@ -31,8 +31,8 @@ HStateTable.Renderer = (function() {
          return this.h.td(attr, [link, append]);
       }
    };
-   Object.assign(Cell.prototype, tableUtils.Markup); // Apply role
-   Object.assign(Cell.prototype, tableUtils.Modifiers); // Apply another role
+   Object.assign(Cell.prototype, TableUtils.Markup); // Apply role
+   Object.assign(Cell.prototype, TableUtils.Modifiers); // Apply another role
    class Column {
       constructor(table, config) {
          this.table        = table;
@@ -62,7 +62,7 @@ HStateTable.Renderer = (function() {
       }
       createCell(row) {
          const cell = new Cell(this, row);
-         this.applyTraits(cell, cellTraits, this.cellTraits);
+         this.applyTraits(cell, CellTraits, this.cellTraits);
          return cell;
       }
       render() {
@@ -81,8 +81,8 @@ HStateTable.Renderer = (function() {
          return this.header;
       }
    };
-   Object.assign(Column.prototype, tableUtils.Markup);
-   Object.assign(Column.prototype, tableUtils.Modifiers);
+   Object.assign(Column.prototype, TableUtils.Markup);
+   Object.assign(Column.prototype, TableUtils.Modifiers);
    class Row {
       constructor(table, result, index) {
          this.table   = table;
@@ -104,8 +104,8 @@ HStateTable.Renderer = (function() {
          return row;
       }
    };
-   Object.assign(Row.prototype, tableUtils.Markup);
-   Object.assign(Row.prototype, tableUtils.Modifiers);
+   Object.assign(Row.prototype, TableUtils.Markup);
+   Object.assign(Row.prototype, TableUtils.Modifiers);
    class State {
       constructor(table) {
          this.page       = 1;
@@ -287,7 +287,7 @@ HStateTable.Renderer = (function() {
             if (before && !apply['before']) continue;
             if (!before && apply['before']) continue;
             const name = config['role-name'] || this.ucfirst(roleName);
-            this.applyTraits(this, tableRoles, [name]);
+            this.applyTraits(this, TableRoles, [name]);
          }
       }
       createColumn(config) {
@@ -297,12 +297,12 @@ HStateTable.Renderer = (function() {
          return await this.resultset.next();
       }
       async nextRow(index) {
-         const result = await this.nextResult()
+         const result = await this.nextResult();
          if (!result) return undefined;
          const row = new Row(this, result, index);
          for (const [traitName, config] of Object.entries(this.rowTraits)) {
             const name = config['role-name'] || this.ucfirst(traitName);
-            this.applyTraits(row, rowTraits, [name]);
+            this.applyTraits(row, RowTraits, [name]);
          }
          return row;
       }
@@ -318,7 +318,7 @@ HStateTable.Renderer = (function() {
          const rs = this.resultset;
          const url = new URL(rs.dataURL);
          const params = url.searchParams;
-         if (rs.enablePaging) {
+         if (rs.enablePaging && !args.disablePaging) {
             params.set(rs.nameMap('page'), rs.state('page'));
             const max = rs.maxPageSize;
             const pageSize = max && rs.state('pageSize') > max
@@ -404,18 +404,31 @@ HStateTable.Renderer = (function() {
          return this.topRightControl;
       }
    };
-   Object.assign(Table.prototype, tableUtils.Markup);
-   Object.assign(Table.prototype, tableUtils.Modifiers);
+   Object.assign(Table.prototype, TableUtils.Markup);
+   Object.assign(Table.prototype, TableUtils.Modifiers);
    class Manager {
       constructor() {
+         this._isConstructing = true;
+         this._isRendering = false;
          this.tables = {};
       }
-      createTables() {
-         for (const el of document.getElementsByClassName(triggerClass)) {
-            const table = new Table(el, JSON.parse(el.dataset[dsName]));
-            this.tables[table.name] = table;
-            table.render();
-         }
+      async createTables() {
+         await this.scan(document);
+         this._isConstructing = false;
+      }
+      isConstructing() {
+         return new Promise(function(resolve) {
+            setTimeout(() => {
+               if (!this._isConstructing) resolve(false);
+            }, 250);
+         }.bind(this));
+      }
+      isRendering() {
+         return new Promise(function(resolve) {
+            setTimeout(() => {
+               if (!this._isRendering) resolve(false);
+            }, 250);
+         }.bind(this));
       }
       onReady(callback) {
          if (document.readyState != 'loading') callback();
@@ -425,7 +438,21 @@ HStateTable.Renderer = (function() {
             if (document.readyState == 'complete') callback();
          });
       }
+      async scan(content) {
+         this._isRendering = true;
+         const promises = [];
+         for (const el of content.getElementsByClassName(triggerClass)) {
+            const table = new Table(el, JSON.parse(el.dataset[dsName]));
+            this.tables[table.name] = table;
+            promises.push(table.render());
+         }
+         await Promise.all(promises);
+         this._isRendering = false;
+      }
    }
    const manager = new Manager();
-   manager.onReady(function() { manager.createTables(); });
+   manager.onReady(function() { this.createTables(); }.bind(manager));
+   return {
+      manager: manager
+   };
 })();
