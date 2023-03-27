@@ -226,7 +226,7 @@ has 'sql' =>
 
 =item value
 
-A lazy code reference, or scalar reference, or string it defalts to the column
+A lazy code reference, or scalar reference, or string it defaults to the column
 name. The value displayed in this column header
 
 =cut
@@ -251,7 +251,7 @@ has '_boolean_options' =>
    isa         => HashRef,
    handles_via => 'Hash',
    handles     => { is_boolean_option => 'exists' },
-   default     => sub { { checkall => TRUE } };
+   default     => sub { { checkall => TRUE, notraits => TRUE } };
 
 =back
 

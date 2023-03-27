@@ -7,6 +7,7 @@
     close-background: red;
     message-background: khaki;
     panel-background: ivory;
+    row-even: ivory;
     row-highlight: lightpink;
     row-inactive: gainsboro;
     row-odd: linen;
@@ -97,6 +98,9 @@
     }
     table th:last-child {
         border-right: 0px;
+    }
+    table tr.even {
+        background: #colours[row-even];
     }
     table tr.odd {
         background: #colours[row-odd];

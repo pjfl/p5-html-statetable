@@ -26,8 +26,16 @@ HStateTable.Renderer = (function() {
          const attr = {};
          const content = this.getValue(attr);
          const append = content.append;
-         if (!content.link) return this.h.td(attr, [content.value, append]);
-         const link = this.h.a({ href: content.link }, content.value);
+         const value = content.value;
+         if (typeof value == 'string'
+             && value.match(new RegExp(`class="${triggerClass}"`))) {
+            const cell = this.h.td(attr);
+            cell.innerHTML = value;
+            HStateTable.Renderer.manager.scan(cell);
+            return cell;
+         }
+         if (!content.link) return this.h.td(attr, [value, append]);
+         const link = this.h.a({ href: content.link }, value);
          return this.h.td(attr, [link, append]);
       }
    };
@@ -63,6 +71,10 @@ HStateTable.Renderer = (function() {
       createCell(row) {
          const cell = new Cell(this, row);
          this.applyTraits(cell, CellTraits, this.cellTraits);
+         const result = row.result[this.name];
+         if (result.cellTraits && !this.options['notraits']) {
+            this.applyTraits(cell, CellTraits, result.cellTraits);
+         }
          return cell;
       }
       render() {
@@ -409,7 +421,7 @@ HStateTable.Renderer = (function() {
    class Manager {
       constructor() {
          this._isConstructing = true;
-         this._isRendering = false;
+         this._isRendering = 0;
          this.tables = {};
       }
       async createTables() {
@@ -426,7 +438,7 @@ HStateTable.Renderer = (function() {
       isRendering() {
          return new Promise(function(resolve) {
             setTimeout(() => {
-               if (!this._isRendering) resolve(false);
+               if (this._isRendering == 0) resolve(false);
             }, 250);
          }.bind(this));
       }
@@ -439,7 +451,7 @@ HStateTable.Renderer = (function() {
          });
       }
       async scan(content) {
-         this._isRendering = true;
+         this._isRendering += 1;
          const promises = [];
          for (const el of content.getElementsByClassName(triggerClass)) {
             const table = new Table(el, JSON.parse(el.dataset[dsName]));
@@ -447,7 +459,7 @@ HStateTable.Renderer = (function() {
             promises.push(table.render());
          }
          await Promise.all(promises);
-         this._isRendering = false;
+         this._isRendering -= 1;
       }
    }
    const manager = new Manager();

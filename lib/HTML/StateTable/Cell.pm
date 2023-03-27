@@ -1,7 +1,7 @@
 package HTML::StateTable::Cell;
 
 use HTML::StateTable::Constants qw( FALSE NUL TRUE );
-use HTML::StateTable::Types     qw( Bool Column Date Row Str Undef );
+use HTML::StateTable::Types     qw( Bool Column Date Object Row Str Undef );
 use Ref::Util                   qw( is_coderef is_scalarref );
 use Type::Utils                 qw( class_type );
 use Moo;
@@ -50,12 +50,11 @@ has 'filtered_value' =>
       my $self  = shift;
       my $value = $self->unfiltered_value;
 
-      if ($self->column->has_filter){
-         $value = $self->column->filter->($value, $self);
-      }
+      $value = $self->column->filter->($value, $self)
+         if $self->column->has_filter;
 
       return unless defined $value;
-
+      return $value->render if $value->can('render');
       return "${value}";
    };
 
@@ -109,7 +108,7 @@ The value of this cell object
 
 has 'value' =>
    is      => 'lazy',
-   isa     => Date|Str|Undef,
+   isa     => Date|Object|Str|Undef,
    reader  => 'unfiltered_value',
    builder => sub {
       my $self  = shift;
@@ -185,6 +184,11 @@ sub serialise_value {
    my $self  = shift;
    my $value = $self->value;
    my $res   = { value => $value };
+
+   if ($self->result->can('cell_traits')) {
+      $res->{cellTraits} = $self->result->cell_traits
+         if $self->result->cell_traits->[0];
+   }
 
    $self->serialise_value2hash($value, $res);
 

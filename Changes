@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Adds support for the object view table
           - Chartable missing div fix
           - Row count fix
           - Weakened context reference. Nasty hack in renderer for top control

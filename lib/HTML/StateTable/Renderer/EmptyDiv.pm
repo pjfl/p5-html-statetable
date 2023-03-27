@@ -1,7 +1,7 @@
 package HTML::StateTable::Renderer::EmptyDiv;
 
-use HTML::StateTable::Constants qw( FALSE QUERY_KEY SERIALISE_COLUMN_ATTR
-                                    TRIGGER_CLASS TRUE );
+use HTML::StateTable::Constants qw( FALSE NUL QUERY_KEY SERIALISE_COLUMN_ATTR
+                                    SPC TRIGGER_CLASS TRUE );
 use HTML::StateTable::Types     qw( HashRef NonEmptySimpleStr );
 use HTML::StateTable::Util      qw( json_bool );
 use Ref::Util                   qw( is_coderef is_hashref );
@@ -37,10 +37,12 @@ Defines no attributes
 has '+container_tag' => default => 'div';
 
 has '+data' => default => sub {
-   my $self = shift;
+   my $self  = shift;
+   my $table = $self->table;
+   my $class = $table->can('table_class') ? SPC . $table->table_class : NUL;
 
    return {
-      'class' => TRIGGER_CLASS,
+      'class' => TRIGGER_CLASS . $class,
       'data-table-config' => $self->_json->encode({
          columns    => $self->_serialise_columns,
          name       => $self->table->name,
