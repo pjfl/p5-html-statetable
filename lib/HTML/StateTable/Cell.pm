@@ -3,6 +3,7 @@ package HTML::StateTable::Cell;
 use HTML::StateTable::Constants qw( FALSE NUL TRUE );
 use HTML::StateTable::Types     qw( Bool Column Date Object Row Str Undef );
 use Ref::Util                   qw( is_coderef is_scalarref );
+use Scalar::Util                qw( blessed );
 use Type::Utils                 qw( class_type );
 use Moo;
 
@@ -54,7 +55,14 @@ has 'filtered_value' =>
          if $self->column->has_filter;
 
       return unless defined $value;
-      return $value->render if $value->can('render');
+
+      if (blessed $value) {
+         return $value->render if $value->can('render');
+
+         $value->set_time_zone($self->table->context->time_zone)
+            if $value->isa('DateTime') && $self->table->has_context;
+      }
+
       return "${value}";
    };
 

@@ -21,7 +21,10 @@ has '_chartable_configs' => is => 'lazy', isa => HashRef, default => sub {
 
    return {
       bar => {
-         chart    => { type  => 'bar' },
+         chart    => {
+            type  => 'bar',
+            backgroundColor => 'transparent',
+         },
          title    => { align => 'left', text => $self->chartable_title_text },
          subtitle => { align => 'left', text => $self->chartable_subtitle_text},
          xAxis    => { title => { text => $self->chartable_xaxis_title } },
@@ -48,7 +51,10 @@ has '_chartable_configs' => is => 'lazy', isa => HashRef, default => sub {
          credits     => { enabled => json_bool FALSE },
       },
       line => {
-         chart    => { type  => 'line' },
+         chart    => {
+            type  => 'line',
+            backgroundColor => 'transparent',
+         },
          title    => { align => 'left', text => $self->chartable_title_text },
          subtitle => { align => 'left', text => $self->chartable_subtitle_text},
          yAxis    => { title => { text => $self->chartable_yaxis_title } },
@@ -74,6 +80,7 @@ has '_chartable_configs' => is => 'lazy', isa => HashRef, default => sub {
       pie => {
          chart => {
             type => 'pie',
+            backgroundColor     => 'transparent',
             plotBackgroundColor => NUL,
             plotBorderWidth     => NUL,
             plotShadow          => json_bool FALSE,

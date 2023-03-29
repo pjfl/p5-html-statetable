@@ -1,3 +1,18 @@
+// Package HStateTable.CellTrait.Bool
+HStateTable.CellTrait.Bool = (function() {
+   return {
+      around: {
+         getValue: function(orig, attr) {
+            const result = orig(attr);
+            if (!result.value || result.value.length == 0 || result.value == 0){
+               result.value = 'No';
+            }
+            else result.value = 'Yes';
+            return result;
+         }
+      }
+   };
+})();
 // Package HStateTable.CellTrait.Checkbox
 HStateTable.CellTrait.Checkbox = (function() {
    return {

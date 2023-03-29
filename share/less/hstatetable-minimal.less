@@ -12,6 +12,7 @@
     row-inactive: gainsboro;
     row-odd: linen;
     search-tag: gray;
+    text: black;
     title-background: linen;
     title-border: orange;
 }
@@ -84,21 +85,6 @@
         border-collapse: collapse; display: block; margin-bottom: 5px;
         margin-top: 5px; position: relative; width: 100%;
     }
-    table th {
-        background: #colours[panel-background]; border-right: 1px solid;
-        border-color: #colours[header-border]; font-family: sans-serif;
-        font-weight: normal; padding-left: 5px; padding-right: 5px;
-    }
-    table th.active-sort-column {
-        background: #colours[active-column];
-    }
-    table th a.filter-control {
-        color: #colours[control-text]; display: inline-block;
-        font-weight: normal;
-    }
-    table th:last-child {
-        border-right: 0px;
-    }
     table tr.even {
         background: #colours[row-even];
     }
@@ -125,6 +111,24 @@
     }
     table td.number {
         text-align: right;
+    }
+    table th {
+        background: #colours[panel-background]; border-right: 1px solid;
+        border-color: #colours[header-border]; font-family: sans-serif;
+        font-weight: normal; padding-left: 5px; padding-right: 5px;
+    }
+    table th.active-sort-column {
+        background: #colours[active-column];
+    }
+    table th a.filter-control {
+        color: #colours[control-text]; display: inline-block;
+        font-weight: normal;
+    }
+    table th:last-child {
+        border-right: 0px;
+    }
+    table th a {
+        color: #colours[text];
     }
     td.checkbox {
         text-align: center;
