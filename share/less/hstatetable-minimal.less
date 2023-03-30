@@ -3,7 +3,7 @@
     contrast: white;
     control-text: gray;
     header-border: gray;
-    link: green;
+    link: seagreen;
     close-background: red;
     message-background: khaki;
     panel-background: ivory;
@@ -49,8 +49,11 @@
     .page-size-control li.selected-page-size {
         text-decoration: underline;
     }
+    .search-box input.search-field {
+        border-radius: 5px;
+    }
     .status-messages {
-        background: #colours[message-background]; border-radius: 3px;
+        background: #colours[message-background]; border-radius: 5px;
         font-family: sans-serif; margin-top: 5px; padding: 3px 5px;
         text-align: center;
     }
@@ -182,12 +185,12 @@
         align-items: center;
         background: #colours[close-background]; border-radius: 3px;
         box-shadow: 3px 3px 3px gray; color: #colours[contrast];
-        cursor: pointer; display: flex; float: right;
+        cursor: pointer; display: flex; filter: sepia(66%); float: right;
         font-family: sans-serif; font-size: smaller; font-weight: bold;
         height: 100%; padding-left: 3px; padding-right: 3px;
     }
     .dialog-close:hover {
-        filter: sepia(66%);
+        filter: sepia(0%);
     }
     .dialog-form {
         padding-left: 3px; padding-right: 3px;

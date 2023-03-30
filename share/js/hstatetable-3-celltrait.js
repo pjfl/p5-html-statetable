@@ -1,13 +1,21 @@
+// -*- coding: utf-8; -*-
 // Package HStateTable.CellTrait.Bool
 HStateTable.CellTrait.Bool = (function() {
+   let bool_false = '✗';
+   let bool_true  = '✓';
    return {
+      initialise: function() {
+         const options = this.column.options;
+         if (options.bool_false) bool_false = options.bool_false;
+         if (options.bool_true)  bool_true  = options.bool_true;
+      },
       around: {
          getValue: function(orig, attr) {
             const result = orig(attr);
             if (!result.value || result.value.length == 0 || result.value == 0){
-               result.value = 'No';
+               result.value = bool_false;
             }
-            else result.value = 'Yes';
+            else result.value = bool_true;
             return result;
          }
       }
