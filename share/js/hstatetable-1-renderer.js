@@ -226,6 +226,9 @@ HStateTable.Renderer = (function() {
          if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
          }
+         if (response.headers.get('location')) {
+            return response.headers.get('location');
+         }
          return await response.json();
       }
    };

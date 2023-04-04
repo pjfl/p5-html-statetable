@@ -21,6 +21,8 @@ has 'form_control_location' => is => 'ro', isa => Str,
 has 'form_hidden' => is => 'ro', isa => ArrayRef,
    default => sub { [] };
 
+has 'form_messages' => is => 'ro', isa => Str, default => NUL;
+
 after 'BUILD' => sub {
    my $self = shift;
 
@@ -38,6 +40,7 @@ sub serialise_form {
       confirm  => $self->form_confirm_message,
       hidden   => $self->form_hidden,
       location => { control => $self->form_control_location },
+      messages => $self->form_messages,
       url      => $self->context->uri_for_action($self->form_action, [$name]),
    };
 }

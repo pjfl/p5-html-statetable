@@ -56,6 +56,7 @@ HStateTable.Role.Active = (function() {
    const modifiedMethods = {};
    return {
       initialise: function() {
+         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
          this.active = new Active(this, modifiedMethods);
       },
       around: modifiedMethods
@@ -122,6 +123,7 @@ HStateTable.Role.Chartable = (function() {
    const modifiedMethods = {};
    return {
       initialise: function() {
+         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
          this.chartable = new Chartable(this, modifiedMethods);
       },
       around: modifiedMethods
@@ -143,6 +145,7 @@ HStateTable.Role.CheckAll = (function() {
    const modifiedMethods = {};
    return {
       initialise: function() {
+         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
          this.checkAllControl = new CheckAllControl(this, modifiedMethods);
       },
       around: modifiedMethods
@@ -558,6 +561,7 @@ HStateTable.Role.Configurable = (function() {
    const modifiedMethods = {};
    return {
       initialise: function() {
+         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
          this.configControl = new ConfigControl(this, modifiedMethods);
       },
       around: modifiedMethods
@@ -647,6 +651,7 @@ HStateTable.Role.Downloadable = (function() {
    const modifiedMethods = {};
    return {
       initialise: function() {
+         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
          this.downloadControl = new DownloadControl(this, modifiedMethods);
       },
       around: modifiedMethods
@@ -738,6 +743,7 @@ HStateTable.Role.Filterable = (function() {
    const modifiedMethods = {};
    return {
       initialise: function() {
+         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
          this.filterControl = new FilterControl(this, modifiedMethods);
       },
       around: modifiedMethods
@@ -747,17 +753,19 @@ HStateTable.Role.Filterable = (function() {
 HStateTable.Role.Form = (function() {
    class FormControl {
       constructor(table, methods) {
-         const config = table.roles['form'];
+         const config      = table.roles['form'];
+         this.table        = table;
+         this.rs           = table.resultset;
          this.buttonConfig = config['buttons'];
-         this.buttons = {};
-         this.confirm = config['confirm'];
+         this.confirm      = config['confirm'];
+         this.location     = config['location'];
+         this.messages     = eval(config['messages']);
+         this.url          = new URL(config['url']);
+         this.buttons      = {};
+         this.handlers     = {};
          this.form;
-         this.handlers = {};
-         this.location = config['location'];
          this.control = 'render' + this.location['control'] + 'Control';
-         this.rs = table.resultset;
-         this.table = table;
-         this.url = new URL(config['url']);
+         if (this.control.match(/Top/)) this.table.topContent = true;
          for (const buttonConfig of this.buttonConfig) {
             this.handlers[buttonConfig['action']] = function(event) {
                event.preventDefault();
@@ -770,7 +778,6 @@ HStateTable.Role.Form = (function() {
             this.form = this.h.form({ className: 'table-form' }, orig());
             return this.form;
          }.bind(this);
-         if (this.control.match(/Top/)) this.table.topContent = true;
          methods[this.control] = function(orig) {
             const container = orig();
             this.render(container);
@@ -818,7 +825,7 @@ HStateTable.Role.Form = (function() {
       async postForm(buttonConfig) {
          const data = this.formData(buttonConfig);
          const response = await this.rs.storeJSON(this.url, data);
-         console.log(response);
+         if (this.messages) this.messages.renderMessage(response);
          this.rs.redraw();
       }
       render(container) {
@@ -843,6 +850,7 @@ HStateTable.Role.Form = (function() {
    const modifiedMethods = {};
    return {
       initialise: function() {
+         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
          this.formControl = new FormControl(this, modifiedMethods);
       },
       around: modifiedMethods
@@ -860,6 +868,7 @@ HStateTable.Role.HighlightRow = (function() {
    const modifiedMethods = {};
    return {
       initialise: function() {
+         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
          this.highlightRow = new HighlightRow(this, modifiedMethods);
       },
       around: modifiedMethods
@@ -970,6 +979,7 @@ HStateTable.Role.Pageable = (function() {
    const modifiedMethods = {};
    return {
       initialise: function() {
+         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
          this.pageControl = new PageControl(this, modifiedMethods);
       },
       around: modifiedMethods
@@ -1024,6 +1034,7 @@ HStateTable.Role.PageSize = (function() {
    const modifiedMethods = {};
    return {
       initialise: function() {
+         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
          this.pageSizeControl = new PageSizeControl(this, modifiedMethods);
       },
       around: modifiedMethods
@@ -1042,6 +1053,7 @@ HStateTable.Role.Reorderable = (function() {
    const modifiedMethods = {};
    return {
       initialise: function() {
+         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
          this.orderControl = new OrderControl(this, modifiedMethods);
       },
       around: modifiedMethods
@@ -1193,6 +1205,7 @@ HStateTable.Role.Searchable = (function() {
    const modifiedMethods = {};
    return {
       initialise: function() {
+         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
          this.searchControl = new SearchControl(this, modifiedMethods);
       },
       around: modifiedMethods
@@ -1246,6 +1259,7 @@ HStateTable.Role.Tagable = (function() {
    const modifiedMethods = {};
    return {
       initialise: function() {
+         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
          this.tagControl = new TagControl(this, modifiedMethods);
       },
       around: modifiedMethods

@@ -114,11 +114,14 @@ HStateTable.Util = (function() {
             if (!this[method]) {
                throw new Error(`Around no method: ${method}`);
             }
-            const original = this[method].bind(this);
+            const orig = this[method].bind(this);
             const around = modifier.bind(this);
             this[method] = function(args1, args2, args3, args4, args5) {
-               return around(original, args1, args2, args3, args4, args5);
+               return around(orig, args1, args2, args3, args4, args5);
             };
+         },
+         resetModifiers: function(methods) {
+            for (const method of Object.keys(methods)) delete methods[method];
          }
       }
    };

@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Adds messages to form role. Resets modifiers
           - Use unicode chars for bool cell trait
           - Adds bool cell trait
           - Adds support for the object view table
