@@ -21,6 +21,18 @@ HStateTable.CellTrait.Bool = (function() {
       }
    };
 })();
+// Package HStateTable.CellTrait.Capitalise
+HStateTable.CellTrait.Capitalise = (function() {
+   return {
+      around: {
+         getValue: function(orig, attr) {
+            const result = orig(attr);
+            result.value = this.capitalise(result.value);
+            return result;
+         }
+      }
+   };
+})();
 // Package HStateTable.CellTrait.Checkbox
 HStateTable.CellTrait.Checkbox = (function() {
    return {
@@ -98,17 +110,17 @@ HStateTable.CellTrait.Tagable = (function() {
             const handler = function(tag) {
                return function(event) {
                   event.preventDefault();
-                  rs.search(
-                     { searchColumn: searchColumn, searchValue: tag }
-                  ).redraw();
+                  rs.search({
+                     searchColumn: searchColumn, searchValue: tag
+                  }).redraw();
                };
             };
             const content = this.h.ul({ className: 'cell-content-append' });
             for (const tag of result.tags) {
                const arrow = this.h.span({ className: 'tag-arrow-left' });
-               const value = this.h.span(
-                  { className: 'tag-value', onclick: handler(tag) }, tag
-               );
+               const value = this.h.span({
+                  className: 'tag-value', onclick: handler(tag)
+               }, tag);
                content.append(
                   this.h.li({ className: 'cell-tag' }, [arrow, value])
                );

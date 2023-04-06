@@ -389,6 +389,10 @@ HStateTable.Renderer = (function() {
          const cell = this.h.td({ colSpan: this.columns.length }, message);
          return this.h.tr(cell);
       }
+      renderRow(tbody, row, className) {
+         const rendered = row.render({ className: className });
+         tbody.append(rendered);
+      }
       async renderRows() {
          this.rows = [];
          this.rowCount = 0;
@@ -400,9 +404,8 @@ HStateTable.Renderer = (function() {
          if (this.rowCount) {
             let className = 'odd';
             for (row of this.rows) {
-               const rendered = row.render({ className: className });
+               this.renderRow(tbody, row, className);
                className = (className == 'odd') ? 'even' : 'odd';
-               tbody.append(rendered);
             }
          }
          else { tbody.append(this.renderNoData()) }

@@ -4,7 +4,7 @@ HStateTable.ColumnTrait.CheckAll = (function() {
       constructor(column, methods) {
          this.column = column;
          this.handler = function(event) {
-            if (!Object.keys(this.column.rowSelector)) return;
+            if (!Object.keys(this.column.rowSelector).length) return;
             for (const box of Object.values(this.column.rowSelector)) {
                box.checked = this.column.checkAll.checked;
             }

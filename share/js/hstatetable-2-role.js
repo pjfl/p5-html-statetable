@@ -503,6 +503,8 @@ HStateTable.Role.Configurable = (function() {
             ]),
             this.form.render(this.getState())
          ]);
+         if (this.control.controlLocation.match(/Right/))
+            dialog.classList.add('control-right');
          const container = this.table.topControl;
          this.dialog = this.display(container, 'dialog', dialog);
       }
@@ -786,7 +788,7 @@ HStateTable.Role.Form = (function() {
       }
       anyChecked(buttonConfig) {
          for (const column of this.table.columns) {
-            if (!Object.keys(column.rowSelector)) continue;
+            if (!Object.keys(column.rowSelector).length) continue;
             for (const box of Object.values(column.rowSelector)) {
                if (box.checked) return true;
             }
@@ -796,7 +798,7 @@ HStateTable.Role.Form = (function() {
       formData(buttonConfig) {
          const selector = [];
          for (const column of this.table.columns) {
-            if (!Object.keys(column.rowSelector)) continue;
+            if (!Object.keys(column.rowSelector).length) continue;
             for (const box of Object.values(column.rowSelector)) {
                if (box.checked) selector.push(box.value);
             }
@@ -813,7 +815,7 @@ HStateTable.Role.Form = (function() {
       }
       onlyOneChecked(buttonConfig) {
          for (const column of this.table.columns) {
-            if (!Object.keys(column.rowSelector)) continue;
+            if (!Object.keys(column.rowSelector).length) continue;
             let count = 0;
             for (const box of Object.values(column.rowSelector)) {
                if (box.checked) count++;
@@ -831,11 +833,12 @@ HStateTable.Role.Form = (function() {
       render(container) {
          for (const buttonConfig of this.buttonConfig) {
             const action = buttonConfig['action'];
-            const button = this.h.button({
+            const attr   = {
                className: buttonConfig['class'],
-               disabled: this.isDisabled(buttonConfig),
                onclick: this.handlers[action]
-            }, buttonConfig['value']);
+            };
+            if (this.isDisabled(buttonConfig)) attr.disabled = true;
+            const button = this.h.button(attr, buttonConfig['value']);
             if (this.buttons[action]
                 && container.contains(this.buttons[action])) {
                container.replaceChild(button, this.buttons[action]);
@@ -1175,6 +1178,7 @@ HStateTable.Role.Searchable = (function() {
          const control = this.h.form({
             className: 'search-box', method: 'get', onsubmit: handler
          }, wrapper);
+         control.setAttribute('listener', true);
          this.control = this.display(container, 'control', control);
       }
       renderMessages(container) {
@@ -1215,31 +1219,47 @@ HStateTable.Role.Searchable = (function() {
 HStateTable.Role.Tagable = (function() {
    class TagControl {
       constructor(table, methods) {
-         const config = table.roles['tagable'];
-         this.appendTo = config['append-to'];
-         this.control;
+         this.table         = table;
+         this.rs            = table.resultset;
+         const config       = table.roles['tagable'];
+         this.appendTo      = config['append-to'];
          this.enablePopular = config['enable-popular'];
-         this.location = config['location']['control'];
-         this.searchColumn = config['search-column'];
-         this.tags = config['tags'];
-         this.table = table;
-         this.rs = table.resultset;
-         if (this.appendTo) {
-            this.table.columnIndex[this.appendTo].cellTraits.push('Tagable');
-            return;
-         }
-         const handler = function(tag) {
+         this.location      = config['location']['control'];
+         this.searchColumn  = config['search-column'];
+         this.section       = config['section'];
+         this.tagColumn     = config['tag-column'];
+         this.tags          = config['tags'];
+         this.control;
+         this.prevTag = '_initial_';
+         this.handler = function(tag) {
             const attr = { searchColumn: this.searchColumn, searchValue: tag };
             return function(event) {
                event.preventDefault();
                this.rs.search(attr).redraw();
             }.bind(this);
          }.bind(this);
+         if (this.appendTo) {
+            this.table.columnIndex[this.appendTo].cellTraits.push('Tagable');
+            return;
+         }
+         if (this.section) {
+            methods['redraw'] = function(orig) {
+               this.prevTag = '_initial_';
+               orig();
+            }.bind(this);
+            methods['renderRow'] = function(orig, tbody, row, className) {
+               const tag = row.result[this.searchColumn];
+               if (this.prevTag != (tag || ''))
+                  this.renderSection(tbody, row, tag);
+               orig(tbody, row, className);
+            }.bind(this);
+            return;
+         }
          const content = this.h.ul({ className: 'cell-content-append' });
          for (const tag of this.tags) {
             const arrow = this.h.span({ className: 'tag-arrow-left' });
             const value = this.h.span({
-               className: 'tag-value', onclick: handler(tag)
+               className: 'tag-value', onclick: this.handler(tag)
             }, tag);
             content.append(
                this.h.li({ className: 'cell-tag' }, [arrow, value])
@@ -1253,6 +1273,22 @@ HStateTable.Role.Tagable = (function() {
             this.control = this.display(container, 'control', control);
             return container;
          }.bind(this);
+      }
+      renderSection(tbody, row, tag) {
+         const cells = [];
+         let colSpan = this.table.columns.length - 1;
+         if (this.table.columns[0].options['checkall']) {
+            cells.push(this.h.td({ className: 'section-check' }, ' '));
+            colSpan--;
+         }
+         const label = tag ? tag.replace(/\|/g, ' + ') : '\xA0';
+         cells.push(this.h.td({
+            className: 'section-tag', colSpan: colSpan
+         }, this.h.span({
+            className: 'tag-value', onclick: this.handler(tag)
+         }, label)));
+         tbody.append(this.h.tr({ className: 'section-row' }, cells));
+         this.prevTag = tag ? tag : '';
       }
    }
    Object.assign(TagControl.prototype, HStateTable.Util.Markup);

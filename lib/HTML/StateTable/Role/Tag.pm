@@ -76,6 +76,8 @@ has 'tag_rs_name' => is => 'ro', isa => Str, default => 'Tag';
 
 has 'tag_search_column' => is => 'ro', isa => Str, default => 'tags';
 
+has 'tag_section' => is => 'ro', isa => Bool, default => FALSE;
+
 after 'BUILD' => sub {
    my $self = shift;
 
@@ -101,6 +103,7 @@ sub serialise_tagable {
       'enable-popular' => json_bool $self->tag_enable_popular,
       'location'       => { control => $self->tag_control_location },
       'search-column'  => $self->tag_search_column,
+      'section'        => json_bool $self->tag_section,
       'tags'           => \@tags,
    };
 
