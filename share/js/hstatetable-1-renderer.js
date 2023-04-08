@@ -133,6 +133,7 @@ HStateTable.Renderer = (function() {
          this.enablePaging = table.properties['enable-paging'];
          this.maxPageSize  = table.properties['max-page-size'] || null;
          this.rowCount     = table.properties['row-count'];
+         this.token        = table.properties['verify-token'];
          this.index        = 0;
          this.records      = [];
          this.parameterMap = {
@@ -146,27 +147,6 @@ HStateTable.Renderer = (function() {
       extendState(key, value) {
          this._state[key] = value;
       }
-      async fetchBlob(url) {
-         const response = await fetch(url);
-         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-         }
-         const headers = response.headers;
-         const filename
-               = headers.get('content-disposition').split('filename=')[1];
-         const blob = await response.blob();
-         return { blob: blob, filename: filename };
-      }
-      async fetchJSON(url) {
-         const headers = new Headers();
-         headers.set('X-Requested-With', 'XMLHttpRequest');
-         const options = { headers: headers, method: 'GET' };
-         const response = await fetch(url, options);
-         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-         }
-         return await response.json();
-      }
       getState(attrs) {
          const state = {};
          for (const attr of attrs) { state[attr] = this.state(attr) || '' }
@@ -179,9 +159,9 @@ HStateTable.Renderer = (function() {
       }
       async next() {
          if (this.index > 0) return this.records[this.index++];
-         const response = await this.fetchJSON(this.table.prepareURL());
-         this.records = response['records'];
-         this.rowCount = parseInt(response['row-count']);
+         const { object } = await this.bitch.sucks(this.table.prepareURL());
+         this.records = object['records'];
+         this.rowCount = parseInt(object['row-count']);
          return this.records[this.index++];
       }
       redraw() {
@@ -211,27 +191,8 @@ HStateTable.Renderer = (function() {
          }
          return false;
       }
-      async storeJSON(url, args) {
-         const body = JSON.stringify({
-            data: args, _verify: this.table.properties['verify-token']
-         });
-         const headers = new Headers();
-         headers.set('Content-Type', 'application/json');
-         headers.set('X-Requested-With', 'XMLHttpRequest');
-         const options = {
-            body: body, cache: 'no-store', credentials: 'same-origin',
-            headers: headers, method: 'POST',
-         };
-         const response = await fetch(url, options);
-         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-         }
-         if (response.headers.get('location')) {
-            return response.headers.get('location');
-         }
-         return await response.json();
-      }
    };
+   Object.assign(Resultset.prototype, TableUtils.Markup);
    class Table {
       constructor(container, config) {
          this.container   = container;
@@ -244,6 +205,8 @@ HStateTable.Renderer = (function() {
          this.columnIndex = {};
          this.columns     = [];
          this.header      = this.h.thead();
+         this.pageManager = eval(this.properties['page-manager'] || '');
+         this.renderStyle = 'replace';
          this.rows        = [];
          this.rowCount    = 0;
          this.table       = this.h.table({ id: this.name });
@@ -353,6 +316,12 @@ HStateTable.Renderer = (function() {
          else params.delete(rs.nameMap('sortDesc'));
          return url;
       }
+      async readRows() {
+         this.rows = [];
+         let index = 0;
+         let row;
+         while (row = await this.nextRow(index++)) { this.rows.push(row) }
+      }
       redraw() {
          this.render();
       }
@@ -386,31 +355,50 @@ HStateTable.Renderer = (function() {
       }
       renderNoData() {
          const message = this.properties['no-data-message'];
-         const cell = this.h.td({ colSpan: this.columns.length }, message);
-         return this.h.tr(cell);
-      }
-      renderRow(tbody, row, className) {
-         const rendered = row.render({ className: className });
-         tbody.append(rendered);
-      }
-      async renderRows() {
-         this.rows = [];
-         this.rowCount = 0;
-         let index = 0;
-         let row;
-         while (row = await this.nextRow(index++)) { this.rows.push(row) }
-         this.rowCount = this.rows.length;
-         const tbody = this.h.tbody();
-         if (this.rowCount) {
-            let className = 'odd';
-            for (row of this.rows) {
-               this.renderRow(tbody, row, className);
-               className = (className == 'odd') ? 'even' : 'odd';
-            }
-         }
-         else { tbody.append(this.renderNoData()) }
+         const cell    = this.h.td({ colSpan: this.columns.length }, message);
+         const tbody   = this.h.tbody(this.h.tr(cell));
          this.table.replaceChild(tbody, this.body);
          this.body = tbody;
+      }
+      renderRow(container, row, className) {
+         container.append(row.render({ className: className }));
+      }
+      async renderRows() {
+         await this.readRows();
+         if (!this.rows.length) return this.renderNoData();
+         if (this.renderStyle == 'replace') this.renderRowsReplaceBody();
+         else this.renderRowsScrollUp();
+         this.rowCount = this.rows.length;
+         if (this.pageManager) this.pageManager.onContentLoad();
+      }
+      async renderRowsReplaceBody() {
+         const tbody = this.h.tbody();
+         let className = 'odd';
+         for (const row of this.rows) {
+            this.renderRow(tbody, row, className);
+            className = (className == 'odd') ? 'even' : 'odd';
+         }
+         this.table.replaceChild(tbody, this.body);
+         this.body = tbody;
+      }
+      async renderRowsScrollUp() { // TODO: Finish this
+         const pageSize = this.resultset.state('pageSize');
+         let currRows   = this.rowCount;
+         let className  = 'odd';
+         for (const row of this.rows) {
+            if (currRows > 0 && currRows == pageSize) {
+               let child = this.body.firstChild;
+               if (child) {
+                  if (child.classList.contains('section-row')) {
+                     child.remove();
+                     child = this.body.firstChild;
+                  }
+                  if (child) child.remove();
+               }
+            }
+            this.renderRow(this.body, row, className);
+            className = (className == 'odd') ? 'even' : 'odd';
+         }
       }
       renderTitleControl() {
          return this.titleControl;
@@ -427,7 +415,6 @@ HStateTable.Renderer = (function() {
    class Manager {
       constructor() {
          this._isConstructing = true;
-         this._isRendering = 0;
          this.tables = {};
       }
       async createTables() {
@@ -441,13 +428,6 @@ HStateTable.Renderer = (function() {
             }, 250);
          }.bind(this));
       }
-      isRendering() {
-         return new Promise(function(resolve) {
-            setTimeout(() => {
-               if (this._isRendering == 0) resolve(false);
-            }, 250);
-         }.bind(this));
-      }
       onReady(callback) {
          if (document.readyState != 'loading') callback();
          else if (document.addEventListener)
@@ -457,7 +437,6 @@ HStateTable.Renderer = (function() {
          });
       }
       async scan(content) {
-         this._isRendering += 1;
          const promises = [];
          for (const el of content.getElementsByClassName(triggerClass)) {
             const table = new Table(el, JSON.parse(el.dataset[dsName]));
@@ -465,7 +444,6 @@ HStateTable.Renderer = (function() {
             promises.push(table.render());
          }
          await Promise.all(promises);
-         this._isRendering -= 1;
       }
    }
    const manager = new Manager();

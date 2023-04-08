@@ -2,15 +2,15 @@
 HStateTable.Role.Active = (function() {
    class Active {
       constructor(table, methods) {
+         this.table = table;
+         this.rs = table.resultset;
          const config = table.roles['active'];
-         this.activeForm;
          this.enabled = config['enabled'];
          this.label = config['label'];
          this.location = config['location'];
          this.controlLocation = this.location['control'];
-         this.rs = table.resultset;
+         this.activeForm;
          this.showInactive = false;
-         this.table = table;
          this.table.rowTraits['active'] = {};
          this.rs.extendState('showInactive', false);
          this.rs.nameMap('showInactive', 'show_inactive');
@@ -102,8 +102,8 @@ HStateTable.Role.Chartable = (function() {
          else if (!this.rs.stateChanged(this.previousState)) return;
          this.previousState = state;
          const url = this.table.prepareURL({ disablePaging: true });
-         const response = await this.rs.fetchJSON(url);
-         const results = response['records'];
+         const { object } = await this.bitch.sucks(url);
+         const results = object['records'];
          const series = [];
          for (const colName of this.columnNames) {
             const data = [];
@@ -225,18 +225,19 @@ HStateTable.Role.Configurable = (function() {
          this.table.columns = columns;
       }
       async clearPreference() {
-         await this.rs.storeJSON(this.control.url, '');
+         const json = JSON.stringify({ data: '', _verify: this.rs.token });
+         await this.bitch.blows(this.control.url, { json: json });
          const url = this.table.prepareURL({ tableMeta: true });
-         const response = await this.rs.fetchJSON(url);
-         const order = response['column-order'];
+         const { object } = await this.bitch.sucks(url);
+         const order = object['column-order'];
          if (order) this.applyColumnOrder(order);
          for (const column of this.table.columns) {
-            column.displayed = response['displayed'][column.name];
-            column.downloadable = response['downloadable'][column.name];
+            column.displayed = object['displayed'][column.name];
+            column.downloadable = object['downloadable'][column.name];
          }
-         this.rs.state('pageSize',   response['page-size']);
-         this.rs.state('sortColumn', response['sort-column']);
-         this.rs.state('sortDesc',   response['sort-desc']);
+         this.rs.state('pageSize',   object['page-size']);
+         this.rs.state('sortColumn', object['sort-column']);
+         this.rs.state('sortDesc',   object['sort-desc']);
          this.preference.form.initialState = this.preference.getState();
          this.rs.redraw();
       }
@@ -284,7 +285,8 @@ HStateTable.Role.Configurable = (function() {
       }
       async savePreference() {
          const data = this.updatePreference();
-         const response = await this.rs.storeJSON(this.control.url, data);
+         const json = JSON.stringify({ data: data, _verify: this.rs.token });
+         await this.bitch.blows(this.control.url, { json: json });
          this.preference.form.initialState = this.preference.getState();
          this.rs.redraw();
       }
@@ -316,6 +318,7 @@ HStateTable.Role.Configurable = (function() {
          return data;
       }
    }
+   Object.assign(PreferenceHandlers.prototype, HStateTable.Util.Markup);
    class PreferenceForm {
       constructor(preference) {
          this.preference = preference;
@@ -577,7 +580,8 @@ HStateTable.Role.Downloadable = (function() {
          this.textFile = null;
       }
       async createLink(url, fDefault) {
-         const { blob, filename } = await this.rs.fetchBlob(url)
+         const options = { response: 'blob' };
+         const { blob, filename } = await this.bitch.sucks(url, options);
          if (this.textFile !== null) window.URL.revokeObjectURL(this.textFile);
          this.textFile = window.URL.createObjectURL(blob);
          const attr = { download: filename || fDefault, href: this.textFile };
@@ -755,13 +759,13 @@ HStateTable.Role.Filterable = (function() {
 HStateTable.Role.Form = (function() {
    class FormControl {
       constructor(table, methods) {
-         const config      = table.roles['form'];
          this.table        = table;
+         this.pageManager  = table.pageManager;
          this.rs           = table.resultset;
+         const config      = table.roles['form'];
          this.buttonConfig = config['buttons'];
          this.confirm      = config['confirm'];
          this.location     = config['location'];
-         this.messages     = eval(config['messages']);
          this.url          = new URL(config['url']);
          this.buttons      = {};
          this.handlers     = {};
@@ -769,11 +773,12 @@ HStateTable.Role.Form = (function() {
          this.control = 'render' + this.location['control'] + 'Control';
          if (this.control.match(/Top/)) this.table.topContent = true;
          for (const buttonConfig of this.buttonConfig) {
+            if (buttonConfig['method'] == 'get') continue;
             this.handlers[buttonConfig['action']] = function(event) {
                event.preventDefault();
                if (!confirm(this.confirm.replace(/\*/, buttonConfig['value'])))
                   return;
-               this.postForm(buttonConfig);
+               this.sendForm(buttonConfig);
             }.bind(this);
          }
          methods['orderedContent'] = function(orig) {
@@ -824,28 +829,37 @@ HStateTable.Role.Form = (function() {
          }
          return false;
       }
-      async postForm(buttonConfig) {
-         const data = this.formData(buttonConfig);
-         const response = await this.rs.storeJSON(this.url, data);
-         if (this.messages) this.messages.renderMessage(response);
-         this.rs.redraw();
-      }
       render(container) {
          for (const buttonConfig of this.buttonConfig) {
             const action = buttonConfig['action'];
-            const attr   = {
-               className: buttonConfig['class'],
-               onclick: this.handlers[action]
-            };
+            const attr = {};
             if (this.isDisabled(buttonConfig)) attr.disabled = true;
-            const button = this.h.button(attr, buttonConfig['value']);
-            if (this.buttons[action]
-                && container.contains(this.buttons[action])) {
-               container.replaceChild(button, this.buttons[action]);
+            let control;
+            if (this.handlers[action]) {
+               attr.onclick = this.handlers[action];
+               control = this.h.button(attr, buttonConfig['value']);
             }
-            else { container.append(button) }
-            this.buttons[action] = button;
+            else {
+               attr.href = action;
+               control = this.h.a(attr, buttonConfig['value']);
+               control.classList.add('table-button');
+            }
+            const old = this.buttons[action];
+            if (old && container.contains(old))
+               container.replaceChild(control, old);
+            else container.append(control);
+            this.buttons[action] = control;
          }
+      }
+      async sendForm(buttonConfig) {
+         const data = this.formData(buttonConfig);
+         const json = {
+            json: JSON.stringify({ data: data, _verify: this.rs.token })
+         };
+         const { location, object } = await this.bitch.blows(this.url, json);
+         if (this.pageManager && location)
+            this.pageManager.renderMessage(location);
+         this.rs.redraw();
       }
    }
    Object.assign(FormControl.prototype, HStateTable.Util.Markup);
@@ -1247,11 +1261,11 @@ HStateTable.Role.Tagable = (function() {
                this.prevTag = '_initial_';
                orig();
             }.bind(this);
-            methods['renderRow'] = function(orig, tbody, row, className) {
+            methods['renderRow'] = function(orig, container, row, className) {
                const tag = row.result[this.searchColumn];
                if (this.prevTag != (tag || ''))
-                  this.renderSection(tbody, row, tag);
-               orig(tbody, row, className);
+                  container.append(this.renderSection(tag));
+               orig(container, row, className);
             }.bind(this);
             return;
          }
@@ -1274,7 +1288,7 @@ HStateTable.Role.Tagable = (function() {
             return container;
          }.bind(this);
       }
-      renderSection(tbody, row, tag) {
+      renderSection(tag) {
          const cells = [];
          let colSpan = this.table.columns.length - 1;
          if (this.table.columns[0].options['checkall']) {
@@ -1287,8 +1301,8 @@ HStateTable.Role.Tagable = (function() {
          }, this.h.span({
             className: 'tag-value', onclick: this.handler(tag)
          }, label)));
-         tbody.append(this.h.tr({ className: 'section-row' }, cells));
          this.prevTag = tag ? tag : '';
+         return this.h.tr({ className: 'section-row' }, cells);
       }
    }
    Object.assign(TagControl.prototype, HStateTable.Util.Markup);

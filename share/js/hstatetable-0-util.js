@@ -15,6 +15,91 @@ HStateTable.Util = (function() {
       'onchange', 'onclick', 'ondragenter', 'ondragleave',
       'ondragover', 'ondragstart', 'ondrop', 'onsubmit'
    ];
+   class Bitch {
+      _newHeaders() {
+         const headers = new Headers();
+         headers.set('X-Requested-With', 'XMLHttpRequest');
+         return headers;
+      }
+      _setHeaders(options) {
+         if (!options.headers) options.headers = this._newHeaders();
+         if (!(options.headers instanceof Headers)) {
+            const headers = options.headers;
+            options.headers = this._newHeaders();
+            for (const [k, v] of Object.entries(headers))
+               options.headers.set(k, v);
+         }
+      }
+      async blows(url, options) {
+         options ||= {};
+         let want = options.response || 'text'; delete options.response;
+         this._setHeaders(options);
+         if (options.form) {
+            options.headers.set(
+               'Content-Type', 'application/x-www-form-urlencoded'
+            );
+            const form = options.form; delete options.form;
+            const params = new URLSearchParams(new FormData(form));
+            options.body = params.toString();
+         }
+         if (options.json) {
+            options.headers.set('Content-Type', 'application/json');
+            options.body = options.json; delete options.json;
+            want = 'object';
+         }
+         options.method ||= 'POST';
+         if (options.method == 'POST') {
+            options.cache ||= 'no-store';
+            options.credentials ||= 'same-origin';
+         }
+         const response = await fetch(url, options);
+         if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.statusText}`);
+         }
+         if (response.headers.get('location')) return {
+            location: response.headers.get('location'), status: 302
+         };
+         if (want == 'object') return {
+            object: await response.json(), status: response.status
+         };
+         if (want == 'text') return {
+            status: response.status, text: await response.text()
+         };
+         return { response: response };
+      }
+      async sucks(url, options) {
+         options ||= {};
+         const want = options.response || 'object'; delete options.response;
+         this._setHeaders(options);
+         options.method ||= 'GET';
+         const response = await fetch(url, options);
+         if (!response.ok) {
+            if (want == 'object') {
+               console.warn(`HTTP error! Status: ${response.statusText}`);
+               return { object: false, status: response.status };
+            }
+            throw new Error(`HTTP error! Status: ${response.statusText}`);
+         }
+         const headers = response.headers;
+         if (headers.get('location')) return {
+            location: headers.get('location'), status: 302
+         };
+         if (want == 'blob') {
+            const key = 'content-disposition';
+            const filename = headers.get(key).split('filename=')[1];
+            const blob = await response.blob();
+            return { blob: blob, filename: filename, status: response.status };
+         }
+         if (want == 'object') return {
+            object: await response.json(), status: response.status
+         };
+         if (want == 'text') return {
+            status: response.status,
+            text: await new Response(await response.blob()).text()
+         };
+         return { response: response };
+      }
+   }
    class HtmlTiny {
       _tag(tag, attr, content) {
          const el = document.createElement(tag);
@@ -88,6 +173,7 @@ HStateTable.Util = (function() {
             if (existingValue) existingValue += ' ';
             obj[key] = existingValue + newValue;
          },
+         bitch: new Bitch(),
          capitalise: function(s) {
             const words = [];
             for (const word of s.split(' ')) words.push(ucfirst(word));

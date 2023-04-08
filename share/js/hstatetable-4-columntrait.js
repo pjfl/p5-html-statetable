@@ -78,8 +78,8 @@ HStateTable.ColumnTrait.Filterable = (function() {
          const url = this.table.prepareURL({
             filterColumnValues: this.column.name
          });
-         const response = await this.rs.fetchJSON(url);
-         this.records = response['records'];
+         const { object } = await this.bitch.sucks(url);
+         this.records = object['records'];
          const items = [];
          for (const value of this.records) {
             items.push(this.h.li({

@@ -1,10 +1,13 @@
 #colours() {
     active-column: bisque;
+    button-background: #e9e9ed;
+    button-border: gray;
+    button-hover: lightgray;
+    close-background: red;
     contrast: white;
     control-text: gray;
     header-border: gray;
     link: seagreen;
-    close-background: red;
     message-background: khaki;
     panel-background: ivory;
     row-even: ivory;
@@ -129,6 +132,7 @@
         background: #colours[panel-background]; border-right: 1px solid;
         border-color: #colours[header-border]; font-family: sans-serif;
         font-weight: normal; padding-left: 5px; padding-right: 5px;
+        white-space: nowrap;
     }
     table th.active-sort-column {
         background: #colours[active-column];
@@ -159,6 +163,11 @@
         border-bottom: 8px solid transparent; border-right: 8px solid;
         border-right-color: #colours[search-tag]; height: 0;
         vertical-align: middle; width: 0;
+    }
+    .cell-tag .tag-arrow-left::after {
+        bottom: 5px; color: #colours[contrast]; content: '.'; display: block;
+        font-size: larger; height: 20px; padding-left: 3px; position: absolute;
+        width: 5px;
     }
     .cell-tag .tag-value {
         background: #colours[search-tag];
@@ -236,6 +245,20 @@
     }
     .table-container.inline {
         padding-top: 10px;
+    }
+    .table-form button {
+        margin-right: 0.5rem;
+    }
+    .table-form .table-button {
+        background: #colours[button-background];
+        border: 1px solid; border-color: #colours[button-border];
+        border-radius: 3px; color: #colours[text];
+        font-family: sans-serif; font-size: 12.5px; font-weight: 400;
+        margin-right: 0.5rem; padding: 3px 4px 2px 4px; text-align: center;
+        text-decoration: none; vertical-align: baseline;
+    }
+    .table-form .table-button:hover {
+        background: #colours[button-hover];
     }
     .chart-container.inline {
         padding-top: 3px;

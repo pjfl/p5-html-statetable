@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Replaces rs store/fetch with util library calls
           - Adds tag sections
           - Adds messages to form role. Resets modifiers
           - Use unicode chars for bool cell trait

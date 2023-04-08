@@ -1,9 +1,9 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 44 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 45 $ =~ /\d+/gmx );
 
-use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE RENDERER_CLASS
+use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Bool ClassName Column Context
                                     HashRef LoadableClass NonEmptySimpleStr
@@ -184,6 +184,14 @@ location of the page control
 
 has 'page_control_location' => is => 'ro', isa => NonEmptySimpleStr,
    default => 'BottomLeft';
+
+=item page_manager
+
+An immutable non empty simple string. Name of the JS page management object
+
+=cut
+
+has 'page_manager' => is => 'ro', isa => NonEmptySimpleStr, default => NUL;
 
 =item page_size
 

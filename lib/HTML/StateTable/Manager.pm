@@ -49,6 +49,14 @@ to form a complete table class name
 
 has 'namespace' => is => 'ro', isa => Str, required => TRUE;
 
+=item page_manager
+
+An immutable string. Name of the JS page management object
+
+=cut
+
+has 'page_manager' => is => 'ro', isa => Str, predicate => 'has_page_manager';
+
 =item query_key
 
 An immutable string which defaults to 'table_name'. When set in the query
@@ -118,6 +126,7 @@ sub table {
 
    $options->{download_view_name} = $self->view_name;
    $options->{filterable_view_name} = $self->view_name;
+   $options->{page_manager} = $self->page_manager if $self->has_page_manager;
    $options->{renderer_class} = $class if $class;
    $options->{renderer_args}->{query_key} = $self->query_key;
 
