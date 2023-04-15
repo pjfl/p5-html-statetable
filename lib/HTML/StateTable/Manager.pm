@@ -49,13 +49,13 @@ to form a complete table class name
 
 has 'namespace' => is => 'ro', isa => Str, required => TRUE;
 
-=item page_manager
+=item nav_manager
 
-An immutable string. Name of the JS page management object
+An immutable string. Name of the JS navigation management object
 
 =cut
 
-has 'page_manager' => is => 'ro', isa => Str, predicate => 'has_page_manager';
+has 'nav_manager' => is => 'ro', isa => Str, predicate => 'has_nav_manager';
 
 =item query_key
 
@@ -126,7 +126,7 @@ sub table {
 
    $options->{download_view_name} = $self->view_name;
    $options->{filterable_view_name} = $self->view_name;
-   $options->{page_manager} = $self->page_manager if $self->has_page_manager;
+   $options->{nav_manager} = $self->nav_manager if $self->has_nav_manager;
    $options->{renderer_class} = $class if $class;
    $options->{renderer_args}->{query_key} = $self->query_key;
 

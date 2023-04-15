@@ -30,11 +30,25 @@ Table render class
 
 =head1 Configuration and Environment
 
-Defines no attributes
+Defines the following attributes;
+
+=over 3
+
+=item container_tag
+
+Overrides the default setting the container element to C<div>
 
 =cut
 
 has '+container_tag' => default => 'div';
+
+=item data
+
+Overrides the default returning a hash reference used to set the attributes
+of the C<container> element. Contains the C<TRIGGER_CLASS> and the JSON
+encoded table configuration
+
+=cut
 
 has '+data' => default => sub {
    my $self  = shift;
@@ -52,14 +66,22 @@ has '+data' => default => sub {
    };
 };
 
+=item query_key
+
+Defaults to the value supplied by the C<Constants> class (C<table_name>). This
+is the query parameter that is used to identify which table on a page the
+request is targeting
+
+=cut
+
+has 'query_key' => is => 'lazy', isa => NonEmptySimpleStr, default => QUERY_KEY;
+
+# Private attributes
 has '_json' => is => 'ro', isa => class_type(JSON::MaybeXS::JSON),
    default => sub {
       return JSON::MaybeXS->new( convert_blessed => TRUE, utf8 => FALSE );
    };
 
-has 'query_key' => is => 'lazy', isa => NonEmptySimpleStr, default => QUERY_KEY;
-
-# Private attributes
 has '_tags' =>
    is      => 'lazy',
    isa     => HashRef,
@@ -78,7 +100,7 @@ has '_tags' =>
 
 =head1 Subroutines/Methods
 
-Defines no methods
+Defines no public methods
 
 =cut
 
@@ -194,11 +216,13 @@ sub _serialise_properties {
       'max-page-size'   => $table->max_page_size,
       'no-count'        => json_bool $table->no_count,
       'no-data-message' => $table->empty_text,
-      'page-manager'    => $table->page_manager,
+      'nav-manager'     => $table->nav_manager,
       'page-size'       => $table->page_size,
+      'render-style'    => $table->render_style,
       'row-count'       => 0,
       'sort-column'     => $table->sort_column_name,
       'sort-desc'       => json_bool $table->sort_desc,
+      'title-location'  => $table->title_location,
    };
 
    $data->{'row-count'} = $table->row_count unless $table->no_count;
@@ -256,7 +280,7 @@ None
 
 =over 3
 
-=item L<Moo>
+=item L<HTML::StateTable::Renderer>
 
 =back
 

@@ -92,6 +92,11 @@ sub _apply_configurable_params {
       $self->page_size($page_size) unless $self->param_value('page_size');
    }
 
+   if (my $render_style = $params->{render_style}) {
+      $self->render_style($render_style)
+         unless $self->param_value('render_style');
+   }
+
    return;
 }
 

@@ -122,6 +122,7 @@ HStateTable.Renderer = (function() {
       constructor(table) {
          this.page       = 1;
          this.pageSize   = table.properties['page-size'];
+         this.prevPage   = 0;
          this.sortColumn = table.properties['sort-column'];
          this.sortDesc   = table.properties['sort-desc'];
       }
@@ -179,6 +180,8 @@ HStateTable.Renderer = (function() {
       }
       state(key, value) {
          if (typeof value !== 'undefined') {
+            if (key == 'page' || key == 'pageSize')
+               this._state['prevPage'] = this._state['page'];
             this._state[key] = value;
             if (key == 'pageSize') this._state['page'] = 1;
          }
@@ -195,23 +198,26 @@ HStateTable.Renderer = (function() {
    Object.assign(Resultset.prototype, TableUtils.Markup);
    class Table {
       constructor(container, config) {
-         this.container   = container;
-         this.columnConf  = config['columns'] || [];
-         this.name        = config['name'];
-         this.properties  = config['properties'];
-         this.roles       = config['roles'];
-         this.rowTraits   = config['row-traits'] || {};
-         this.body        = this.h.tbody();
-         this.columnIndex = {};
-         this.columns     = [];
-         this.header      = this.h.thead();
-         this.pageManager = eval(this.properties['page-manager'] || '');
-         this.renderStyle = 'replace';
-         this.rows        = [];
-         this.rowCount    = 0;
-         this.table       = this.h.table({ id: this.name });
-         this.resultset   = new Resultset(this);
-         this.topContent  = false;
+         this.container  = container;
+         this.columnConf = config['columns'] || [];
+         this.name       = config['name'];
+         this.properties = config['properties'];
+         this.roles      = config['roles'];
+         this.rowTraits  = config['row-traits'] || {};
+
+         this.body          = this.h.tbody();
+         this.bottomContent = false;
+         this.columnIndex   = {};
+         this.columns       = [];
+         this.header        = this.h.thead();
+         this.navManager    = eval(this.properties['nav-manager'] || '');
+         this.renderStyle   = this.properties['render-style'];
+         this.rows          = [];
+         this.rowCount      = 0;
+         this.table         = this.h.table({ id: this.name });
+         this.resultset     = new Resultset(this);
+         this.titleLocation = this.properties['title-location'] || 'inner';
+         this.topContent    = false;
 
          this.table.append(this.header);
          this.table.append(this.body);
@@ -234,7 +240,9 @@ HStateTable.Renderer = (function() {
          this.topRightControl = this.h.div({ className: 'top-right-control' });
          this.topControl.append(this.topRightControl);
 
-         this.bottomControl = this.h.div({ className: 'bottom-control' });
+         className = 'bottom-control';
+         if (this.bottomContent) className += ' visible';
+         this.bottomControl = this.h.div({ className: className });
          this.bottomLeftControl
             = this.h.div({ className: 'bottom-left-control' });
          this.bottomControl.append(this.bottomLeftControl);
@@ -285,6 +293,13 @@ HStateTable.Renderer = (function() {
          return row;
       }
       orderedContent() {
+         if (this.titleLocation == 'outer') {
+            return [
+               this.titleControl, this.topControl,
+               this.table,
+               this.bottomControl, this.creditControl
+            ];
+         }
          return [
             this.topControl, this.titleControl,
             this.table,
@@ -335,14 +350,16 @@ HStateTable.Renderer = (function() {
          this.renderBottomLeftControl();
          this.renderBottomRightControl();
       }
-      renderHeader() {
-         const row = this.h.tr();
-         for (const column of this.columns) {
-            if (column.displayed) row.append(column.render());
+      renderBody() {
+         const newBody = this.h.tbody();
+         let className = 'odd';
+         for (const row of this.rows) {
+            const rendered = this.renderRow(newBody, row, className);
+            rendered.classList.add('visible');
+            className = (className == 'odd') ? 'even' : 'odd';
          }
-         const thead = this.h.thead(row);
-         this.table.replaceChild(thead, this.header);
-         this.header = thead;
+         this.table.replaceChild(newBody, this.body);
+         this.body = newBody;
       }
       renderBottomLeftControl() {
          return this.bottomLeftControl;
@@ -353,6 +370,15 @@ HStateTable.Renderer = (function() {
       renderCreditControl() {
          return this.creditControl;
       }
+      renderHeader() {
+         const row = this.h.tr();
+         for (const column of this.columns) {
+            if (column.displayed) row.append(column.render());
+         }
+         const thead = this.h.thead(row);
+         this.table.replaceChild(thead, this.header);
+         this.header = thead;
+      }
       renderNoData() {
          const message = this.properties['no-data-message'];
          const cell    = this.h.td({ colSpan: this.columns.length }, message);
@@ -361,44 +387,16 @@ HStateTable.Renderer = (function() {
          this.body = tbody;
       }
       renderRow(container, row, className) {
-         container.append(row.render({ className: className }));
+         const rendered = row.render({ className: className });
+         container.append(rendered);
+         return rendered;
       }
       async renderRows() {
          await this.readRows();
          if (!this.rows.length) return this.renderNoData();
-         if (this.renderStyle == 'replace') this.renderRowsReplaceBody();
-         else this.renderRowsScrollUp();
+         this.renderBody();
          this.rowCount = this.rows.length;
-         if (this.pageManager) this.pageManager.onContentLoad();
-      }
-      async renderRowsReplaceBody() {
-         const tbody = this.h.tbody();
-         let className = 'odd';
-         for (const row of this.rows) {
-            this.renderRow(tbody, row, className);
-            className = (className == 'odd') ? 'even' : 'odd';
-         }
-         this.table.replaceChild(tbody, this.body);
-         this.body = tbody;
-      }
-      async renderRowsScrollUp() { // TODO: Finish this
-         const pageSize = this.resultset.state('pageSize');
-         let currRows   = this.rowCount;
-         let className  = 'odd';
-         for (const row of this.rows) {
-            if (currRows > 0 && currRows == pageSize) {
-               let child = this.body.firstChild;
-               if (child) {
-                  if (child.classList.contains('section-row')) {
-                     child.remove();
-                     child = this.body.firstChild;
-                  }
-                  if (child) child.remove();
-               }
-            }
-            this.renderRow(this.body, row, className);
-            className = (className == 'odd') ? 'even' : 'odd';
-         }
+         if (this.navManager) this.navManager.onContentLoad();
       }
       renderTitleControl() {
          return this.titleControl;
@@ -409,13 +407,17 @@ HStateTable.Renderer = (function() {
       renderTopRightControl() {
          return this.topRightControl;
       }
+      setControlState(control) {
+         if (control.match(/Bottom/)) this.bottomContent = true;
+         if (control.match(/Top/)) this.topContent = true;
+      }
    };
    Object.assign(Table.prototype, TableUtils.Markup);
    Object.assign(Table.prototype, TableUtils.Modifiers);
    class Manager {
       constructor() {
          this._isConstructing = true;
-         this.tables = {};
+         this.tables = {}; // TODO: Figure out if we can let this go
       }
       async createTables() {
          await this.scan(document);

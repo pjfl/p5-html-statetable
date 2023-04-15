@@ -40,7 +40,7 @@ has '_serialisable_columns' =>
    isa     => ArrayRef[Column],
    default => sub { shift->table->get_serialisable_columns };
 
-before 'serialise' => sub { shift->write_headers };
+before 'serialise' => sub { shift->_write_headers };
 
 around 'serialise_row' => sub {
    my ($orig, $self, $row, $row_number) = @_;
@@ -60,14 +60,14 @@ sub serialise_cell {
    return;
 }
 
-sub write_headers {
+sub _write_headers {
    my $self    = shift;
    my @headers = @{$self->headers};
 
    $headers[0] = 'id' if $headers[0] eq 'ID';
 
    $self->_csv->combine(@headers);
-   $self->writer->("\x{FEFF}"); # Byte object mark
+   $self->writer->("\x{FEFF}"); # Byte object mark. Stupid MS
    $self->writer->($self->_csv->string);
 }
 

@@ -18,7 +18,7 @@ HStateTable.Role.Active = (function() {
             this.showInactive = !this.showInactive;
             this.rs.search({ showInactive: this.showInactive }).redraw();
          }.bind(this);
-         if (this.controlLocation.match(/Top/)) this.table.topContent = true;
+         this.table.setControlState(this.controlLocation);
          const name = 'render' + this.controlLocation + 'Control';
          methods[name] = function(orig) {
             const container = orig();
@@ -58,6 +58,77 @@ HStateTable.Role.Active = (function() {
       initialise: function() {
          HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
          this.active = new Active(this, modifiedMethods);
+      },
+      around: modifiedMethods
+   };
+})();
+// Package HStateTable.Role.Animation
+HStateTable.Role.Animation = (function() { // TODO: Finish this
+   class Animation {
+      constructor(table, methods) {
+         this.table = table;
+         this.rs = table.resultset;
+         methods['renderBody'] = this.renderScrollingBody.bind(this);
+         methods['renderRow']  = this.renderRowWithDirection.bind(this);
+      }
+      direction() {
+         const prev = this.rs.state('prevPage');
+         if (prev > this.rs.state('page') && prev > 1) return 'down';
+         return 'up';
+      }
+      renderRowWithDirection(orig, container, row, className) {
+         const style = this.table.renderStyle;
+         if (style != 'scroll') return orig(container, row, className);
+         const rendered = row.render({ className: className });
+         if (this.direction() == 'up') container.append(rendered);
+         else container.prepend(rendered);
+         return rendered;
+      }
+      renderScrollingBody(orig) {
+         if (this.table.renderStyle != 'scroll') return orig();
+         const body = this.table.body;
+         const rows = this.table.rows;
+         const size = this.rs.state('pageSize');
+         if (this.direction() == 'up') this.renderScrollUp(body, rows, size);
+         else this.renderScrollDown(body, rows, size);
+         this.rs.state('prevPage', this.rs.state('page'));
+      }
+      renderScrollDown(body, rows, pageSize) {
+         let className = body.children.length % 2 == 0 ? 'odd' : 'even';
+         for (const row of rows.reverse()) {
+            const child = body.lastChild;
+            if (child && body.children.length == pageSize) child.remove();
+            const rendered = this.table.renderRow(body, row, className);
+            className = (className == 'odd') ? 'even' : 'odd';
+         }
+         if (rows.length < pageSize) {
+            let child = body.children.item(rows.length);
+            while (child) {
+               child.remove();
+               child = body.children.item(rows.length);
+            }
+         }
+      }
+      renderScrollUp(body, rows, pageSize) {
+         let className = body.children.length % 2 == 0 ? 'even' : 'odd';
+         for (const row of rows) {
+            let child = body.firstChild;
+            if (child && body.children.length == pageSize) child.remove();
+            const rendered = this.table.renderRow(body, row, className);
+            className = (className == 'odd') ? 'even' : 'odd';
+         }
+         if (rows.length < pageSize && this.rs.state('page') == 1) {
+            while (body.children.length > rows.length)
+               body.children.item(0).remove();
+         }
+      }
+   }
+   Object.assign(Animation.prototype, HStateTable.Util.Markup);
+   const modifiedMethods = {};
+   return {
+      initialise: function() {
+         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
+         this.animation = new Animation(this, modifiedMethods);
       },
       around: modifiedMethods
    };
@@ -238,6 +309,7 @@ HStateTable.Role.Configurable = (function() {
          this.rs.state('pageSize',   object['page-size']);
          this.rs.state('sortColumn', object['sort-column']);
          this.rs.state('sortDesc',   object['sort-desc']);
+         this.table.renderStyle = object['render-style'];
          this.preference.form.initialState = this.preference.getState();
          this.rs.redraw();
       }
@@ -278,6 +350,8 @@ HStateTable.Role.Configurable = (function() {
          }
          this.rs.state('pageSize', state['pageSize']);
          form.pageSize.value = state['pageSize'];
+         this.table.renderStyle = state['renderStyle'];
+         if (form.renderStyle) form.renderStyle.value = this.table.renderStyle;
          this.rs.state('sortColumn', state['sortColumn']);
          form.sortBy.value = state['sortColumn'];
          this.rs.state('sortDesc', state['sortDesc']);
@@ -293,6 +367,8 @@ HStateTable.Role.Configurable = (function() {
       updatePreference() {
          const form = this.preference.form;
          const pageSize = form.pageSize.value;
+         const renderStyle
+               = form.renderStyle ? form.renderStyle.value : 'replace';
          const sortBy = form.sortBy.value;
          const sortDesc = form.sortDesc.checked;
          this.rs.search({
@@ -303,6 +379,7 @@ HStateTable.Role.Configurable = (function() {
          const data = { columns: {}, sort: { column: sortBy, desc: sortDesc } };
          data['column_order'] = this.table.columns.map(col => col.name);
          data['page_size'] = pageSize;
+         this.table.renderStyle = data['render_style'] = renderStyle;
          for (const box of form.downBoxes) {
             const name = box.name.replace(/Down$/, '');
             data.columns[name] ||= {};
@@ -325,12 +402,14 @@ HStateTable.Role.Configurable = (function() {
          this.handlers = preference.handlers.functions;
          this.initialState = preference.getState();
          this.table = preference.table;
+         this.animation = this.table.roles['animation'] ? true : false;
          this.downloadable = this.table.roles['downloadable'] ? true : false;
          this.reorderable = this.table.roles['reorderable'] ? true : false;
          this.downBoxes = [];
          this.initialState;
          this.pageSize;
          this.preferenceTable;
+         this.renderStyle;
          this.sortBy;
          this.sortDesc;
          this.viewBoxes = [];
@@ -440,6 +519,19 @@ HStateTable.Role.Configurable = (function() {
             ondragleave: this.handlers['dragLeaveHandler'],
             ondrop: this.handlers['dropHandler']
          }, rows);
+         if (this.animation) {
+            const styleOptions = [];
+            for (const style of ['replace', 'scroll']) {
+               const option = { value: style };
+               if (style == this.table['renderStyle'])
+                  option.selected = 'selected';
+               styleOptions.push(this.h.option(option, this.ucfirst(style)));
+            }
+            this.renderStyle = this.h.select({
+               id: 'renderStyle', name: 'renderStyle',
+               onchange: this.handlers['changeHandler']
+            }, styleOptions);
+         }
          return this.h.form({
             'accept-charset': 'utf-8', className: 'dialog-form',
             enctype: 'multipart/form-data', id: this.table.name + 'Prefs'
@@ -455,6 +547,12 @@ HStateTable.Role.Configurable = (function() {
                this.pageSize,
                this.h.span('\xA0rows')
             ]),
+            this.animation ? this.h.div({ className: 'dialog-input' }, [
+               this.h.label({
+                  htmlFor: 'renderStyle'
+               }, 'Select render style\xA0'),
+               this.renderStyle
+            ]) : '',
             this.renderButtons()
          ]);
       }
@@ -477,6 +575,7 @@ HStateTable.Role.Configurable = (function() {
             columnOrder: this.table.columns.map(col => col.name),
             download: {},
             pageSize: rs.state('pageSize'),
+            renderStyle: this.table.renderStyle,
             sortColumn: rs.state('sortColumn'),
             sortDesc: rs.state('sortDesc'),
             viewable: {}
@@ -532,7 +631,7 @@ HStateTable.Role.Configurable = (function() {
             else this.preference.dialog.remove();
          }.bind(this);
          this.preference = new Preference(table, this);
-         if (this.controlLocation.match(/Top/)) this.table.topContent = true;
+         this.table.setControlState(this.controlLocation);
          const name = 'render' + this.controlLocation + 'Control';
          methods[name] = function(orig) {
             const container = orig();
@@ -551,13 +650,14 @@ HStateTable.Role.Configurable = (function() {
          }.bind(this);
       }
       render(container) {
+         const label = '\xA0' + this.label + '\xA0';
          const control = this.h.a({
             className: 'preference-link',
             onclick: this.dialogHandler,
             title: this.dialogTitle
          }, [
             this.h.span({ className: 'sprite sprite-preference' }),
-            '\xA0' + this.label + '\xA0'
+            this.h.span({ className: 'preference-control' }, label)
          ]);
          this.control = this.display(container, 'control', control);
       }
@@ -575,17 +675,20 @@ HStateTable.Role.Configurable = (function() {
 // Package HStateTable.Role.Downloadable
 HStateTable.Role.Downloadable = (function() {
    class Downloader {
-      constructor(resultset) {
-         this.rs = resultset;
-         this.textFile = null;
+      constructor(label) {
+         this.label = label || '';
+         this.textFile;
       }
-      async createLink(url, fDefault) {
+      async createLink(url, defaultFilename) {
          const options = { response: 'blob' };
          const { blob, filename } = await this.bitch.sucks(url, options);
-         if (this.textFile !== null) window.URL.revokeObjectURL(this.textFile);
          this.textFile = window.URL.createObjectURL(blob);
-         const attr = { download: filename || fDefault, href: this.textFile };
-         const link = this.h.a(attr, 'Downloading...');
+         const attr = {
+            className: 'state-table file-download-link',
+            download: filename || defaultFilename,
+            href: this.textFile
+         };
+         const link = this.h.a(attr, this.label);
          document.body.appendChild(link);
          return link;
       }
@@ -594,7 +697,8 @@ HStateTable.Role.Downloadable = (function() {
             const event = new MouseEvent('click');
             link.dispatchEvent(event);
             document.body.removeChild(link);
-         }, 100);
+            window.URL.revokeObjectURL(this.textFile);
+         }.bind(this), 100);
       }
       async handler(url, filename) {
          this.clickLink(await this.createLink(url, filename));
@@ -603,32 +707,31 @@ HStateTable.Role.Downloadable = (function() {
    Object.assign(Downloader.prototype, HStateTable.Util.Markup); // Apply role
    class DownloadControl {
       constructor(table, methods) {
-         const config = table.roles['downloadable'];
-         this.control;
+         this.table       = table;
+         this.rs          = table.resultset;
+         const config     = table.roles['downloadable'];
          this.displayLink = config['display'];
-         this.downloader = new Downloader(table.resultset);
-         this.filename = config['filename'];
-         this.label = config['label'];
-         this.location = config['location'];
+         this.filename    = config['filename'];
+         this.label       = config['label'];
+         this.location    = config['location'];
+         this.method      = config['method'];
+         this.downloader  = new Downloader(config['indicator']);
          this.controlLocation = this.location['control'];
-         this.method = config['method'];
-         this.rs = table.resultset;
-         this.table = table;
+         this.control;
          this.rs.extendState('download', false);
          this.rs.nameMap('download', 'download');
          this.downloadHandler = function(event) {
             event.preventDefault();
             const url = this.table.prepareURL({ download: this.method });
             this.downloader.handler(url, this.filename);
-            this.rs.reset();
          }.bind(this);
-         if (this.controlLocation.match(/Top/)) this.table.topContent = true;
+         this.table.setControlState(this.controlLocation);
          const name = 'render' + this.controlLocation + 'Control';
          methods[name] = function(orig) {
             const container = orig();
-            this.downloadControl.render(container);
+            this.render(container);
             return container;
-         };
+         }.bind(this);
          methods['prepareURL'] = function(orig, args) {
             args ||= {};
             const url = orig(args);
@@ -697,12 +800,13 @@ HStateTable.Role.Filterable = (function() {
          }.bind(this);
          methods['prepareURL'] = function(orig, args) {
             args ||= {};
-            const url = orig(args);
-            const params = url.searchParams;
             const filterColumn = this.rs.state('filterColumn');
             const filterValue = this.rs.state('filterValue');
             const colName = this.rs.nameMap('filterColumn');
             const valName = this.rs.nameMap('filterValue');
+            if (filterColumn && filterValue) this.rs.state('page', 1);
+            const url = orig(args);
+            const params = url.searchParams;
             if (filterColumn && filterValue) {
                params.set(colName, filterColumn);
                params.set(valName, filterValue);
@@ -760,7 +864,7 @@ HStateTable.Role.Form = (function() {
    class FormControl {
       constructor(table, methods) {
          this.table        = table;
-         this.pageManager  = table.pageManager;
+         this.navManager   = table.navManager;
          this.rs           = table.resultset;
          const config      = table.roles['form'];
          this.buttonConfig = config['buttons'];
@@ -771,7 +875,7 @@ HStateTable.Role.Form = (function() {
          this.handlers     = {};
          this.form;
          this.control = 'render' + this.location['control'] + 'Control';
-         if (this.control.match(/Top/)) this.table.topContent = true;
+         this.table.setControlState(this.control);
          for (const buttonConfig of this.buttonConfig) {
             if (buttonConfig['method'] == 'get') continue;
             this.handlers[buttonConfig['action']] = function(event) {
@@ -852,13 +956,12 @@ HStateTable.Role.Form = (function() {
          }
       }
       async sendForm(buttonConfig) {
-         const data = this.formData(buttonConfig);
-         const json = {
-            json: JSON.stringify({ data: data, _verify: this.rs.token })
-         };
-         const { location, object } = await this.bitch.blows(this.url, json);
-         if (this.pageManager && location)
-            this.pageManager.renderMessage(location);
+         const token = this.rs.token;
+         const data = { data: this.formData(buttonConfig), _verify: token };
+         const options = { json: JSON.stringify(data) };
+         const { location, object } = await this.bitch.blows(this.url, options);
+         const nav = this.navManager;
+         if (nav && location) nav.renderMessage(location);
          this.rs.redraw();
       }
    }
@@ -904,6 +1007,7 @@ HStateTable.Role.Pageable = (function() {
          this.pagingText = 'Page %current_page of %last_page';
          this.rs = table.resultset;
          this.table = table;
+         this.table.setControlState(this.location['control']);
          const messages = 'render' + this.location['control'] + 'Control';
          methods[messages] = function(orig) {
             const container = orig();
@@ -955,7 +1059,9 @@ HStateTable.Role.Pageable = (function() {
          for (const text of ['first', 'prev', 'page', 'next', 'last']) {
             let item;
             if (text == 'page') {
-               item = this.h.li(this.interpolatePageText());
+               item = this.h.li({
+                  className: 'page-indicator'
+               }, this.interpolatePageText());
             }
             else if (((text == 'first' || text == 'prev') && atFirst)
                      ||((text == 'next' || text == 'last') && atLast)) {
@@ -977,7 +1083,9 @@ HStateTable.Role.Pageable = (function() {
          for (const text of ['first', 'prev', 'page', 'next']) {
             let item;
             if (text == 'page') {
-               item = this.h.li('Page\xA0' + currentPage);
+               item = this.h.li({
+                  className: 'page-indicator'
+               }, 'Page\xA0' + currentPage);
             }
             else if (((text == 'first' || text == 'prev') && atFirst)
                      || (text == 'next' && atLast)) {
@@ -1014,6 +1122,7 @@ HStateTable.Role.PageSize = (function() {
          this.location = config['location'];
          this.rs = table.resultset;
          this.table = table;
+         this.table.setControlState(this.location['control']);
          const messages = 'render' + this.location['control'] + 'Control';
          methods[messages] = function(orig) {
             const container = orig();
@@ -1100,7 +1209,7 @@ HStateTable.Role.Searchable = (function() {
             if (column) this.searchableColumns.push(column);
          }
          const search = 'render' + this.location['control'] + 'Control';
-         if (search.match(/Top/)) this.table.topContent = true;
+         this.table.setControlState(search);
          methods[search] = function(orig) {
             const container = orig();
             this.renderSearch(container);
@@ -1114,11 +1223,12 @@ HStateTable.Role.Searchable = (function() {
          }.bind(this);
          methods['prepareURL'] = function(orig, args) {
             args ||= {};
-            const url = orig(args);
-            const params = url.searchParams;
             const searchValue = this.rs.state('searchValue');
             const colName = this.rs.nameMap('searchColumn');
             const valName = this.rs.nameMap('searchValue');
+            if (searchValue) this.rs.state('page', 1);
+            const url = orig(args);
+            const params = url.searchParams;
             if (searchValue) {
                const searchColumn = this.rs.state('searchColumn');
                if (searchColumn) params.set(colName, searchColumn);
@@ -1164,7 +1274,6 @@ HStateTable.Role.Searchable = (function() {
             if (selected) attr['selected'] = 'selected';
             options.push(this.h.option(attr, column.label));
          }
-// selectElements.push(this.h.span({ className:'search-display'},selectPrefix));
          selectElements.push(this.h.span({ className: 'search-arrow' }));
          const select = this.h.select({
             className: 'search-select', name: this.rs.nameMap('searchColumn')
@@ -1265,7 +1374,7 @@ HStateTable.Role.Tagable = (function() {
                const tag = row.result[this.searchColumn];
                if (this.prevTag != (tag || ''))
                   container.append(this.renderSection(tag));
-               orig(container, row, className);
+               return orig(container, row, className);
             }.bind(this);
             return;
          }
@@ -1280,7 +1389,7 @@ HStateTable.Role.Tagable = (function() {
             );
          }
          const location = 'render' + this.location + 'Control';
-         if (location.match(/Top/)) this.table.topContent = true;
+         this.table.setControlState(location);
          methods[location] = function(orig) {
             const container = orig();
             const control = this.h.div({ className: 'tag-control' }, content);

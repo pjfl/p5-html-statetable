@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Starts animation role
           - Replaces rs store/fetch with util library calls
           - Adds tag sections
           - Adds messages to form role. Resets modifiers

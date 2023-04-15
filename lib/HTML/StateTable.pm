@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 45 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 46 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -152,6 +152,15 @@ has 'name' =>
       return $meta->can('table_name') ? ($meta->table_name // q()) : q();
    };
 
+=item nav_manager
+
+An immutable non empty simple string. Name of the JS navigation management
+object
+
+=cut
+
+has 'nav_manager' => is => 'ro', isa => NonEmptySimpleStr, default => NUL;
+
 =item no_count
 
 A boolean which defaults to false. If set to true will prevent the counting
@@ -184,14 +193,6 @@ location of the page control
 
 has 'page_control_location' => is => 'ro', isa => NonEmptySimpleStr,
    default => 'BottomLeft';
-
-=item page_manager
-
-An immutable non empty simple string. Name of the JS page management object
-
-=cut
-
-has 'page_manager' => is => 'ro', isa => NonEmptySimpleStr, default => NUL;
 
 =item page_size
 
@@ -250,6 +251,15 @@ has 'prepared_resultset' =>
    clearer   => 'clear_prepared_resultset',
    predicate => 'has_prepared_resultset',
    required  => TRUE;
+
+=item render_style
+
+=cut
+
+has 'render_style' =>
+   is      => 'rw',
+   isa     => SimpleStr,
+   default => sub { shift->_default('render_style', 'replace') };
 
 =item renderer
 
@@ -434,6 +444,16 @@ has 'sortable_columns' =>
    default  => sub {
       return [ grep { $_->sortable && !ref $_->value } shift->all_columns ];
    };
+
+=item title_location
+
+Immutable string which defaults to C<inner>. If set to C<outer> causes the
+title and credit control divs to be rendered outside of the top and botton
+control divs
+
+=cut
+
+has 'title_location' => is => 'ro', isa => SimpleStr, default => 'inner';
 
 =item visisble_columns
 

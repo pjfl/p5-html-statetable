@@ -79,6 +79,9 @@ after 'BUILD' => sub {
 
 =item build_prepared_resultset
 
+Wraps around the core table method an conditionally adds the resultset method
+call to C<active>
+
 =cut
 
 around 'build_prepared_resultset' => sub {
@@ -94,6 +97,9 @@ around 'build_prepared_resultset' => sub {
 
 =item is_row_active( row )
 
+If the C<row> result has an C<active> method call it and return the result,
+otherwise return true
+
 =cut
 
 sub is_row_active {
@@ -103,6 +109,9 @@ sub is_row_active {
 }
 
 =item serialise_active
+
+Returns a hash reference of keys and values serialised for and sent to the
+JS running in the browser. JSON booleans are correctly marked
 
 =cut
 

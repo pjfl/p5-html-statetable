@@ -19,6 +19,8 @@ has 'download_filename' =>
    isa     => Str,
    default => sub { shift->name || 'download' };
 
+has 'download_indicator' => is => 'ro', isa => Str, default => 'Downloading...';
+
 has 'download_label' => is => 'ro', isa => Str, default => 'Download';
 
 has 'download_method' => is => 'ro', isa => Str, default => 'csv';
@@ -60,11 +62,12 @@ sub serialise_downloadable {
    my $self = shift;
 
    return {
-      display  => json_bool $self->download_display,
-      filename => $self->download_filename,
-      label    => $self->download_label,
-      location => { control => $self->download_control_location },
-      method   => $self->download_method,
+      display   => json_bool $self->download_display,
+      filename  => $self->download_filename,
+      indicator => $self->download_indicator,
+      label     => $self->download_label,
+      location  => { control => $self->download_control_location },
+      method    => $self->download_method,
    };
 }
 

@@ -14,34 +14,33 @@
     row-highlight: lightpink;
     row-inactive: gainsboro;
     row-odd: linen;
-    search-tag: gray;
     text: black;
     title-background: linen;
     title-border: orange;
 }
+body {
+    counter-reset: section;
+}
 .state-table {
     display: inline-block; text-align: left;
-    .page-control li, .page-size-control li {
+    .active-control-label {
+        font-family: sans-serif;
+    }
+    .page-control li,
+    .page-size-control li {
         display: inline-block;
     }
     .download-link,
-    .filter-value,
     .page-control a,
+    .page-control li,
     .page-size-control a,
-    .preference-link,
-    th a {
-        cursor: pointer;
-    }
     .active-control-label {
-        color: #colours[control-text]; font-size: small;
+        color: #colours[control-text]; cursor: pointer; font-size: small;
     }
     .page-control,
     .page-size-control {
         color: #colours[control-text]; font-family: sans-serif;
         font-size: small; margin: 0; padding-left: 0;
-    }
-    .page-control li {
-        cursor: pointer;
     }
     .page-control li.disabled {
         cursor: text; text-decoration: line-through;
@@ -49,25 +48,40 @@
     .page-control li:first-letter {
         text-transform: capitalize;
     }
+    .page-control li.page-indicator {
+        cursor: text;
+    }
     .page-size-control li.selected-page-size {
         text-decoration: underline;
+    }
+    .preference-link {
+        cursor: pointer;
     }
     .search-box input.search-field {
         border-radius: 5px;
     }
-    .section-row td {
-        background: #colours[row-inactive];
-        font-family: sans-serif; font-size: smaller;
-        .tag-value {
-            display: block;
+    .section-row {
+        background: #colours[row-inactive]; font-family: sans-serif;
+        font-size: smaller;
+        .section-check {
+            text-align: center;
         }
-        .tag-value:hover {
-            cursor: pointer; font-style: italic;
+        .section-check::before {
+            counter-increment: section;
+            content: counter(section) '. ';
+        }
+        .section-tag {
+            .tag-value {
+                display: block;
+            }
+            .tag-value:hover {
+                cursor: pointer; font-style: italic;
+            }
         }
     }
     .status-messages {
         background: #colours[message-background]; border-radius: 5px;
-        font-family: sans-serif; margin-top: 5px; padding: 3px 5px;
+        font: 0.8rem sans-serif; margin-top: 5px; padding: 0.25rem 0.5rem;
         text-align: center;
     }
     .status-messages a {
@@ -87,103 +101,110 @@
     .top-right-control {
         display: inline-block;
     }
+    .bottom-left-control {
+        float: left;
+    }
     .bottom-right-control,
     .top-right-control {
-        float: right; padding-top: 2px; text-align: right;
+        float: right; text-align: right;
     }
+    .bottom-control,
     .top-control {
         display: none; position: relative;
     }
+    .bottom-control.visible,
     .top-control.visible {
         display: block;
     }
     table {
         border-collapse: collapse; display: block; margin-bottom: 5px;
         margin-top: 5px; position: relative; width: 100%;
-    }
-    table tr.even {
-        background: #colours[row-even];
-    }
-    table tr.odd {
-        background: #colours[row-odd];
-    }
-    table tr.highlight {
-        background: #colours[row-highlight];
-    }
-    table tr.inactive {
-        background: #colours[row-inactive];
-    }
-    table td {
-        padding-left: 5px; padding-right: 5px;
-    }
-    table td a {
-        color: #colours[link];
-    }
-    table td a:link, table td a:visited {
-        text-decoration: none;
-    }
-    table td a:active, table td a:hover {
-        font-style: italic;
-    }
-    table td.number {
-        text-align: right;
-    }
-    table th {
-        background: #colours[panel-background]; border-right: 1px solid;
-        border-color: #colours[header-border]; font-family: sans-serif;
-        font-weight: normal; padding-left: 5px; padding-right: 5px;
-        white-space: nowrap;
-    }
-    table th.active-sort-column {
-        background: #colours[active-column];
-    }
-    table th a.filter-control {
-        color: #colours[control-text]; display: inline-block;
-        font-weight: normal;
-    }
-    table th:last-child {
-        border-right: 0px;
-    }
-    table th a {
-        color: #colours[text];
-    }
-    td.checkbox {
-        text-align: center;
+        td {
+            border-right: 1px solid transparent;
+        }
+        td:last-child {
+            border-right: 0;
+        }
+        td, th {
+            box-sizing: border-box; padding: 0 0.5rem 0 0.5rem;
+        }
+        td a {
+            color: #colours[link];
+        }
+        td a:link, td a:visited {
+            text-decoration: none;
+        }
+        td a:active, td a:hover {
+            font-style: italic;
+        }
+        td.checkbox {
+            text-align: center;
+        }
+        td.number {
+            text-align: right;
+        }
+        th {
+            background: #colours[panel-background]; border-right: 1px solid;
+            border-color: #colours[header-border]; font-family: sans-serif;
+            font-weight: normal; white-space: nowrap;
+        }
+        th:last-child {
+            border-right: 0px;
+        }
+        th.active-sort-column {
+            background: #colours[active-column];
+        }
+        th a.filter-control {
+            color: #colours[control-text]; display: inline-block;
+            font-weight: normal;
+        }
+        th a {
+            color: #colours[text]; cursor: pointer;
+        }
+        tr.even {
+            background: #colours[row-even];
+        }
+        tr.odd {
+            background: #colours[row-odd];
+        }
+        tr.highlight {
+            background: #colours[row-highlight];
+        }
+        tr.inactive {
+            background: #colours[row-inactive];
+        }
     }
     .cell-content-append {
-        display: block; list-style: none; margin-top: 0;
-        margin-bottom: 0; padding-left: 3px; padding-right: 3px;
+        display: inline-block; list-style: none; margin-top: 0;
+        margin-bottom: 0; padding: 0 0.25rem 0 0.25rem;
     }
     .cell-tag {
-        display: inline-block; margin-right: 5px;
-        padding-left: 3px; padding-right: 3px;
+        display: inline-block; margin: 0; padding-right: 0.25rem;
+        * {
+            display: inline-block; line-height: 12px; vertical-align: middle;
+        }
     }
     .cell-tag .tag-arrow-left {
-        display: inline-block; border-top: 8px solid transparent;
+        border-top: 8px solid transparent;
         border-bottom: 8px solid transparent; border-right: 8px solid;
-        border-right-color: #colours[search-tag]; height: 0;
-        vertical-align: middle; width: 0;
+        border-right-color: #colours[button-background];
+        height: 0; width: 0;
     }
     .cell-tag .tag-arrow-left::after {
-        bottom: 5px; color: #colours[contrast]; content: '.'; display: block;
-        font-size: larger; height: 20px; padding-left: 3px; position: absolute;
-        width: 5px;
+        content: '.'; display: inline-block;
+        font-size: larger; position: absolute;
+        transform: translate(0.25rem, -100%);
     }
     .cell-tag .tag-value {
-        background: #colours[search-tag];
-        border-bottom-right-radius: 3px; border-top-right-radius: 3px;
-        color: #colours[contrast]; cursor: pointer; display: inline-block;
-        font-size: x-small; padding-bottom: 1px; padding-left: 3px;
-        padding-right: 3px; padding-top: 2px;
-        vertical-align: middle;
+        background: #colours[button-background]; border-radius: 0 3px 3px 0;
+        color: #colours[link]; cursor: pointer; font-size: x-small;
+        padding: 2px 0.25rem 2px 0.25rem;
     }
     .filter-dialog,
     .preference-dialog {
         background: #colours[panel-background]; border: 1px solid;
-        border-radius: 3px; position: absolute; top: 25px; z-index: 10;
-    }
-    .filter-values {
-        height: 100px; overflow: auto;
+        border-radius: 3px; box-shadow: 3px 3px 3px gray;
+        position: absolute; top: 25px; z-index: 10;
     }
     .preference-dialog.control-right {
         right: 0px;
@@ -212,7 +233,19 @@
         filter: sepia(0%);
     }
     .dialog-form {
-        padding-left: 3px; padding-right: 3px;
+        padding: 0 0.5rem 0.25rem 0.5rem;
+        table td:first-child {
+            padding-left: 0;
+        }
+        table td:last-child {
+            padding-right: 0;
+        }
+        table th:first-child {
+            padding-left: 0;
+        }
+        table th:last-child {
+            padding-right: 0;
+        }
     }
     .dialog-input {
         padding-bottom: 3px; padding-top: 3px;
@@ -220,18 +253,26 @@
     .dialog-input button {
         margin-right: 3px;
     }
+    .dialog-input span,
+    .dialog-input label {
+        font: normal 0.8rem sans-serif;
+    }
     .dialog-title {
         background: #colours[title-background];
         border-bottom: 1px solid; border-color: #colours[title-border];
-        font-weight: bold; min-width: 80px; padding: 3px; text-align: left;
+        font: bold 1rem sans-serif; min-width: 6rem;
+        padding: 0.25rem 0.5rem 0.25rem 0.5rem; text-align: left;
     }
     .filter-values {
-        font-size: smaller; font-weight: normal; list-style: none;
-        margin-top: 3px; margin-bottom: 3px; padding-left: 3px;
-        padding-right: 3px; text-align: left;
+        font: normal smaller serif; height: 100px; list-style: none;
+        margin-top: 3px; margin-bottom: 3px; overflow: auto;
+        padding: 0 0.5rem 0 0.5rem; text-align: left;
+    }
+    .filter-value {
+        color: #colours[link]; cursor: pointer;
     }
     .filter-value:hover {
-        color: #colours[link];
+        font-style: italic;
     }
     .grab-handle-cell {
         cursor: grab; text-align: center;
@@ -246,27 +287,53 @@
     .table-container.inline {
         padding-top: 10px;
     }
+    .table-form .table-button,
     .table-form button {
         margin-right: 0.5rem;
+    }
+    .table-form .table-button:last-child,
+    .table-form button:last-child {
+        margin-right: 0;
     }
     .table-form .table-button {
         background: #colours[button-background];
         border: 1px solid; border-color: #colours[button-border];
         border-radius: 3px; color: #colours[text];
         font-family: sans-serif; font-size: 12.5px; font-weight: 400;
-        margin-right: 0.5rem; padding: 3px 4px 2px 4px; text-align: center;
+        padding: 3px 4px 2px 4px; text-align: center;
         text-decoration: none; vertical-align: baseline;
     }
     .table-form .table-button:hover {
         background: #colours[button-hover];
     }
     .chart-container.inline {
-        padding-top: 3px;
+        padding-top: 6px;
     }
     .highcharts-figure {
         margin: 0;
     }
     .highcharts-legend.highcharts-no-tooltip {
         display: none;
+    }
+}
+.state-table.object-view {
+    box-shadow: 3px 3px 3px gray; display: inline-block; text-align: left;
+    td:first-child {
+        border-right: 1px solid; font: normal 1rem sans-serif;
+        padding-right: 0.5rem; white-space: nowrap;
+    }
+    .state-table td:first-child {
+        border: 0; font-family: serif;
+    }
+    .state-table th:first-child a {
+        color: #colours[text];
+    }
+    .table-form .table-button,
+    .table-form button {
+        margin-bottom: 0.5rem;
+    }
+    .table-form .table-button:first-child,
+    .table-form button:first-child {
+        margin-left: 0.5rem;
     }
 }
