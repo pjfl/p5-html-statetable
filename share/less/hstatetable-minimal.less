@@ -3,7 +3,7 @@
     button-background: #e9e9ed;
     button-border: gray;
     button-hover: lightgray;
-    close-background: red;
+    close-background: orange;
     contrast: white;
     control-text: gray;
     header-border: gray;
@@ -18,120 +18,31 @@
     title-background: linen;
     title-border: orange;
 }
+#fonts() {
+    data: Roboto Slab, serif;
+    system: Roboto, sans-serif;
+}
 body {
     counter-reset: section;
 }
 .state-table {
     display: inline-block; text-align: left;
-    .active-control-label {
-        font-family: sans-serif;
-    }
-    .page-control li,
-    .page-size-control li {
-        display: inline-block;
-    }
-    .download-link,
-    .page-control a,
-    .page-control li,
-    .page-size-control a,
-    .active-control-label {
-        color: #colours[control-text]; cursor: pointer; font-size: small;
-    }
-    .page-control,
-    .page-size-control {
-        color: #colours[control-text]; font-family: sans-serif;
-        font-size: small; margin: 0; padding-left: 0;
-    }
-    .page-control li.disabled {
-        cursor: text; text-decoration: line-through;
-    }
-    .page-control li:first-letter {
-        text-transform: capitalize;
-    }
-    .page-control li.page-indicator {
-        cursor: text;
-    }
-    .page-size-control li.selected-page-size {
-        text-decoration: underline;
-    }
-    .preference-link {
-        cursor: pointer;
-    }
-    .search-box input.search-field {
-        border-radius: 5px;
-    }
-    .section-row {
-        background: #colours[row-inactive]; font-family: sans-serif;
-        font-size: smaller;
-        .section-check {
-            text-align: center;
-        }
-        .section-check::before {
-            counter-increment: section;
-            content: counter(section) '. ';
-        }
-        .section-tag {
-            .tag-value {
-                display: block;
-            }
-            .tag-value:hover {
-                cursor: pointer; font-style: italic;
-            }
-        }
-    }
-    .status-messages {
-        background: #colours[message-background]; border-radius: 5px;
-        font: 0.8rem sans-serif; margin-top: 5px; padding: 0.25rem 0.5rem;
-        text-align: center;
-    }
-    .status-messages a {
-        color: #colours[link]; cursor: pointer; margin-left: 5px;
-    }
-    .status-messages a:hover {
-        font-style: italic;
-    }
-    .status-messages strong {
-        font-family: serif;
-    }
-    .active-control,
-    .bottom-left-control,
-    .bottom-right-control,
-    .search-box,
-    .top-left-control,
-    .top-right-control {
-        display: inline-block;
-    }
-    .bottom-left-control {
-        float: left;
-    }
-    .bottom-right-control,
-    .top-right-control {
-        float: right; text-align: right;
-    }
-    .bottom-control,
-    .top-control {
-        display: none; position: relative;
-    }
-    .bottom-control.visible,
-    .top-control.visible {
-        display: block;
-    }
     table {
-        border-collapse: collapse; display: block; margin-bottom: 5px;
-        margin-top: 5px; position: relative; width: 100%;
+        border-collapse: collapse; display: block; margin: 0.5rem 0;
+        position: relative; width: 100%;
         td {
-            border-right: 1px solid transparent;
-        }
-        td:last-child {
-            border-right: 0;
+            border-right: 1px solid transparent; font-family: #fonts[data];
         }
         td, th {
-            box-sizing: border-box; padding: 0 0.5rem 0 0.5rem;
+            box-sizing: border-box; padding: 0 0.5rem;
+        }
+        td:last-child, th:last-child {
+            border-right: 0;
         }
         td a {
-            color: #colours[link];
+            color: #colours[link]; font-family: #fonts[data];
         }
-        td a:link, td a:visited {
+        td a:link {
             text-decoration: none;
         }
         td a:active, td a:hover {
@@ -145,21 +56,20 @@ body {
         }
         th {
             background: #colours[panel-background]; border-right: 1px solid;
-            border-color: #colours[header-border]; font-family: sans-serif;
+            border-color: #colours[header-border]; font-family: #fonts[system];
             font-weight: normal; white-space: nowrap;
-        }
-        th:last-child {
-            border-right: 0px;
-        }
-        th.active-sort-column {
-            background: #colours[active-column];
-        }
-        th a.filter-control {
-            color: #colours[control-text]; display: inline-block;
-            font-weight: normal;
+            .column-header {
+                display: inline-block;
+            }
         }
         th a {
             color: #colours[text]; cursor: pointer;
+        }
+        th a.filter-control {
+            color: #colours[control-text]; display: inline-block;
+        }
+        th.active-sort-column {
+            background: #colours[active-column];
         }
         tr.even {
             background: #colours[row-even];
@@ -174,9 +84,108 @@ body {
             background: #colours[row-inactive];
         }
     }
+    .active-control-label {
+        font-family: #fonts[system];
+    }
+    .active-control-label,
+    .download-link,
+    .page-control a,
+    .page-control li,
+    .page-size-control a {
+        color: #colours[control-text]; cursor: pointer; font-size: small;
+    }
+    .page-control,
+    .page-size-control {
+        color: #colours[control-text]; font-family: #fonts[system];
+        font-size: small; margin: 0; padding-left: 0;
+    }
+    .page-control,
+    .page-control li,
+    .page-size-control li {
+        display: inline-block;
+    }
+    .page-control li.disabled {
+        cursor: text; text-decoration: line-through;
+    }
+    .page-control li:first-letter {
+        text-transform: capitalize;
+    }
+    .page-control li.page-indicator {
+        cursor: text;
+    }
+    .page-size-control li.selected-page-size {
+        text-decoration: underline;
+    }
+    .preference-control {
+        display: inline-block;
+        img {
+            height: 24px; width: 24px; vertical-align: middle;
+        }
+    }
+    .preference-control.text {
+        padding: 0 0.25rem;
+    }
+    .preference-link {
+        cursor: pointer; display: inline-block;
+    }
+    .search-box input.search-field {
+        border-radius: 5px;
+    }
+    .section-row {
+        background: #colours[row-inactive]; font-family: #fonts[system];
+        font-size: smaller;
+        .section-check {
+            text-align: center;
+        }
+        .section-check::before {
+            counter-increment: section; content: counter(section) '. ';
+        }
+        .section-tag {
+            .tag-value {
+                display: block;
+            }
+            .tag-value:hover {
+                cursor: pointer; font-style: italic;
+            }
+        }
+    }
+    .status-messages {
+        background: #colours[message-background]; border-radius: 5px;
+        font-family: #fonts[system]; font-size: 0.8rem; margin-top: 0.25rem;
+        padding: 0.25rem 0.5rem; text-align: center;
+    }
+    .status-messages a {
+        color: #colours[link]; cursor: pointer; margin-left: 0.5rem;
+    }
+    .status-messages a:hover {
+        font-style: italic;
+    }
+    .status-messages strong {
+        font-family: #fonts[data];
+    }
+    .active-control,
+    .bottom-left-control,
+    .bottom-right-control,
+    .search-box,
+    .top-left-control,
+    .top-right-control {
+        display: inline-block;
+    }
+    .bottom-control,
+    .top-control {
+        display: none; position: relative;
+    }
+    .bottom-control.visible,
+    .top-control.visible {
+        display: flex; justify-content: space-between;
+    }
+    .top-left-control,
+    .top-right-control {
+        margin-top: 0.25rem;
+    }
     .cell-content-append {
         display: inline-block; list-style: none; margin-top: 0;
-        margin-bottom: 0; padding: 0 0.25rem 0 0.25rem;
+        margin-bottom: 0; padding: 0 0.25rem;
     }
     .cell-tag {
         display: inline-block; margin: 0; padding-right: 0.25rem;
@@ -191,14 +200,13 @@ body {
         height: 0; width: 0;
     }
     .cell-tag .tag-arrow-left::after {
-        content: '.'; display: inline-block;
-        font-size: larger; position: absolute;
-        transform: translate(0.25rem, -100%);
+        content: '.'; display: inline-block; font-size: larger;
+        position: absolute; transform: translate(0.25rem, -100%);
     }
     .cell-tag .tag-value {
         background: #colours[button-background]; border-radius: 0 3px 3px 0;
-        color: #colours[link]; cursor: pointer; font-size: x-small;
-        padding: 2px 0.25rem 2px 0.25rem;
+        color: #colours[link]; cursor: pointer; font-family: #fonts[data];
+        font-size: x-small; padding: 2px 0.25rem;
     }
     .filter-dialog,
     .preference-dialog {
@@ -207,7 +215,7 @@ body {
         position: absolute; top: 25px; z-index: 10;
     }
     .preference-dialog.control-right {
-        right: 0px;
+        right: 0;
     }
     table.preference-columns {
         border: 2px transparent solid; user-select: none;
@@ -215,58 +223,65 @@ body {
     .dropzone.dragover {
         border: 2px solid; border-color: #colours[link];
     }
-    .dialog-buttons {
-        text-align: right;
-    }
     .dialog-button-download {
-        float: left;
+        order: 99;
+    }
+    .dialog-buttons {
+        display: flex; flex-direction: row-reverse;
+        justify-content: space-between;
     }
     .dialog-close {
-        align-items: center;
-        background: #colours[close-background]; border-radius: 3px;
-        box-shadow: 3px 3px 3px gray; color: #colours[contrast];
-        cursor: pointer; display: flex; filter: sepia(66%); float: right;
-        font-family: sans-serif; font-size: smaller; font-weight: bold;
-        height: 100%; padding-left: 3px; padding-right: 3px;
+        align-items: center; background: #colours[close-background];
+        border-radius: 3px; box-shadow: 3px 3px 3px gray;
+        color: #colours[contrast]; cursor: pointer; filter: sepia(66%);
+        font-family: #fonts[system]; font-size: smaller; font-weight: bold;
+        height: 100%; margin-top: 2px; padding: 0 0.25rem;
+        img {
+            height: 16px; width: 16px; vertical-align: middle;
+        }
     }
     .dialog-close:hover {
-        filter: sepia(0%);
+        box-shadow: inset 0 0 3px gray; filter: sepia(0%);
     }
     .dialog-form {
-        padding: 0 0.5rem 0.25rem 0.5rem;
-        table td:first-child {
+        padding: 0 1rem 0.25rem 1rem;
+        table td:first-child, table th:first-child {
             padding-left: 0;
         }
-        table td:last-child {
-            padding-right: 0;
-        }
-        table th:first-child {
-            padding-left: 0;
-        }
-        table th:last-child {
+        table td:last-child, table th:last-child {
             padding-right: 0;
         }
     }
     .dialog-input {
-        padding-bottom: 3px; padding-top: 3px;
+        padding: 0.25rem 0;
     }
     .dialog-input button {
-        margin-right: 3px;
+        margin-right: 0.25rem;
     }
     .dialog-input span,
     .dialog-input label {
-        font: normal 0.8rem sans-serif;
+        font-family: #fonts[system]; font-size: 0.8rem; line-height: 1rem;
     }
     .dialog-title {
-        background: #colours[title-background];
-        border-bottom: 1px solid; border-color: #colours[title-border];
-        font: bold 1rem sans-serif; min-width: 6rem;
-        padding: 0.25rem 0.5rem 0.25rem 0.5rem; text-align: left;
+        background: #colours[title-background]; border-bottom: 1px solid;
+        border-color: #colours[title-border]; display: flex;
+        font-family: #fonts[system]; font-size: 1rem; font-weight: bold;
+        justify-content: space-between; min-width: 6rem;
+        padding: 0.25rem 0.5rem;
+    }
+    .filter-label {
+        display: inline-block;
+        img {
+            height: 24px; width: 24px; vertical-align: middle;
+        }
+    }
+    .filter-label.text {
+        padding-left: 0.25rem;
     }
     .filter-values {
-        font: normal smaller serif; height: 100px; list-style: none;
-        margin-top: 3px; margin-bottom: 3px; overflow: auto;
-        padding: 0 0.5rem 0 0.5rem; text-align: left;
+        font-family: #fonts[data]; font-size: smaller; height: 6.5rem;
+        list-style: none; margin: 0.25rem 0; overflow: auto;
+        padding: 0 0.5rem; text-align: left;
     }
     .filter-value {
         color: #colours[link]; cursor: pointer;
@@ -282,10 +297,7 @@ body {
     }
     .chart-container.inline,
     .table-container.inline {
-        display: inline-block; vertical-align: top;
-    }
-    .table-container.inline {
-        padding-top: 10px;
+        display: inline-block; padding-top: 0.5rem; vertical-align: top;
     }
     .table-form .table-button,
     .table-form button {
@@ -296,18 +308,14 @@ body {
         margin-right: 0;
     }
     .table-form .table-button {
-        background: #colours[button-background];
-        border: 1px solid; border-color: #colours[button-border];
-        border-radius: 3px; color: #colours[text];
-        font-family: sans-serif; font-size: 12.5px; font-weight: 400;
-        padding: 3px 4px 2px 4px; text-align: center;
+        background: #colours[button-background]; border: 1px solid;
+        border-color: #colours[button-border]; border-radius: 3px;
+        color: #colours[text]; font-family: #fonts[system]; font-size: 12.5px;
+        font-weight: 400; padding: 3px 4px 2px 4px; text-align: center;
         text-decoration: none; vertical-align: baseline;
     }
     .table-form .table-button:hover {
         background: #colours[button-hover];
-    }
-    .chart-container.inline {
-        padding-top: 6px;
     }
     .highcharts-figure {
         margin: 0;
@@ -319,11 +327,11 @@ body {
 .state-table.object-view {
     box-shadow: 3px 3px 3px gray; display: inline-block; text-align: left;
     td:first-child {
-        border-right: 1px solid; font: normal 1rem sans-serif;
-        padding-right: 0.5rem; white-space: nowrap;
+        border-right: 1px solid; font-family: #fonts[system]; font-size: 0.8rem;
+        font-weight: normal; padding-right: 0.5rem; white-space: nowrap;
     }
     .state-table td:first-child {
-        border: 0; font-family: serif;
+        border: 0; font-family: #fonts[data]; font-size: 1rem;
     }
     .state-table th:first-child a {
         color: #colours[text];
@@ -336,4 +344,7 @@ body {
     .table-form button:first-child {
         margin-left: 0.5rem;
     }
+}
+.state-table .state-table table {
+    margin-bottom: 0;
 }

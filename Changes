@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - CSS fonts and svg icons
           - Starts animation role
           - Replaces rs store/fetch with util library calls
           - Adds tag sections

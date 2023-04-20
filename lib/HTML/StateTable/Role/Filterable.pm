@@ -10,11 +10,12 @@ use Ref::Util                   qw( is_coderef );
 use Unexpected::Functions       qw( UnknownView );
 use Moo::Role;
 
+# ↣ ↓ ⛢ ∀ ∇ 
+
 has 'filterable_dialog_title' => is => 'ro', isa => Str,
    default => 'Filter';
 
-has 'filterable_label' => is => 'ro', isa => Str,
-   default => '∇'; # ↣ ↓ ⛢ ∀ ∇
+has 'filterable_label' => is => 'lazy', isa => Str, default => '∇';
 
 has 'filterable_message_label' => is => 'ro', isa => Str,
    default => 'Filtering on column';

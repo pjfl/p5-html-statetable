@@ -131,6 +131,7 @@ HStateTable.Util = (function() {
       div(attr, content)      { return this._tag('div', attr, content) }
       figure(attr, content)   { return this._tag('figure', attr, content) }
       form(attr, content)     { return this._tag('form', attr, content) }
+      img(attr)               { return this._tag('img', attr) }
       input(attr, content)    { return this._tag('input', attr, content) }
       label(attr, content)    { return this._tag('label', attr, content) }
       li(attr, content)       { return this._tag('li', attr, content) }
@@ -155,6 +156,10 @@ HStateTable.Util = (function() {
       }
       checkbox(attr) {
          attr['type'] = 'checkbox';
+         return this._tag('input', attr);
+      }
+      hidden(attr) {
+         attr['type'] = 'hidden';
          return this._tag('input', attr);
       }
       text(attr) {

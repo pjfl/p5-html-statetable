@@ -65,14 +65,15 @@ HStateTable.ColumnTrait.Filterable = (function() {
          }.bind(this);
       }
       renderAnchor() {
+         const attr  = { className: 'filter-label' };
+         const isURL = this.label.match(/:/) ? true : false;
+         if (!isURL) attr.className = 'filter-label text';
+         const label = isURL ? this.h.img({ src: this.label }) : this.label;
          return this.h.a({
             className: 'filter-control',
             onclick: this.dialogHandler,
             title: this.dialogTitle
-         }, [
-            this.h.span({ className: 'sprite sprite-filter' }),
-            '\xA0' + this.label + '\xA0'
-         ]);
+         }, this.h.span(attr, label));
       }
       async renderValues() {
          const url = this.table.prepareURL({

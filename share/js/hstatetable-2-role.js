@@ -420,19 +420,21 @@ HStateTable.Role.Configurable = (function() {
                className: 'dialog-button-download',
                onclick: this.handlers['downloadHandler']
             }, 'Download') : '',
-            this.h.button({
-               className: 'dialog-button-clear',
-               onclick: this.handlers['clearHandler']
-            }, 'Clear'),
-            this.h.button({
-               className: 'dialog-button-reset',
-               onclick: this.handlers['resetHandler'],
-               type: 'reset'
-            }, 'Reset'),
-            this.h.button({
-               className: 'dialog-button-save',
-               onclick: this.handlers['saveHandler']
-            }, 'Save'),
+            this.h.div({ className: 'dialog-button-group' }, [
+               this.h.button({
+                  className: 'dialog-button-clear',
+                  onclick: this.handlers['clearHandler']
+               }, 'Clear'),
+               this.h.button({
+                  className: 'dialog-button-reset',
+                  onclick: this.handlers['resetHandler'],
+                  type: 'reset'
+               }, 'Reset'),
+               this.h.button({
+                  className: 'dialog-button-save',
+                  onclick: this.handlers['saveHandler']
+               }, 'Save')
+            ])
          ]);
       }
       renderCells(state, column) {
@@ -595,13 +597,20 @@ HStateTable.Role.Configurable = (function() {
          return column && column.displayed;
       }
       render() {
+         const close = this.control.dialogClose;
+         const attr  = { className: 'dialog-close' };
+         const isURL = close.match(/:/) ? true : false;
+         if (!isURL) attr.className = 'dialog-close text';
+         const label = isURL ? this.h.img({ src: close }) : close;
          const dialog = this.h.div({ className: 'preference-dialog' }, [
             this.h.div({
                className: 'dialog-title',
                onclick: this.control.dialogHandler
             }, [
-               this.control.dialogTitle,
-               this.h.span({ className: 'dialog-close' }, 'x')
+               this.h.span({
+                  className: 'dialog-title-text'
+               }, this.control.dialogTitle),
+               this.h.span(attr, label)
             ]),
             this.form.render(this.getState())
          ]);
@@ -616,6 +625,7 @@ HStateTable.Role.Configurable = (function() {
       constructor(table, methods) {
          const config = table.roles['configurable'];
          this.control;
+         this.dialogClose = config['dialog-close'] || 'x';
          this.dialogState = false;
          this.dialogTitle = config['dialog-title'] || '';
          this.label = config['label'] || 'V';
@@ -650,15 +660,15 @@ HStateTable.Role.Configurable = (function() {
          }.bind(this);
       }
       render(container) {
-         const label = '\xA0' + this.label + '\xA0';
+         const attr  = { className: 'preference-control' };
+         const isURL = this.label.match(/:/) ? true : false;
+         if (!isURL) attr.className = 'preference-control text';
+         const label = isURL ? this.h.img({ src: this.label }) : this.label;
          const control = this.h.a({
             className: 'preference-link',
             onclick: this.dialogHandler,
             title: this.dialogTitle
-         }, [
-            this.h.span({ className: 'sprite sprite-preference' }),
-            this.h.span({ className: 'preference-control' }, label)
-         ]);
+         }, this.h.span(attr, label));
          this.control = this.display(container, 'control', control);
       }
    }
@@ -956,13 +966,31 @@ HStateTable.Role.Form = (function() {
          }
       }
       async sendForm(buttonConfig) {
-         const token = this.rs.token;
-         const data = { data: this.formData(buttonConfig), _verify: token };
-         const options = { json: JSON.stringify(data) };
-         const { location, object } = await this.bitch.blows(this.url, options);
-         const nav = this.navManager;
-         if (nav && location) nav.renderMessage(location);
-         this.rs.redraw();
+         const action = buttonConfig['action'];
+         const nav    = this.navManager;
+         const token  = this.rs.token;
+         if (!action.match(/:/)) {
+            const data = { data: this.formData(buttonConfig), _verify: token };
+            const { location, object } = await this.bitch.blows(
+               this.url, { json: JSON.stringify(data) }
+            );
+            if (nav && location) nav.renderMessage(location);
+            this.rs.redraw();
+         }
+         else {
+            const attr = { name: '_verify', value: token };
+            const form = this.h.form(this.h.hidden(attr));
+            const { location, text } = await this.bitch.blows(
+               action, { headers: { prefer: 'render=partial' }, form: form }
+            );
+            if (location && nav) {
+               nav.renderMessage(location);
+               nav.renderLocation(location);
+            }
+            else if (text) {
+               console.warn('Unexpected text response');
+            }
+         }
       }
    }
    Object.assign(FormControl.prototype, HStateTable.Util.Markup);

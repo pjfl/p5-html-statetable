@@ -15,10 +15,13 @@ has 'configurable_action' => is => 'ro', isa => Str,
 has 'configurable_control_location' => is => 'ro', isa => Str,
    default => 'TopRight';
 
+has 'configurable_dialog_close' => is => 'lazy', isa => Str,
+   default => 'X';
+
 has 'configurable_dialog_title' => is => 'ro', isa => Str,
    default => 'Defaults';
 
-has 'configurable_label' => is => 'ro', isa => Str,
+has 'configurable_label' => is => 'lazy', isa => Str,
    default => '⚙';
 
 has 'configurable_params' => is => 'lazy', isa => HashRef, default => sub {
@@ -54,6 +57,7 @@ sub serialise_configurable {
    my $action = $self->configurable_action;
 
    return {
+      'dialog-close' => $self->configurable_dialog_close,
       'dialog-title' => $self->configurable_dialog_title,
       'label'        => $self->configurable_label,
       'location'     => { control => $self->configurable_control_location },

@@ -56,7 +56,7 @@ HStateTable.Renderer = (function() {
          this.title        = config['title'];
          this.traits       = config['traits'] || [];
          this.width        = config['width']
-            ? ('width:' + config['width'] + ';') : '';
+            ? ('min-width:' + config['width'] + ';') : '';
          this.header;
          this.rowSelector  = {};
          this.sortDesc     = this.rs.state('sortDesc');
@@ -88,6 +88,9 @@ HStateTable.Renderer = (function() {
                attr.className = 'active-sort-column';
             }
             content = [this.h.a({ onclick: this.sortHandler }, content[0])];
+         }
+         else if (content[0].match(/[^ ]/)) {
+            content = [this.h.span({ className: 'column-header' }, content[0])];
          }
          this.header = this.h.th(attr, content);
          return this.header;
