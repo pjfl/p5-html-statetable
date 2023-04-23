@@ -24,19 +24,22 @@ HStateTable.Renderer = (function() {
       }
       render() {
          const attr = {};
-         const content = this.getValue(attr);
-         const append = content.append;
-         const value = content.value;
+         const { append, link, value } = this.getValue(attr);
+         let cell;
          if (typeof value == 'string'
              && value.match(new RegExp(`class="${triggerClass}"`))) {
-            const cell = this.h.td(attr);
+            cell = this.h.td(attr);
             cell.innerHTML = value;
             HStateTable.Renderer.manager.scan(cell);
-            return cell;
          }
-         if (!content.link) return this.h.td(attr, [value, append]);
-         const link = this.h.a({ href: content.link }, value);
-         return this.h.td(attr, [link, append]);
+         else {
+            let content;
+            if (!link) content = [value, append];
+            else content = [this.h.a({ href: link }, value), append];
+            cell = this.h.td(attr, content);
+         }
+         cell.setAttribute('data-cell', this.column.name);
+         return cell;
       }
    };
    Object.assign(Cell.prototype, TableUtils.Markup); // Apply role
@@ -210,6 +213,7 @@ HStateTable.Renderer = (function() {
 
          this.body          = this.h.tbody();
          this.bottomContent = false;
+         this.caption       = this.properties['caption'];
          this.columnIndex   = {};
          this.columns       = [];
          this.header        = this.h.thead();
@@ -222,6 +226,8 @@ HStateTable.Renderer = (function() {
          this.titleLocation = this.properties['title-location'] || 'inner';
          this.topContent    = false;
 
+         if (this.caption.length)
+            this.table.append(this.h.caption(this.caption));
          this.table.append(this.header);
          this.table.append(this.body);
          this.applyRoles(true);

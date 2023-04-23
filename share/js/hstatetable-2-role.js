@@ -444,25 +444,31 @@ HStateTable.Role.Configurable = (function() {
             onchange: this.handlers['changeHandler']
          });
          this.viewBoxes.push(viewBox);
-         const cells = [
-            this.h.td(column.label || this.ucfirst(column.name)),
-            this.h.td({ className: 'checkbox' }, viewBox),
-         ];
+         let cell = this.h.td(column.label || this.ucfirst(column.name));
+         cell.setAttribute('data-cell', 'Column Name');
+         const cells = [cell];
+         cell = this.h.td({ className: 'checkbox' }, viewBox);
+         cell.setAttribute('data-cell', 'View');
+         cells.push(cell);
          if (this.downloadable) {
             const downBox = this.h.checkbox({
                checked: state['download'][column.name],
                id: column.name + 'Down', name: column.name + 'Down',
             });
             this.downBoxes.push(downBox);
-            cells.push(this.h.td({ className: 'checkbox' }, downBox));
+            cell = this.h.td({ className: 'checkbox' }, downBox);
+            cell.setAttribute('data-cell', 'Download');
+            cells.push(cell);
          }
          if (this.reorderable) {
             const orderControl = this.table.orderControl;
-            cells.push(this.h.td({
+            cell = this.h.td({
                className: 'grab-handle-cell'
             }, this.h.div({
                className: 'grab-handle', title: orderControl.title
-            }, orderControl.label)));
+            }, orderControl.label));
+            cell.setAttribute('data-cell', 'Order');
+            cells.push(cell);
          }
          return cells;
       }

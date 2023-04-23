@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 47 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 48 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -44,6 +44,15 @@ reload
 Defines the following attributes;
 
 =over 3
+
+=item caption
+
+An immutable string with a null default. If set will display as the tables
+caption
+
+=cut
+
+has 'caption' => is => 'ro', isa => SimpleStr, default => NUL;
 
 =item cell_class
 

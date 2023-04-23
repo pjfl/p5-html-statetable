@@ -128,6 +128,7 @@ HStateTable.Util = (function() {
          return el;
       }
       a(attr, content)        { return this._tag('a', attr, content) }
+      caption(attr, content)  { return this._tag('caption', attr, content) }
       div(attr, content)      { return this._tag('div', attr, content) }
       figure(attr, content)   { return this._tag('figure', attr, content) }
       form(attr, content)     { return this._tag('form', attr, content) }

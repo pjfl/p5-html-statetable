@@ -211,6 +211,7 @@ sub _serialise_properties {
    $uri->query_param($self->query_key => $table->name);
 
    my $data = {
+      'caption'         => $table->caption,
       'data-url'        => $uri->as_string,
       'enable-paging'   => json_bool $table->paging,
       'max-page-size'   => $table->max_page_size,

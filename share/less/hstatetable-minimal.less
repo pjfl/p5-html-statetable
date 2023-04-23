@@ -27,6 +27,10 @@ body {
 }
 .state-table {
     display: inline-block; text-align: left;
+    caption {
+        font-family: #fonts[system]; text-align: left;
+        text-transform: uppercase;
+    }
     table {
         border-collapse: collapse; display: block; margin: 0.5rem 0;
         position: relative; width: 100%;
@@ -311,7 +315,7 @@ body {
         background: #colours[button-background]; border: 1px solid;
         border-color: #colours[button-border]; border-radius: 3px;
         color: #colours[text]; font-family: #fonts[system]; font-size: 12.5px;
-        font-weight: 400; padding: 3px 4px 2px 4px; text-align: center;
+        font-weight: 400; padding: 2px 4px; text-align: center;
         text-decoration: none; vertical-align: baseline;
     }
     .table-form .table-button:hover {
@@ -323,6 +327,26 @@ body {
     .highcharts-legend.highcharts-no-tooltip {
         display: none;
     }
+    @media (max-width: 680px) {
+        table {
+            td {
+                display: grid; grid-template-columns: 15ch auto;
+            }
+            td, td.checkbox {
+                justify-content: left; text-align: left !important;
+            }
+            td::before {
+                content: attr(data-cell) ': '; font-family: #fonts[system];
+                font-weight: bold; text-transform: capitalize;
+            }
+            th {
+                display: none;
+            }
+        }
+        .chart-container {
+            display: none !important;
+        }
+    }
 }
 .state-table.object-view {
     box-shadow: 3px 3px 3px gray; display: inline-block; text-align: left;
@@ -330,13 +354,15 @@ body {
         border-right: 1px solid; font-family: #fonts[system]; font-size: 0.8rem;
         font-weight: normal; padding-right: 0.5rem; white-space: nowrap;
     }
+    .state-table caption {
+        display: none;
+    }
     .state-table td:first-child {
         border: 0; font-family: #fonts[data]; font-size: 1rem;
     }
     .state-table th:first-child a {
         color: #colours[text];
     }
-    .table-form .table-button,
     .table-form button {
         margin-bottom: 0.5rem;
     }
