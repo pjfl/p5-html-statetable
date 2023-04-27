@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Minor CSS improvements
           - Responsive tables
           - CSS fonts and svg icons
           - Starts animation role
