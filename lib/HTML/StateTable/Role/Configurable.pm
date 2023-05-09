@@ -106,11 +106,12 @@ sub _apply_configurable_params {
 sub _preference {
    my $self = shift;
 
-   return unless $self->has_context;
+   return {} unless $self->has_context;
 
-   my $rs   = $self->context->model('Preference');
-   my $name = 'table' . DOT . $self->name . DOT . 'preference';
-   my $pref = $rs->find({ name => $name }, { key => 'preference_name' });
+   my $rs      = $self->context->model('Preference');
+   my $name    = 'table' . DOT . $self->name . DOT . 'preference';
+   my $user_id = $self->context->session->id;
+   my $pref    = $rs->find({ user_id => $user_id, name => $name });
 
    return $pref ? $pref->value : {};
 }
