@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Weakens request
           - Configurable now per user
           - Minor CSS improvements
           - Responsive tables
