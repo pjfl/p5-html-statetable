@@ -25,11 +25,6 @@ has 'download_label' => is => 'ro', isa => Str, default => 'Download';
 
 has 'download_method' => is => 'ro', isa => Str, default => 'csv';
 
-has 'download_stash_key' =>
-   is      => 'ro',
-   isa     => Str,
-   default => SERIALISE_TABLE_KEY;
-
 has 'download_view_name' =>
    is      => 'ro',
    isa     => Str,
@@ -42,13 +37,14 @@ after 'BUILD' => sub {
 
    $self->add_role('downloadable', __PACKAGE__);
 
-   throw UnknownView, [$self->download_view_name]
-      unless $self->context->view($self->download_view_name);
+   my $view = $self->download_view_name;
+
+   throw UnknownView, [$view] unless $self->context->view($view);
 
    if (my $format = $self->param_value('download')) {
       $self->context->stash(
-         view => $self->download_view_name,
-         $self->download_stash_key => {
+         view => $view,
+         SERIALISE_TABLE_KEY() => {
             filename => $self->download_filename,
             format   => $format,
             table    => $self,

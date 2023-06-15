@@ -1,5 +1,6 @@
-use utf8; # -*- coding: utf-8; -*-
 package HTML::StateTable::Role::Filterable;
+
+use utf8; # -*- coding: utf-8; -*-
 
 use HTML::StateTable::Constants qw( COL_INFO_TYPE_ATTR EXCEPTION_CLASS FALSE
                                     MAX_FILTER_ROWS SERIALISE_TABLE_KEY
@@ -49,7 +50,7 @@ after 'BUILD' => sub {
             no_filename        => TRUE,
             serialiser_args    => {
                disable_paging  => TRUE,
-               filter_column   => $column_name
+               filter_column   => $column_name,
             },
          },
       );

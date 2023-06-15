@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 51 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 52 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -161,15 +161,6 @@ has 'name' =>
       return $meta->can('table_name') ? ($meta->table_name // q()) : q();
    };
 
-=item nav_manager
-
-An immutable non empty simple string. Name of the JS navigation management
-object
-
-=cut
-
-has 'nav_manager' => is => 'ro', isa => NonEmptySimpleStr, default => NUL;
-
 =item no_count
 
 A boolean which defaults to false. If set to true will prevent the counting
@@ -202,6 +193,15 @@ location of the page control
 
 has 'page_control_location' => is => 'ro', isa => NonEmptySimpleStr,
    default => 'BottomLeft';
+
+=item page_manager
+
+An immutable non empty simple string with a null default. Name of the JS
+page management object
+
+=cut
+
+has 'page_manager' => is => 'ro', isa => NonEmptySimpleStr, default => NUL;
 
 =item page_size
 
@@ -262,6 +262,9 @@ has 'prepared_resultset' =>
    required  => TRUE;
 
 =item render_style
+
+A mutable simple string which defaults to 'replace'. Used by the experimental
+animation feature to select which type of row replacement animation to use
 
 =cut
 
@@ -562,7 +565,7 @@ sub BUILD {
    return;
 }
 
-=item add_role( role_name, class_name )
+=item add_role( $role_name, $class_name )
 
 Called by the applied table roles this method registers the role and it's
 class with the serialiser. Each table role is expected to implement a method
@@ -665,7 +668,7 @@ sub next_row {
    return $self->row_class->new( result => $result, table => $self );
 }
 
-=item param_value( name )
+=item param_value( $name )
 
 If context has been provided returns the named query parameter. Will look for
 "<table name>_<param name>" in the query parameters and return it if it
@@ -702,7 +705,7 @@ sub reset_resultset {
    return shift->prepared_resultset->reset;
 }
 
-=item serialiser( moniker, writer, args )
+=item serialiser( $moniker, \&writer, \%args )
 
 Returns the requested serialiser object. The C<moniker> is the serialiser
 class without the prefix. The C<writer> is a code reference that is called
@@ -734,7 +737,7 @@ sub serialiser {
    return $class->new($args);
 }
 
-=item sort_column( column_name )
+=item sort_column( $column_name )
 
 Accessor mutator for C<sort_column_name> attribute. Returns the current sort
 column object

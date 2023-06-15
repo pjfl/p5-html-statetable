@@ -75,9 +75,10 @@ Defines the following functions;
 
 =over 3
 
-=item cell( column )
+=item cell( $column )
 
-Takes a column object an uses it to create a new cell object which it returns
+Takes a column object reference an uses it to create a new cell object which it
+returns
 
 =cut
 
@@ -87,7 +88,7 @@ sub cell {
    return $column->create_cell($self);
 }
 
-=item get_cell( column_name )
+=item get_cell( $column_name )
 
 Searches the list of cells for one with a matching C<column_name>
 
@@ -113,7 +114,7 @@ sub columns {
    my $self = shift; return $self->table->columns;
 }
 
-=item compound_method( methods, @args )
+=item compound_method( $methods, @args )
 
 Splits the C<methods> argument on dot and descends into the result object.
 Calls the final method in the list passing in the supplied C<args>

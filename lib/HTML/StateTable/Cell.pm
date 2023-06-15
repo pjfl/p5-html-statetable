@@ -206,9 +206,13 @@ sub serialise_value {
    return 1 == scalar keys %{$res} ? $res->{value} : $res;
 }
 
-=item serialise_value2hash
+=item serialise_value2hash( $value, \%response )
 
-Placeholder method wrapped by applied traits
+Placeholder method wrapped by applied traits. This is called by
+C<serialise_value> which passes in the cell value and a response hash whose
+'value' attribute also contains the cell value. Applied method modifiers can
+add attributes to the response hash reference which will be returned by
+C<serialise_value>
 
 =cut
 

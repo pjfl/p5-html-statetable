@@ -39,8 +39,8 @@ has 'container_tag' => is => 'ro', isa => Str, default => 'table';
 
 =item container
 
-The HTML C<container_tag>, applied attributes C<data>, and the table rows
-C<rows> rendered as a string
+The HTML C<container_tag>, applied attributes C<data>, and the table
+C<rows> rendered as an HTML string
 
 =cut
 

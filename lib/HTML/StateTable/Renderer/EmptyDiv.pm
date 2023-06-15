@@ -217,7 +217,7 @@ sub _serialise_properties {
       'max-page-size'   => $table->max_page_size,
       'no-count'        => json_bool $table->no_count,
       'no-data-message' => $table->empty_text,
-      'nav-manager'     => $table->nav_manager,
+      'page-manager'    => $table->page_manager,
       'page-size'       => $table->page_size,
       'render-style'    => $table->render_style,
       'row-count'       => 0,

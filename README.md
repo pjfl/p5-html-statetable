@@ -19,6 +19,11 @@ reload
 
 Defines the following attributes;
 
+- caption
+
+    An immutable string with a null default. If set will display as the tables
+    caption
+
 - cell\_class
 
     A lazy loadable class that defaults to [HTML::StateTable::Cell](https://metacpan.org/pod/HTML%3A%3AStateTable%3A%3ACell)
@@ -71,10 +76,25 @@ Defines the following attributes;
     A mutable non zero positive integer that defaults to 1. The number of the
     current page of data being displayed
 
+- page\_control\_location
+
+    An immutable non empty simple string which defaults to 'BottomRight'. The
+    location of the page control
+
+- page\_manager
+
+    An immutable non empty simple string with a null default. Name of the JS
+    page management object
+
 - page\_size
 
     A mutable non zero positive integer which defaults to 20. The number of rows
     to be displayed per page. This is settable from preferences
+
+- page\_size\_control\_location
+
+    An immutable non empty simple string which defaults to 'BottomLeft'. The
+    location of the page size control
 
 - pager
 
@@ -91,6 +111,11 @@ Defines the following attributes;
     builder method is `build_prepared_resultset`. The prepared resultset restricts
     the row retrieved from the database to those requested by the `Searchable` and
     `Filterable` table roles
+
+- render\_style
+
+    A mutable simple string which defaults to 'replace'. Used by the experimental
+    animation feature to select which type of row replacement animation to use
 
 - renderer
 
@@ -147,6 +172,12 @@ Defines the following attributes;
 
     A lazy array reference of `Column` objects
 
+- title\_location
+
+    Immutable string which defaults to `inner`. If set to `outer` causes the
+    title and credit control divs to be rendered outside of the top and botton
+    control divs
+
 - visisble\_columns
 
     A lazy array reference of `Column` objects that are not hidden.
@@ -167,7 +198,7 @@ Defines the following methods;
     Called after object instantiation it applys parameters from the query string
     in the request object if context has been provided
 
-- add\_role( role\_name, class\_name )
+- add\_role( $role\_name, $class\_name )
 
     Called by the applied table roles this method registers the role and it's
     class with the serialiser. Each table role is expected to implement a method
@@ -194,7 +225,7 @@ Defines the following methods;
     Call `next_result` to obtain the next result object which it uses to
     instantiate a row object which it returns
 
-- param\_value( name )
+- param\_value( $name )
 
     If context has been provided returns the named query parameter. Will look for
     "&lt;table name>\_&lt;param name>" in the query parameters and return it if it
@@ -204,14 +235,14 @@ Defines the following methods;
 
     Resets the resultset so that `next` can be called again
 
-- serialiser( moniker, writer, args )
+- serialiser( $moniker, \\&writer, \\%args )
 
     Returns the requested serialiser object. The `moniker` is the serialiser
     class without the prefix. The `writer` is a code reference that is called
     to write the serialised output. The `args` are passed to the constructor
     call for the serialiser object
 
-- sort\_column( column\_name )
+- sort\_column( $column\_name )
 
     Accessor mutator for `sort_column_name` attribute. Returns the current sort
     column object

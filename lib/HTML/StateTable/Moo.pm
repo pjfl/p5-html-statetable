@@ -3,8 +3,7 @@ package HTML::StateTable::Moo;
 use mro;
 use strictures;
 
-use HTML::StateTable::Constants qw( COLUMN_TRAIT_PREFIX FALSE TABLE_META
-                                    TABLE_META_CONFIG TRUE );
+use HTML::StateTable::Constants qw( COLUMN_TRAIT_PREFIX FALSE TABLE_META TRUE );
 use HTML::StateTable::Util      qw( throw );
 use Ref::Util                   qw( is_arrayref );
 use Sub::Install                qw( install_sub );
@@ -31,7 +30,7 @@ sub import {
       # Don't add this to a role. The ISA of a role is always empty!
       if ($target->can($method)) { $meta = $target->$method }
       else {
-         my $attr = { TABLE_META_CONFIG, target => $target, @args };
+         my $attr = { target => $target, @args };
 
          $meta = HTML::StateTable::Meta->new($attr);
          install_sub { as => $method, into => $target, code => sub {

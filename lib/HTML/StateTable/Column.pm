@@ -1,7 +1,6 @@
 package HTML::StateTable::Column;
 
-use HTML::StateTable::Constants qw( COLUMN_ALIAS COLUMN_META
-                                    COLUMN_META_CONFIG CELL_TRAIT_PREFIX
+use HTML::StateTable::Constants qw( COLUMN_ALIAS COLUMN_META CELL_TRAIT_PREFIX
                                     FALSE SPC TRUE );
 use HTML::StateTable::Types     qw( ArrayRef Bool CodeRef HashRef
                                     NonEmptySimpleStr Options PositiveInt
@@ -269,11 +268,11 @@ Placeholder to be modified by applied traits
 
 sub BUILD {}
 
-=item create_cell( row )
+=item create_cell( $row )
 
-Creates and return a new instance of the cell class passing both column
-and row into the constructor. Also applies the cell traits to the new cell
-object before returning it
+Creates and return a new instance of the cell class passing both column (self)
+and row object references into the constructor. Also applies the cell traits to
+the new cell object before returning it
 
 =cut
 
@@ -294,7 +293,7 @@ sub create_cell {
    return $cell;
 }
 
-=item hidden( table )
+=item hidden( $table )
 
 Called by the cell object to determine if the column is hidden. Returns a
 boolean
@@ -320,7 +319,7 @@ sub import {
    my ($class, @args) = @_; return $class->import_meta(__PACKAGE__, @args);
 }
 
-=item import_meta( target, @args )
+=item import_meta( $target, @args )
 
 Imports the meta object into the C<target> class. The optional C<args> are
 passed to the constructor for the meta object
@@ -334,14 +333,14 @@ sub import_meta {
    {
       no strict 'refs'; return if *{ "${target}::${attr}" }{CODE};
    }
-   my $config = { COLUMN_META_CONFIG, target => $target, @args };
+   my $config = { target => $target, @args };
    my $meta   = HTML::StateTable::Column::Meta->new($config);
 
    install_sub { as => $attr, into => $target, code => sub { $meta } };
    return;
 }
 
-=item new_with_traits( class, %args )
+=item new_with_traits( $class, %args )
 
 Creates a new instance of C<class> which it returns. The C<traits> array
 reference is delete from the optional C<args> and the list traits are applied

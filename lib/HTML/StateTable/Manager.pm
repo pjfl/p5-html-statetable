@@ -1,6 +1,6 @@
 package HTML::StateTable::Manager;
 
-use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE QUERY_KEY
+use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL QUERY_KEY
                                     SERIALISE_TABLE_KEY SERIALISE_TABLE_VIEW
                                     TRUE );
 use HTML::StateTable::Types     qw( Str );
@@ -49,13 +49,13 @@ to form a complete table class name
 
 has 'namespace' => is => 'ro', isa => Str, required => TRUE;
 
-=item nav_manager
+=item page_manager
 
-An immutable string. Name of the JS navigation management object
+An optional immutable string. Name of the JS page management object
 
 =cut
 
-has 'nav_manager' => is => 'ro', isa => Str, predicate => 'has_nav_manager';
+has 'page_manager' => is => 'ro', isa => Str, predicate => 'has_page_manager';
 
 =item query_key
 
@@ -111,10 +111,10 @@ Defines the following methods;
 
 =over 3
 
-=item table( name, options )
+=item table( $name, \%options )
 
 Returns a new table object. The C<namespace> attribute is prepended to the
-C<name> provided and that table class loaded is then loaded before creating
+C<name> provided and that table class is then loaded before creating
 the new instance
 
 =cut
@@ -126,7 +126,7 @@ sub table {
 
    $options->{download_view_name} = $self->view_name;
    $options->{filterable_view_name} = $self->view_name;
-   $options->{nav_manager} = $self->nav_manager if $self->has_nav_manager;
+   $options->{page_manager} = $self->page_manager if $self->has_page_manager;
    $options->{renderer_class} = $class if $class;
    $options->{renderer_args}->{query_key} = $self->query_key;
 
@@ -137,7 +137,7 @@ sub table {
    return $table;
 }
 
-=item new_with_context( name, options )
+=item new_with_context( $name, \%options )
 
 Proxy for C<table>
 
@@ -187,26 +187,28 @@ sub _setup_view {
    my ($self, $table) = @_;
 
    my $context = $table->context;
+   my $view    = $self->view_name;
 
-   throw UnknownView, [$self->view_name]
-      unless $context->view($self->view_name);
+   throw UnknownView, [$view] unless $context->view($view);
 
    my $params = $table->request->query_parameters;
-   my $key    = $params->{$self->query_key} // q();
+   my $name   = $params->{$self->query_key} // NUL;
+   my $key    = $self->stash_key;
 
-   if (!exists $context->stash->{$self->stash_key} && $key eq $table->name) {
-      $context->stash->{view} = $self->view_name;
+   return unless !exists $context->stash->{$key} && $name eq $table->name;
 
-      $context->stash->{$self->stash_key} = {
-         format          => 'json',
-         no_filename     => TRUE,
-         serialiser_args => {
-            disable_paging => FALSE,
-            serialise_meta => $params->{$self->meta_key} ? TRUE : FALSE,
-         },
-         table           => $table,
-      };
-   }
+   my $options = {
+      format          => 'json',
+      no_filename     => TRUE,
+      serialiser_args => {
+         disable_paging => FALSE,
+         serialise_meta => $params->{$self->meta_key} ? TRUE : FALSE,
+      },
+      table           => $table,
+   };
+
+   $context->stash(view => $view, $key => $options);
+   return;
 }
 
 use namespace::autoclean;

@@ -217,7 +217,7 @@ HStateTable.Renderer = (function() {
          this.columnIndex   = {};
          this.columns       = [];
          this.header        = this.h.thead();
-         this.navManager    = eval(this.properties['nav-manager'] || '');
+         this.pageManager   = eval(this.properties['page-manager'] || '');
          this.renderStyle   = this.properties['render-style'];
          this.rows          = [];
          this.rowCount      = 0;
@@ -405,7 +405,7 @@ HStateTable.Renderer = (function() {
          if (!this.rows.length) return this.renderNoData();
          this.renderBody();
          this.rowCount = this.rows.length;
-         if (this.navManager) this.navManager.onContentLoad();
+         if (this.pageManager) this.pageManager.onContentLoad();
       }
       renderTitleControl() {
          return this.titleControl;

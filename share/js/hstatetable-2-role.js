@@ -880,7 +880,7 @@ HStateTable.Role.Form = (function() {
    class FormControl {
       constructor(table, methods) {
          this.table        = table;
-         this.navManager   = table.navManager;
+         this.pageManager  = table.pageManager;
          this.rs           = table.resultset;
          const config      = table.roles['form'];
          this.buttonConfig = config['buttons'];
@@ -972,15 +972,15 @@ HStateTable.Role.Form = (function() {
          }
       }
       async sendForm(buttonConfig) {
-         const action = buttonConfig['action'];
-         const nav    = this.navManager;
-         const token  = this.rs.token;
+         const action  = buttonConfig['action'];
+         const manager = this.pageManager;
+         const token   = this.rs.token;
          if (!action.match(/:/)) {
             const data = { data: this.formData(buttonConfig), _verify: token };
             const { location, object } = await this.bitch.blows(
                this.url, { json: JSON.stringify(data) }
             );
-            if (nav && location) nav.renderMessage(location);
+            if (manager && location) manager.renderMessage(location);
             this.rs.redraw();
          }
          else {
@@ -989,9 +989,9 @@ HStateTable.Role.Form = (function() {
             const { location, text } = await this.bitch.blows(
                action, { headers: { prefer: 'render=partial' }, form: form }
             );
-            if (location && nav) {
-               nav.renderMessage(location);
-               nav.renderLocation(location);
+            if (manager && location) {
+               manager.renderMessage(location);
+               manager.renderLocation(location);
             }
             else if (text) {
                console.warn('Unexpected text response');

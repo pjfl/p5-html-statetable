@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - POD updates
           - Weakens request
           - Configurable now per user
           - Minor CSS improvements

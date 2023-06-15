@@ -52,7 +52,7 @@ sub throw (;@) {
    EXCEPTION_CLASS->throw(@_);
 }
 
-=item dquote( string )
+=item dquote( $string )
 
 Wraps and returns the supplied string in double quotes
 
@@ -64,7 +64,7 @@ sub dquote ($) {
    return quote_string('"', $string);
 }
 
-=item encode_only_entities( html )
+=item encode_only_entities( $html )
 
 Encode control chars and high bit chars, but leave '<', '&', '>', ''' and
 '"'. Encode as decimal rather than hex, to keep Lotus Notes happy
@@ -81,7 +81,7 @@ sub encode_only_entities {
    return $html;
 }
 
-=item ensure_class_loaded( class_name, options )
+=item ensure_class_loaded( $class_name, \%options )
 
 Loads the specified C<class_name> at runtime. The optional has reference of
 options includes; C<ignore_loaded> which if true will load the class again.
@@ -120,7 +120,7 @@ sub escape_formula (@) {
       @args;
 }
 
-=item foreign_sort( resultset, sorting, reverse )
+=item foreign_sort( $resultset, $sorting, $reverse )
 
 Applies the order by clause to the supplied resultset and the returns it.
 The C<sorting> argument is an array reference of hash references containing
@@ -198,7 +198,7 @@ sub _get_order {
    return \"LOWER($order_column)"; #"
 }
 
-=item json_bool( scalar )
+=item json_bool( $scalar )
 
 Evaluates the scalar value provided and returns references to true/false values
 for serialising to JSON
@@ -228,7 +228,7 @@ sub quote_column_name (;@) {
    return join DOT, @parts;
 }
 
-=item quote_string( quote, string )
+=item quote_string( $quote, $string )
 
 Wraps the supplied string in the quote characters and insert backslashes into
 the string if contains the quote characters
@@ -256,7 +256,7 @@ sub quote_string ($$) {
    return "${start_quote}${string}${end_quote}";
 }
 
-=item squote( string )
+=item squote( $string )
 
 Wraps and returns the supplied string in single quotes
 
@@ -268,7 +268,7 @@ sub squote ($) {
    return quote_string("'", $string);
 }
 
-=item trim( string, characters )
+=item trim( $string, $characters )
 
 Trims whitespace characters from both ends of the supplied string and returns
 it. The list of C<characters> to remove is optional and defaults to space and
@@ -285,7 +285,7 @@ sub trim (;$$) {
    return $value;
 }
 
-=item unquote_sting( string )
+=item unquote_sting( $string )
 
 Removes the first and last characters from the supplied string. Also removes
 one level of backslashes from within the string which it returns
