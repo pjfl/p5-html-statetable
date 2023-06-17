@@ -259,11 +259,9 @@ sub _get_mime_type {
       $filename .= DOT . TYPE_EXTENSION->{$mime_type};
    }
 
-   return $mime_type if $mime_type;
-
    (my $file_ext = $filename) =~ s{ \A .* \. }{}mx;
 
-   $mime_type ||= EXTENSION_TYPE->{lc $file_ext};
+   $mime_type = EXTENSION_TYPE->{lc $file_ext} || $mime_type;
    $mime_type = EXTENSION_TYPE->{'other'} unless $mime_type;
    return $mime_type;
 }

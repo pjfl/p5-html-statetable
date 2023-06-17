@@ -53,6 +53,10 @@ has 'namespace' => is => 'ro', isa => Str, required => TRUE;
 
 An optional immutable string. Name of the JS page management object
 
+=item has_page_manager
+
+Predicate
+
 =cut
 
 has 'page_manager' => is => 'ro', isa => Str, predicate => 'has_page_manager';
@@ -70,6 +74,10 @@ has 'query_key' => is => 'ro', isa => Str, default => QUERY_KEY;
 =item renderer_class
 
 An immutable string. The name of the non default renderer class
+
+=item has_renderer_class
+
+Predicate
 
 =cut
 

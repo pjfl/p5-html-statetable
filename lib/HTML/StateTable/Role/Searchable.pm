@@ -93,9 +93,7 @@ around 'build_prepared_resultset' => sub {
          push @search_params, $column->search_query->($column, $name, $search);
       }
 
-      return $rs unless scalar @search_params;
-
-      $rs = $rs->search(\@search_params);
+      $rs = $rs->search(\@search_params) if scalar @search_params;
    }
 
    return $rs;

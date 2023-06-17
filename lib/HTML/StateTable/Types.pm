@@ -135,7 +135,7 @@ subtype Iterable => as Object, where {
 
 =item Options
 
-A subtype of hash reference which can be coearced from an array reference of
+A subtype of hash reference which can be coerced from an array reference of
 keys
 
 =cut

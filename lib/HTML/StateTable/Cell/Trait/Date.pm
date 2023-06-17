@@ -14,32 +14,34 @@ __END__
 
 =head1 Name
 
-HTML::StateTable::Cell::Trait::Date - One-line description of the modules purpose
+HTML::StateTable::Cell::Trait::Date - Abstract base role
 
 =head1 Synopsis
 
-   use HTML::StateTable::Column::Trait::Date;
-   # Brief but working code examples
+   use Moo;
+   with 'HTML::StateTable::Column::Trait::Date';
 
 =head1 Description
 
+Abstract base role
+
 =head1 Configuration and Environment
 
-Defines the following attributes;
-
-=over 3
-
-=back
+Defines no attributes
 
 =head1 Subroutines/Methods
 
+Defines no methods or functions
+
 =head1 Diagnostics
+
+None
 
 =head1 Dependencies
 
 =over 3
 
-=item L<Class::Usul>
+=item L<Moo::Role>
 
 =back
 

@@ -26,6 +26,8 @@ column called active which is true
 
 Defines the following attributes;
 
+=over 3
+
 =item active_control_location
 
 An immutable string which defaults to 'TopLeft'. Choose where to display
@@ -95,7 +97,7 @@ around 'build_prepared_resultset' => sub {
    return $rs;
 };
 
-=item is_row_active( row )
+=item is_row_active( $row )
 
 If the C<row> result has an C<active> method call it and return the result,
 otherwise return true

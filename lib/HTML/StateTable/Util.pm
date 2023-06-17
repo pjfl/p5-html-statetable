@@ -107,7 +107,7 @@ sub ensure_class_loaded ($;$) {
 
 =item escape_formula( @args )
 
-Prefixes lines begining plus, minus, equals and @ with a tab character. Used
+Prefixes lines beginning plus, minus, equals and @ with a tab character. Used
 in the production of CSV files
 
 =cut
@@ -285,7 +285,7 @@ sub trim (;$$) {
    return $value;
 }
 
-=item unquote_sting( $string )
+=item unquote_string( $string )
 
 Removes the first and last characters from the supplied string. Also removes
 one level of backslashes from within the string which it returns

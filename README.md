@@ -40,6 +40,10 @@ Defines the following attributes;
     expected to contain a request object. Some table roles require this to
     function
 
+- has\_context
+
+    Predicate for the `context` attribute
+
 - displayable\_columns
 
     A lazy hash reference of booleans keyed by column name. Indicates that the
@@ -112,6 +116,10 @@ Defines the following attributes;
     the row retrieved from the database to those requested by the `Searchable` and
     `Filterable` table roles
 
+- has\_prepared\_resultset
+
+    Predicate for `prepared_resultset`
+
 - render\_style
 
     A mutable simple string which defaults to 'replace'. Used by the experimental
@@ -175,7 +183,7 @@ Defines the following attributes;
 - title\_location
 
     Immutable string which defaults to `inner`. If set to `outer` causes the
-    title and credit control divs to be rendered outside of the top and botton
+    title and credit control divs to be rendered outside of the top and bottom
     control divs
 
 - visisble\_columns
@@ -195,7 +203,7 @@ Defines the following methods;
 
 - BUILD
 
-    Called after object instantiation it applys parameters from the query string
+    Called after object instantiation it applies parameters from the query string
     in the request object if context has been provided
 
 - add\_role( $role\_name, $class\_name )
@@ -249,7 +257,7 @@ Defines the following methods;
 
 - sorted\_columns( @columns )
 
-    Returns the list of column objects sorted by their position attriute value
+    Returns the list of column objects sorted by their position attribute value
 
 # Diagnostics
 

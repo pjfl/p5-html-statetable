@@ -6,18 +6,100 @@ use HTML::StateTable::Util      qw( throw );
 use Ref::Util                   qw( is_coderef is_scalarref );
 use Moo::Role;
 
+=pod
+
+=encoding utf-8
+
+=head1 Name
+
+HTML::StateTable::Column::Trait::Filterable - Filters column values
+
+=head1 Synopsis
+
+   use Moo;
+
+   with 'HTML::StateTable::Column::Trait::Filterable';
+
+=head1 Description
+
+The custom meta class importer L<HTML::StateTable::Moo> will automatically
+apply this trait if the column attributes include C<filterable>
+
+=head1 Configuration and Environment
+
+Defines the following attributes;
+
+=over 3
+
+=item filter_column
+
+A privately mutable string. The name of column to filter on
+
+=item has_filter_column
+
+Predicate
+
+=cut
+
 has 'filter_column' => is => 'rwp', isa => Str,
    predicate => 'has_filter_column';
+
+=item filter_relation
+
+A privately mutable string. If no C<filter_column> is supplied then a
+C<filter_relation> must be supplied instead
+
+=item has_filter_relation
+
+Predicate
+
+=cut
 
 has 'filter_relation' => is => 'rwp', isa => Str,
    predicate => 'has_filter_relation';
 
+=item filter_use_pkey
+
+An immutable boolean which defaults true.
+
+=cut
+
 has 'filter_use_pkey' => is => 'ro', isa => Bool, default => TRUE;
+
+=item filter_value_map
+
+An immutable code reference or hash reference.
+
+=item has_filter_value_map
+
+Predicate
+
+=cut
 
 has 'filter_value_map' => is => 'ro', isa => CodeRef|HashRef,
    predicate => 'has_filter_value_map';
 
+=item filterable
+
+An immutable boolean which defaults false. Setting it to true selects the
+column for filtering
+
+=cut
+
 has 'filterable' => is => 'ro', isa => Bool, default => FALSE;
+
+=back
+
+=head1 Subroutines/Methods
+
+=over 3
+
+=item BUILD
+
+Before C<BUILD> in the parent class executes sets the filter column and/or
+the filter column relation
+
+=cut
 
 before 'BUILD' => sub {
    my $self = shift;
@@ -44,38 +126,17 @@ use namespace::autoclean;
 
 __END__
 
-=pod
-
-=encoding utf-8
-
-=head1 Name
-
-HTML::StateTable::Column::Trait::Filterable - One-line description of the modules purpose
-
-=head1 Synopsis
-
-   use HTML::StateTable::Column::Trait::Filterable;
-   # Brief but working code examples
-
-=head1 Description
-
-=head1 Configuration and Environment
-
-Defines the following attributes;
-
-=over 3
-
 =back
 
-=head1 Subroutines/Methods
-
 =head1 Diagnostics
+
+None
 
 =head1 Dependencies
 
 =over 3
 
-=item L<Class::Usul>
+=item L<Moo::Role>
 
 =back
 

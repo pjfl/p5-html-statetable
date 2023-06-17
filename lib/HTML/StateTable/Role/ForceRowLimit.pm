@@ -2,6 +2,36 @@ package HTML::StateTable::Role::ForceRowLimit;
 
 use Moo::Role;
 
+=pod
+
+=encoding utf-8
+
+=head1 Name
+
+HTML::StateTable::Role::ForceRowLimit - One-line description of the modules purpose
+
+=head1 Synopsis
+
+   with 'HTML::StateTable::Role::ForceRowLimit';
+
+=head1 Description
+
+=head1 Configuration and Environment
+
+Defines no attributes
+
+=over 3
+
+=back
+
+=head1 Subroutines/Methods
+
+=over 3
+
+=item force_row_limit
+
+=cut
+
 sub force_row_limit {
    my $self  = shift;
 
@@ -24,38 +54,17 @@ use namespace::autoclean;
 
 __END__
 
-=pod
-
-=encoding utf-8
-
-=head1 Name
-
-HTML::StateTable::Role::ForceRowLimit - One-line description of the modules purpose
-
-=head1 Synopsis
-
-   use HTML::StateTable::Role::ForceRowLimit;
-   # Brief but working code examples
-
-=head1 Description
-
-=head1 Configuration and Environment
-
-Defines the following attributes;
-
-=over 3
-
 =back
 
-=head1 Subroutines/Methods
-
 =head1 Diagnostics
+
+None
 
 =head1 Dependencies
 
 =over 3
 
-=item L<Class::Usul>
+=item L<Moo::Role>
 
 =back
 

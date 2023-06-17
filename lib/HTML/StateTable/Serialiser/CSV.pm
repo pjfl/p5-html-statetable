@@ -27,13 +27,17 @@ Serialise a table object in CSV format
 
 =head1 Configuration and Environment
 
-Defines the following attributes;
+Extends L<HTML::StateTable::Serialiser>. Defines the following attributes;
 
 =over 3
 
 =item mime_type
 
 Overrides the default in the parent class setting the value to 'text/csv'
+
+=item has_mime_type
+
+Predicate
 
 =cut
 

@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 52 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 53 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -92,6 +92,10 @@ has 'columns' =>
 An optional C<Context> object passed to the constructor. If supplied it is
 expected to contain a request object. Some table roles require this to
 function
+
+=item has_context
+
+Predicate for the C<context> attribute
 
 =cut
 
@@ -201,7 +205,7 @@ page management object
 
 =cut
 
-has 'page_manager' => is => 'ro', isa => NonEmptySimpleStr, default => NUL;
+has 'page_manager' => is => 'ro', isa => SimpleStr, default => NUL;
 
 =item page_size
 
@@ -250,6 +254,10 @@ A required lazy C<ResultSet> built from the C<resultset> attribute. The
 builder method is C<build_prepared_resultset>. The prepared resultset restricts
 the row retrieved from the database to those requested by the C<Searchable> and
 C<Filterable> table roles
+
+=item has_prepared_resultset
+
+Predicate for C<prepared_resultset>
 
 =cut
 
@@ -376,8 +384,9 @@ has 'row_count' =>
    default  => sub {
       my $self = shift;
 
-      return $self->paging
-         ? $self->pager->total_entries : $self->prepared_resultset->count;
+      return $self->prepared_resultset->count unless $self->paging;
+      return $self->pager->total_entries if $self->pager;
+      return 0;
    };
 
 =item serialisable_columns
@@ -461,7 +470,7 @@ has 'sortable_columns' =>
 =item title_location
 
 Immutable string which defaults to C<inner>. If set to C<outer> causes the
-title and credit control divs to be rendered outside of the top and botton
+title and credit control divs to be rendered outside of the top and bottom
 control divs
 
 =cut
@@ -553,7 +562,7 @@ around 'BUILDARGS' => sub {
 
 =item BUILD
 
-Called after object instantiation it applys parameters from the query string
+Called after object instantiation it applies parameters from the query string
 in the request object if context has been provided
 
 =cut
@@ -759,7 +768,7 @@ sub sort_column {
 
 =item sorted_columns( @columns )
 
-Returns the list of column objects sorted by their position attriute value
+Returns the list of column objects sorted by their position attribute value
 
 =cut
 

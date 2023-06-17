@@ -9,13 +9,75 @@ use Moo;
 
 extends qw'HTML::StateTable::Serialiser';
 
+=pod
+
+=encoding utf-8
+
+=head1 Name
+
+HTML::StateTable::Serialiser::JSON - Serialise a table object in JSON format
+
+=head1 Synopsis
+
+   use HTML::StateTable::Serialiser::JSON;
+
+=head1 Description
+
+Serialise a table object in JSON format
+
+=head1 Configuration and Environment
+
+Extends L<HTML::StateTable::Serialiser>. Defines the following attributes;
+
+=over 3
+
+=item mime_type
+
+Overrides the default in the parent class setting the value to
+'application/json'
+
+=item has_mime_type
+
+Predicate
+
+=cut
+
 has '+mime_type' => default => 'application/json';
+
+=item filter_column
+
+An immutable string without default. If set, it is the name of the column for
+which a sorted and unique list of values will be returned
+
+=cut
 
 has 'filter_column' => is => 'ro', isa => Str;
 
+=item serialise_as_hashref
+
+An immutable boolean which defaults true. Wraps the list of serialised records
+in a hash reference and includes the total record count. If false an array
+reference of serialised records is returned
+
+=cut
+
 has 'serialise_as_hashref' => is => 'ro', isa => Bool, default => TRUE;
 
+=item serialise_meta
+
+An immutable boolean which defaults false. If true the table meta data will
+be serialised instead of the data records
+
+=cut
+
 has 'serialise_meta' => is => 'ro', isa => Bool, default => FALSE;
+
+=item serialise_record_key
+
+An immutable string which defaults to 'name'. Can be set to 'label'. Selects
+the column attribute whose value is used as the key in the output data
+
+=cut
 
 has 'serialise_record_key' => is => 'ro', isa => Str, default => 'name';
 
@@ -28,6 +90,22 @@ has '_tags' =>
    isa     => HashRef,
    writer  => '_set_tags',
    default => sub { {} };
+
+=back
+
+=head1 Subroutines/Methods
+
+Defines the following methods;
+
+=over 3
+
+=item serialise
+
+Wraps the call to the method in the parent class. Will either serialise the
+filter column values, or serialise the table meta data, or call the parent
+method possibly also outputting a hash reference with a row count
+
+=cut
 
 around 'serialise' => sub {
    my ($orig, $self) = @_;
@@ -53,6 +131,14 @@ around 'serialise' => sub {
    return $index;
 };
 
+=item serialise_row( $row, $index )
+
+Wraps around the method in the parent class. Extracts and sets C<tags> from
+the row object. Adds booleans for the active and highlight row table roles
+if applied. JSON encodes the return data
+
+=cut
+
 around 'serialise_row' => sub {
    my ($orig, $self, $row, $index) = @_;
 
@@ -72,6 +158,14 @@ around 'serialise_row' => sub {
    return $row;
 };
 
+=item serialise_cell( $cell, $data )
+
+Stores the cell value in the data hash reference keyed by either the column
+label or the column name. Links and tags are also added to the data if
+available
+
+=cut
+
 sub serialise_cell {
    my ($self, $cell, $data) = @_;
 
@@ -89,6 +183,12 @@ sub serialise_cell {
    $data->{$key} = $value;
    return;
 }
+
+=item skip_serialise_cell( $cell )
+
+Returns true if column C<append_to> is set or the column is hidden
+
+=cut
 
 sub skip_serialise_cell {
    my ($self, $cell) = @_;
@@ -157,3 +257,56 @@ sub _store_value_as_hash {
 use namespace::autoclean;
 
 1;
+
+__END__
+
+=back
+
+=head1 Diagnostics
+
+None
+
+=head1 Dependencies
+
+=over 3
+
+=item L<JSON::MaybeXS>
+
+=back
+
+=head1 Incompatibilities
+
+There are no known incompatibilities in this module
+
+=head1 Bugs and Limitations
+
+There are no known bugs in this module. Please report problems to
+http://rt.cpan.org/NoAuth/Bugs.html?Dist=HTML-StateTable.
+Patches are welcome
+
+=head1 Acknowledgements
+
+Larry Wall - For the Perl programming language
+
+=head1 Author
+
+Peter Flanigan, C<< <pjfl@cpan.org> >>
+
+=head1 License and Copyright
+
+Copyright (c) 2023 Peter Flanigan. All rights reserved
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself. See L<perlartistic>
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE
+
+=cut
+
+# Local Variables:
+# mode: perl
+# tab-width: 3
+# End:
+# vim: expandtab shiftwidth=3:
