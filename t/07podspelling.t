@@ -56,6 +56,7 @@ SERIALISERS
 SPC
 TopLeft
 UnknownView
+chartable
 csv
 divs
 downloader

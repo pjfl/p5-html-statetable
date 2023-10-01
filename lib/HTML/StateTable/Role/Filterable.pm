@@ -11,24 +11,103 @@ use Ref::Util                   qw( is_coderef );
 use Unexpected::Functions       qw( UnknownView );
 use Moo::Role;
 
-# ↣ ↓ ⛢ ∀ ∇ 
+=pod
 
-has 'filterable_dialog_title' => is => 'ro', isa => Str,
-   default => 'Filter';
+=encoding utf-8
+
+=head1 Name
+
+HTML::StateTable::Role::Filterable - Filters rows by column value
+
+=head1 Synopsis
+
+   use Moo;
+   extends 'HTML::StateTable';
+   with 'HTML::StateTable::Role::Filterable';
+
+=head1 Description
+
+Filters rows by column value
+
+=head1 Configuration and Environment
+
+Defines the following attributes;
+
+=over 3
+
+=item filterable_dialog_title
+
+An immutable string which defaults to C<Filter>. The title text displayed on
+the filter dialog
+
+=cut
+
+has 'filterable_dialog_title' => is => 'ro', isa => Str, default => 'Filter';
+
+=item filterable_label
+
+A lazy immutable string which defaults to C<∇>. Displayed in the header,
+triggers the display of the filter dialog
+
+=cut
 
 has 'filterable_label' => is => 'lazy', isa => Str, default => '∇';
+# Alternate labels ↣ ↓ ⛢ ∀ ∇ 
+
+=item filterable_message_label
+
+An immutable string which defaults to C<<Filtering on column>>. Displayed
+when filtering is active
+
+=cut
 
 has 'filterable_message_label' => is => 'ro', isa => Str,
    default => 'Filtering on column';
 
-has 'filterable_message_location' => is => 'ro', isa => Str,
-   default => 'Title';
+=item filterable_message_location
+
+An immutable string with a default of C<Title>. The location where the
+filtering message is displayed
+
+=cut
+
+has 'filterable_message_location' => is => 'ro', isa => Str, default => 'Title';
+
+=item filterable_remove_label
+
+An immutable string which defaults to C<Show all>. Displayed when filtering,
+returns to the unfiltered view
+
+=cut
 
 has 'filterable_remove_label' => is => 'ro', isa => Str,
    default => 'Show all';
 
+=item filterable_view_name
+
+An immutable string which defaults to the constant C<SERIALISE_TABLE_VIEW>.
+The application view name used to serialise the filter results
+
+=cut
+
 has 'filterable_view_name' => is => 'ro', isa => Str,
    default => SERIALISE_TABLE_VIEW;
+
+=back
+
+=head1 Subroutines/Methods
+
+Defines the following methods;
+
+=over 3
+
+=item BUILD
+
+Executes after C<BUILD>. If the table has C<context> adds the
+C<serialise_filterable> method to the call chain used to serialise the table
+description
+
+=cut
 
 after 'BUILD' => sub {
    my $self = shift;
@@ -41,23 +120,30 @@ after 'BUILD' => sub {
 
    throw UnknownView, [$view] unless $self->context->view($view);
 
-   if (my $column_name = $self->param_value('filter_column_values')) {
-      $self->context->stash(
-         view                  => $view,
-         SERIALISE_TABLE_KEY() => {
-            table              => $self,
-            format             => 'json',
-            no_filename        => TRUE,
-            serialiser_args    => {
-               disable_paging  => TRUE,
-               filter_column   => $column_name,
-            },
+   my $column_name = $self->param_value('filter_column_values') or return;
+
+   $self->context->stash(
+      SERIALISE_TABLE_KEY() => {
+         table              => $self,
+         format             => 'json',
+         no_filename        => TRUE,
+         serialiser_args    => {
+            disable_paging  => TRUE,
+            filter_column   => $column_name,
          },
-      );
-   }
+      },
+      view => $view,
+   );
 
    return;
 };
+
+=item build_prepared_resultset
+
+Executes around the method in the consuming class. Applies the filter query
+parameters to the resultset
+
+=cut
 
 around 'build_prepared_resultset' => sub {
    my ($orig, $self) = @_;
@@ -96,6 +182,12 @@ around 'build_prepared_resultset' => sub {
 
    return $rs->search({ "${relation_name}.${filter_column}" => $value });
 };
+
+=item filter_column_values( $column_name )
+
+Returns the list of column values for the specified column name
+
+=cut
 
 sub filter_column_values {
    my ($self, $column_name) = @_;
@@ -150,6 +242,13 @@ sub filter_column_values {
    return [$rs->get_column($column->filter_column)->all];
 }
 
+=item serialise_filterable
+
+Called by C<serialise_roles> in C<EmptyDiv> renderer. Returns a hash reference
+of parameters used by the front end to display the filter dialog
+
+=cut
+
 sub serialise_filterable {
    my $self = shift;
 
@@ -163,6 +262,7 @@ sub serialise_filterable {
    };
 }
 
+# Private methods
 sub _get_related_rs {
    my ($self, $related_rs, $relation) = @_;
 
@@ -187,3 +287,56 @@ sub _get_result_source_pkey {
 use namespace::autoclean;
 
 1;
+
+__END__
+
+=back
+
+=head1 Diagnostics
+
+None
+
+=head1 Dependencies
+
+=over 3
+
+=item L<Moo::Role>
+
+=back
+
+=head1 Incompatibilities
+
+There are no known incompatibilities in this module
+
+=head1 Bugs and Limitations
+
+There are no known bugs in this module. Please report problems to
+http://rt.cpan.org/NoAuth/Bugs.html?Dist=HTML-StateTable.
+Patches are welcome
+
+=head1 Acknowledgements
+
+Larry Wall - For the Perl programming language
+
+=head1 Author
+
+Peter Flanigan, C<< <lazarus@roxsoft.co.uk> >>
+
+=head1 License and Copyright
+
+Copyright (c) 2023 Peter Flanigan. All rights reserved
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself. See L<perlartistic>
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE
+
+=cut
+
+# Local Variables:
+# mode: perl
+# tab-width: 3
+# End:
+# vim: expandtab shiftwidth=3:

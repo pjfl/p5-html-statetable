@@ -166,6 +166,7 @@ has 'name' => is => 'ro', isa => NonEmptySimpleStr, required => TRUE;
 An immutable hash reference which defaults to an empty hash reference
 
 Handles C<add_option>, C<all_options>, and C<get_option> via the hash trait
+
 =cut
 
 has 'options' =>

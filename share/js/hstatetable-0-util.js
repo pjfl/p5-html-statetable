@@ -193,6 +193,11 @@ HStateTable.Util = (function() {
             return obj;
          },
          h: new HtmlTiny(),
+         isHTMLOfClass: function(value, className) {
+            if (typeof value != 'string') return false;
+            if (!value.match(new RegExp(`class="${className}"`))) return false;
+            return true;
+         },
          ucfirst: ucfirst
       },
       Modifiers: { // Another role

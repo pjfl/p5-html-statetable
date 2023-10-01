@@ -15,6 +15,8 @@ HTML::StateTable::Role::Active - Allows for the viewing of inactive records
 
 =head1 Synopsis
 
+   use Moo;
+   extends 'HTML::StateTable';
    with 'HTML::StateTable::Role::Active';
 
 =head1 Description
@@ -112,8 +114,8 @@ sub is_row_active {
 
 =item serialise_active
 
-Returns a hash reference of keys and values serialised for and sent to the
-JS running in the browser. JSON booleans are correctly marked
+Returns a hash reference of keys and values serialised for and sent to the JS
+running in the browser. JSON booleans are correctly marked
 
 =cut
 
@@ -143,7 +145,7 @@ None
 
 =over 3
 
-=item L<Moo>
+=item L<Moo::Role>
 
 =back
 

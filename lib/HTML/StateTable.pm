@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 53 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 54 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -200,8 +200,8 @@ has 'page_control_location' => is => 'ro', isa => NonEmptySimpleStr,
 
 =item page_manager
 
-An immutable non empty simple string with a null default. Name of the JS
-page management object
+An immutable simple string with a null default. Name of the JS page management
+object
 
 =cut
 
@@ -570,7 +570,7 @@ in the request object if context has been provided
 sub BUILD {
    my $self = shift;
 
-   $self->_apply_params if $self->has_context;
+   $self->apply_params if $self->has_context;
    return;
 }
 
@@ -587,6 +587,39 @@ sub add_role {
 
    $self->_add_role($role_name, $class_name);
    $self->add_role_name($role_name);
+   return;
+}
+
+=item apply_params
+
+If context is provided extracts query parameter values from the request and
+applies them to the table attributes
+
+=cut
+
+sub apply_params {
+   my $self = shift;
+
+   throw Unspecified, ['context'] unless $self->has_context;
+
+   my $sort = $self->param_value('sort');
+
+   $self->sort_column_name($sort) if $sort;
+
+   my $sort_desc = $self->param_value('desc');
+
+   $self->sort_desc(!!$sort_desc) if $sort;
+
+   my $page = $self->param_value('page');
+
+   $self->page($page) if defined $page && $page =~ m{ \A [0-9]+ \z }mx;
+
+   if (my $page_size = $self->param_value('page_size')) {
+      $page_size = 1 if $page_size < 1;
+      $page_size = $self->max_page_size if $page_size > $self->max_page_size;
+      $self->page_size($page_size);
+   }
+
    return;
 }
 
@@ -681,7 +714,8 @@ sub next_row {
 
 If context has been provided returns the named query parameter. Will look for
 "<table name>_<param name>" in the query parameters and return it if it
-exists
+exists. If not will return "<param name>" from the query parameters if that
+exists. If that does not exist then returns a null string
 
 =cut
 
@@ -818,32 +852,6 @@ sub _apply_pageing {
    return $rs->search(undef, { page => $self->page }) unless $self->paging;
 
    return $rs->search(undef, { page => $self->page, rows => $self->page_size });
-}
-
-sub _apply_params {
-   my $self = shift;
-
-   throw Unspecified, ['context'] unless $self->has_context;
-
-   my $sort = $self->param_value('sort');
-
-   $self->sort_column_name($sort) if $sort;
-
-   my $sort_desc = $self->param_value('desc');
-
-   $self->sort_desc(!!$sort_desc) if $sort;
-
-   my $page = $self->param_value('page');
-
-   $self->page($page) if defined $page && $page =~ m{ \A [0-9]+ \z }mx;
-
-   if (my $page_size = $self->param_value('page_size')) {
-      $page_size = 1 if $page_size < 1;
-      $page_size = $self->max_page_size if $page_size > $self->max_page_size;
-      $self->page_size($page_size);
-   }
-
-   return;
 }
 
 sub _apply_sorting {

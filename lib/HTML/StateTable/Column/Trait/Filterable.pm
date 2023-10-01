@@ -17,8 +17,8 @@ HTML::StateTable::Column::Trait::Filterable - Filters column values
 =head1 Synopsis
 
    use Moo;
-
-   with 'HTML::StateTable::Column::Trait::Filterable';
+   extends 'HTML::StateTable';
+   with 'HTML::StateTable::Role::Filterable';
 
 =head1 Description
 

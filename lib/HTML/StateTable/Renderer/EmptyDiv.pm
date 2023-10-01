@@ -229,7 +229,7 @@ sub _serialise_properties {
    $data->{'row-count'} = $table->row_count unless $table->no_count;
 
    $data->{'verify-token'} = $table->context->verification_token
-      if $table->has_context;
+      if $table->has_context && $table->context->can('verification_token');
 
    return $data;
 }

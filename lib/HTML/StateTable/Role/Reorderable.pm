@@ -1,5 +1,6 @@
-use utf8; # -*- coding: utf-8; -*-
 package HTML::StateTable::Role::Reorderable;
+
+use utf8; # -*- coding: utf-8; -*-
 
 use HTML::StateTable::Constants qw( FALSE TRUE );
 use HTML::StateTable::Types     qw( Bool Str );

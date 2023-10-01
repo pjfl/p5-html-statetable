@@ -26,8 +26,7 @@ HStateTable.Renderer = (function() {
          const attr = {};
          const { append, link, value } = this.getValue(attr);
          let cell;
-         if (typeof value == 'string'
-             && value.match(new RegExp(`class="${triggerClass}"`))) {
+         if (this.isHTMLOfClass(value, triggerClass)) {
             cell = this.h.td(attr);
             cell.innerHTML = value;
             HStateTable.Renderer.manager.scan(cell);

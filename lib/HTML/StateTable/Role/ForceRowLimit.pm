@@ -8,27 +8,32 @@ use Moo::Role;
 
 =head1 Name
 
-HTML::StateTable::Role::ForceRowLimit - One-line description of the modules purpose
+HTML::StateTable::Role::ForceRowLimit - Limits the number of rows selected
 
 =head1 Synopsis
 
+   use Moo;
+   extends 'HTML::StateTable';
    with 'HTML::StateTable::Role::ForceRowLimit';
 
 =head1 Description
+
+Limits the number of rows selected
 
 =head1 Configuration and Environment
 
 Defines no attributes
 
-=over 3
-
-=back
-
 =head1 Subroutines/Methods
+
+Defines the following methods;
 
 =over 3
 
 =item force_row_limit
+
+If displaying page one and there are fewer rows in the table than entries on
+the page, limits the rows in the resultset
 
 =cut
 

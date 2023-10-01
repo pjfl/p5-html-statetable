@@ -1,7 +1,6 @@
 package HTML::StateTable::View::Serialise;
 
 use Encode                      qw( encode_utf8 );
-use HTML::StateTable::Constants qw( NUL  );
 use HTML::StateTable::Constants qw( DOT EXCEPTION_CLASS EXTENSION_TYPE FALSE
                                     ITERATOR_DOWNLOAD_KEY NUL
                                     SERIALISE_TABLE_KEY SERIALISERS TRUE

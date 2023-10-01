@@ -15,11 +15,9 @@ has 'form_buttons' => is => 'lazy', isa => ArrayRef[HashRef|Str],
 has 'form_confirm_message' => is => 'ro', isa => Str,
    default => 'Are you sure you want to *';
 
-has 'form_control_location' => is => 'ro', isa => Str,
-   default => 'Credit';
+has 'form_control_location' => is => 'ro', isa => Str, default => 'Credit';
 
-has 'form_hidden' => is => 'ro', isa => ArrayRef,
-   default => sub { [] };
+has 'form_hidden' => is => 'ro', isa => ArrayRef, default => sub { [] };
 
 after 'BUILD' => sub {
    my $self = shift;
