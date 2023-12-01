@@ -620,9 +620,10 @@ HStateTable.Role.Configurable = (function() {
             ]),
             this.form.render(this.getState())
          ]);
-         if (this.control.controlLocation.match(/Right/))
-            dialog.classList.add('control-right');
-         const container = this.table.topControl;
+         const location = this.control.controlLocation;
+         if (location.match(/Right/)) dialog.classList.add('control-right');
+         const container = location.match(/Top/)
+               ? this.table.topControl : this.table.bottomControl;
          this.dialog = this.display(container, 'dialog', dialog);
       }
    }
@@ -820,7 +821,6 @@ HStateTable.Role.Filterable = (function() {
             const filterValue = this.rs.state('filterValue');
             const colName = this.rs.nameMap('filterColumn');
             const valName = this.rs.nameMap('filterValue');
-            if (filterColumn && filterValue) this.rs.state('page', 1);
             const url = orig(args);
             const params = url.searchParams;
             if (filterColumn && filterValue) {

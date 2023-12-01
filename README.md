@@ -87,8 +87,8 @@ Defines the following attributes;
 
 - page\_manager
 
-    An immutable non empty simple string with a null default. Name of the JS
-    page management object
+    An immutable simple string with a null default. Name of the JS page management
+    object
 
 - page\_size
 
@@ -212,6 +212,11 @@ Defines the following methods;
     class with the serialiser. Each table role is expected to implement a method
     called "serialise\_&lt;role\_name>"
 
+- apply\_params
+
+    If context is provided extracts query parameter values from the request and
+    applies them to the table attributes
+
 - build\_prepared\_resultset
 
     Applies column SQL, paging, and sorting to the supplied resultset
@@ -237,7 +242,8 @@ Defines the following methods;
 
     If context has been provided returns the named query parameter. Will look for
     "&lt;table name>\_&lt;param name>" in the query parameters and return it if it
-    exists
+    exists. If not will return "&lt;param name>" from the query parameters if that
+    exists. If that does not exist then returns a null string
 
 - reset\_resultset
 

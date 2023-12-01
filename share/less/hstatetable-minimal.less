@@ -10,6 +10,7 @@
     link: seagreen;
     message-background: khaki;
     panel-background: ivory;
+    panel-shadow: gray;
     row-even: ivory;
     row-highlight: lightpink;
     row-inactive: gainsboro;
@@ -38,7 +39,7 @@ body {
             border-right: 1px solid transparent; font-family: #fonts[data];
         }
         td, th {
-            box-sizing: border-box; padding: 0 0.5rem;
+            box-sizing: border-box; color: #colours[text]; padding: 0 0.5rem;
         }
         td:last-child, th:last-child {
             border-right: 0;
@@ -59,9 +60,10 @@ body {
             text-align: right;
         }
         th {
-            background: #colours[panel-background]; border-right: 1px solid;
-            border-color: #colours[header-border]; font-family: #fonts[system];
-            font-weight: normal; white-space: nowrap;
+            background: #colours[panel-background];
+            border-right: 1px solid; border-color: #colours[header-border];
+            font-family: #fonts[system]; font-weight: normal;
+            white-space: nowrap;
             .column-header {
                 display: inline-block;
             }
@@ -155,8 +157,8 @@ body {
     }
     .status-messages {
         background: #colours[message-background]; border-radius: 5px;
-        font-family: #fonts[system]; font-size: 0.8rem; margin-top: 0.25rem;
-        padding: 0.25rem 0.5rem; text-align: center;
+        color: #colours[text]; font-family: #fonts[system]; font-size: 0.8rem;
+        margin-top: 0.25rem; padding: 0.25rem 0.5rem; text-align: center;
     }
     .status-messages a {
         color: #colours[link]; cursor: pointer; margin-left: 0.5rem;
@@ -212,11 +214,16 @@ body {
         color: #colours[link]; cursor: pointer; font-family: #fonts[data];
         font-size: x-small; padding: 2px 0.25rem;
     }
+    .dialog-close, .filter-dialog, .preference-dialog {
+        box-shadow: 3px 3px 3px #colours[panel-shadow];
+    }
+    .dialog-close:hover {
+        box-shadow: inset 0 0 3px #colours[panel-shadow];
+    }
     .filter-dialog,
     .preference-dialog {
         background: #colours[panel-background]; border: 1px solid;
-        border-radius: 3px; box-shadow: 3px 3px 3px gray;
-        position: absolute; top: 25px; z-index: 10;
+        border-radius: 3px; position: absolute; top: 25px; z-index: 10;
     }
     .preference-dialog.control-right {
         right: 0;
@@ -236,16 +243,15 @@ body {
     }
     .dialog-close {
         align-items: center; background: #colours[close-background];
-        border-radius: 3px; box-shadow: 3px 3px 3px gray;
-        color: #colours[contrast]; cursor: pointer; filter: sepia(66%);
-        font-family: #fonts[system]; font-size: smaller; font-weight: bold;
-        height: 100%; margin-top: 2px; padding: 0 0.25rem;
+        border-radius: 3px; color: #colours[contrast]; cursor: pointer;
+        filter: sepia(66%); font-family: #fonts[system]; font-size: smaller;
+        font-weight: bold; height: 100%; margin-top: 2px; padding: 0 0.25rem;
         img {
             height: 16px; width: 16px; vertical-align: middle;
         }
     }
     .dialog-close:hover {
-        box-shadow: inset 0 0 3px gray; filter: sepia(0%);
+        filter: sepia(0%);
     }
     .dialog-form {
         padding: 0 1rem 0.25rem 1rem;
@@ -264,11 +270,13 @@ body {
     }
     .dialog-input span,
     .dialog-input label {
+        color: #colours[text];
         font-family: #fonts[system]; font-size: 0.8rem; line-height: 1rem;
     }
     .dialog-title {
         background: #colours[title-background]; border-bottom: 1px solid;
-        border-color: #colours[title-border]; display: flex;
+        border-color: #colours[title-border];
+        color: #colours[text]; display: flex;
         font-family: #fonts[system]; font-size: 1rem; font-weight: bold;
         justify-content: space-between; min-width: 6rem;
         padding: 0.25rem 0.5rem;
@@ -299,16 +307,14 @@ body {
     .grab-handle-cell:hover {
         background: #colours[link];
     }
-    .chart-container,
-    .table-container {
+    .chart-container, .table-container {
         display: inline-block; padding-top: 0.5rem; vertical-align: top;
     }
     .table-form .table-button,
     .table-form button {
         margin-right: 0.5rem;
     }
-    .table-form .table-button:last-child,
-    .table-form button:last-child {
+    .table-form .table-button:last-child, .table-form button:last-child {
         margin-right: 0;
     }
     .table-form .table-button {
@@ -349,7 +355,8 @@ body {
     }
 }
 .state-table.object-view {
-    box-shadow: 3px 3px 3px gray; display: inline-block; text-align: left;
+    box-shadow: 3px 3px 3px #colours[panel-shadow];
+    display: inline-block; text-align: left;
     td:first-child {
         border-right: 1px solid; font-family: #fonts[system]; font-size: 0.8rem;
         font-weight: normal; padding-right: 0.5rem; white-space: nowrap;
@@ -366,8 +373,7 @@ body {
     .table-form button {
         margin-bottom: 0.5rem;
     }
-    .table-form .table-button:first-child,
-    .table-form button:first-child {
+    .table-form .table-button:first-child, .table-form button:first-child {
         margin-left: 0.5rem;
     }
 }
