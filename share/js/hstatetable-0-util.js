@@ -13,7 +13,8 @@ HStateTable.Util = (function() {
    };
    const _events = [
       'onchange', 'onclick', 'ondragenter', 'ondragleave',
-      'ondragover', 'ondragstart', 'ondrop', 'onsubmit'
+      'ondragover', 'ondragstart', 'ondrop', 'onmouseenter', 'onmouseleave',
+      'onmouseover', 'onsubmit'
    ];
    class Bitch {
       _newHeaders() {
@@ -39,7 +40,9 @@ HStateTable.Util = (function() {
                'Content-Type', 'application/x-www-form-urlencoded'
             );
             const form = options.form; delete options.form;
-            const params = new URLSearchParams(new FormData(form));
+            const data = new FormData(form);
+            data.set('_submit', form.getAttribute('submitter'));
+            const params = new URLSearchParams(data);
             options.body = params.toString();
          }
          if (options.json) {
@@ -56,9 +59,13 @@ HStateTable.Util = (function() {
          if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.statusText}`);
          }
-         if (response.headers.get('location')) return {
-            location: response.headers.get('location'), status: 302
-         };
+         const headers = response.headers;
+         const location = headers.get('location');
+         if (location) {
+            const reload_header = headers.get('x-force-reload');
+            const reload = reload_header == 'true' ? true : false;
+            return { location: location, reload: reload, status: 302 };
+         }
          if (want == 'object') return {
             object: await response.json(), status: response.status
          };
@@ -81,9 +88,8 @@ HStateTable.Util = (function() {
             throw new Error(`HTTP error! Status: ${response.statusText}`);
          }
          const headers = response.headers;
-         if (headers.get('location')) return {
-            location: headers.get('location'), status: 302
-         };
+         const location = headers.get('location');
+         if (location) return { location: location, status: 302 };
          if (want == 'blob') {
             const key = 'content-disposition';
             const filename = headers.get(key).split('filename=')[1];
@@ -132,10 +138,12 @@ HStateTable.Util = (function() {
       div(attr, content)      { return this._tag('div', attr, content) }
       figure(attr, content)   { return this._tag('figure', attr, content) }
       form(attr, content)     { return this._tag('form', attr, content) }
+      h5(attr, content)       { return this._tag('h5', attr, content) }
       img(attr)               { return this._tag('img', attr) }
       input(attr, content)    { return this._tag('input', attr, content) }
       label(attr, content)    { return this._tag('label', attr, content) }
       li(attr, content)       { return this._tag('li', attr, content) }
+      nav(attr, content)      { return this._tag('nav', attr, content) }
       option(attr, content)   { return this._tag('option', attr, content) }
       select(attr, content)   { return this._tag('select', attr, content) }
       span(attr, content)     { return this._tag('span', attr, content) }
@@ -161,6 +169,10 @@ HStateTable.Util = (function() {
       }
       hidden(attr) {
          attr['type'] = 'hidden';
+         return this._tag('input', attr);
+      }
+      radio(attr) {
+         attr['type'] = 'radio';
          return this._tag('input', attr);
       }
       text(attr) {
@@ -217,10 +229,10 @@ HStateTable.Util = (function() {
             if (!this[method]) {
                throw new Error(`Around no method: ${method}`);
             }
-            const orig = this[method].bind(this);
+            const original = this[method].bind(this);
             const around = modifier.bind(this);
             this[method] = function(args1, args2, args3, args4, args5) {
-               return around(orig, args1, args2, args3, args4, args5);
+               return around(original, args1, args2, args3, args4, args5);
             };
          },
          resetModifiers: function(methods) {

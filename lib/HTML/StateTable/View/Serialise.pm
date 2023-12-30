@@ -144,7 +144,7 @@ sub process {
 =item guess_object_type( $object )
 
 Returns a string for each of these types of object; 'filehandle', 'iterator',
-'string', 'coderef', and 'statetable'. Used to construct the output method name
+'string', 'coderef', and 'object'. Used to construct the output method name
 C<< output_<type> >>
 
 =cut
@@ -155,7 +155,7 @@ sub guess_object_type {
    my $is_blessed = blessed $obj;
 
    return
-      $is_blessed && $obj->isa('HTML::StateTable::Serialiser') ? 'statetable'
+      $is_blessed && $obj->can('serialise')                    ? 'object'
       : is_globref($obj) || ($is_blessed && $obj->isa('GLOB')) ? 'filehandle'
       : $is_blessed && $obj->can('next')                       ? 'iterator'
       : !is_ref($obj) || (!$is_blessed && is_scalarref($obj))  ? 'string'
@@ -216,15 +216,14 @@ sub output_iterator {
    return;
 }
 
-=item output_statetable( $context, $serialiser )
+=item output_object( $context, $object )
 
-Returns the result of calling the C<serialise> method on the supplied
-serialiser object
+Returns the result of calling the C<serialise> method on the supplied object
 
 =cut
 
-sub output_statetable {
-   my ($self, $context, $serialiser) = @_; return $serialiser->serialise;
+sub output_object {
+   my ($self, $context, $object) = @_; return $object->serialise;
 }
 
 =item output_string( $context, $string )

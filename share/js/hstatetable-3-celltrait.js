@@ -45,11 +45,22 @@ HStateTable.CellTrait.Checkbox = (function() {
             const handler = function(event) {
                col.table[col.table.formControl.control]();
             }.bind(this);
-            const name = col.name + '.' + this.row.index;
-            const box = this.h.checkbox({
-               id: name, name: name, onclick: handler, value: result.value
-            });
-            col.rowSelector[name] = box;
+            let name = col.name;
+            let box;
+            if (col.options['select_one']) {
+               const id = name + '.' + this.row.index;
+               box = this.h.radio({
+                  id: id, name: name, onclick: handler, value: result.value
+               });
+               col.rowSelector[id] = box;
+            }
+            else {
+               name += '.' + this.row.index;
+               box = this.h.checkbox({
+                  id: name, name: name, onclick: handler, value: result.value
+               });
+               col.rowSelector[name] = box;
+            }
             return { value: box };
          }
       }

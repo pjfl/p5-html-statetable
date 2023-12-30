@@ -6,6 +6,7 @@
     close-background: orange;
     contrast: white;
     control-text: gray;
+    error-background: lightpink;
     header-border: gray;
     link: seagreen;
     message-background: khaki;
@@ -20,8 +21,11 @@
     title-border: orange;
 }
 #fonts() {
-    data: Roboto Slab, serif;
-    system: Roboto, sans-serif;
+    code: ui-monospace, 'Cascadia Code', Menlo, 'DejaVu Sans Mono', monospace;
+    cursive: 'Segoe Print', 'Bradley Hand', Chilanka, casual, cursive;
+    data: 'Roboto Slab', 'DejaVu Serif', 'Sitka Small', serif;
+    mono: 'Nimbus Mono PS', 'Courier New', monospace;
+    system: Roboto, system-ui, sans-serif;
 }
 body {
     counter-reset: section;
@@ -100,14 +104,11 @@ body {
     .page-size-control a {
         color: #colours[control-text]; cursor: pointer; font-size: small;
     }
-    .page-control,
-    .page-size-control {
+    .page-control, .page-size-control {
         color: #colours[control-text]; font-family: #fonts[system];
         font-size: small; margin: 0; padding-left: 0;
     }
-    .page-control,
-    .page-control li,
-    .page-size-control li {
+    .page-control, .page-control li, .page-size-control, .page-size-control li {
         display: inline-block;
     }
     .page-control li.disabled {
@@ -370,13 +371,16 @@ body {
     .state-table th:first-child a {
         color: #colours[text];
     }
-    .table-form button {
-        margin-bottom: 0.5rem;
-    }
     .table-form .table-button:first-child, .table-form button:first-child {
         margin-left: 0.5rem;
+    }
+    .table-form .credit-control {
+        padding-bottom: 0.5rem;
     }
 }
 .state-table .state-table table {
     margin-bottom: 0;
+}
+.state-table-error {
+    background: #colours[error-background]; margin: 0 16%;
 }

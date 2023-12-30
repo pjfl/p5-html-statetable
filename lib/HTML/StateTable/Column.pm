@@ -271,7 +271,9 @@ has '_boolean_options' =>
    isa         => HashRef,
    handles_via => 'Hash',
    handles     => { is_boolean_option => 'exists' },
-   default     => sub { { checkall => TRUE, notraits => TRUE } };
+   default     => sub {
+      return { checkall => TRUE, notraits => TRUE, select_one => TRUE };
+   };
 
 =back
 

@@ -426,6 +426,7 @@ HStateTable.Renderer = (function() {
       constructor() {
          this._isConstructing = true;
          this.tables = {}; // TODO: Figure out if we can let this go
+         this.onReady(function() { this.createTables() }.bind(this));
       }
       async createTables() {
          await this.scan(document);
@@ -456,9 +457,7 @@ HStateTable.Renderer = (function() {
          await Promise.all(promises);
       }
    }
-   const manager = new Manager();
-   manager.onReady(function() { this.createTables(); }.bind(manager));
    return {
-      manager: manager
+      manager: new Manager()
    };
 })();

@@ -3,9 +3,10 @@ package HTML::StateTable::Manager;
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL QUERY_KEY
                                     SERIALISE_TABLE_KEY SERIALISE_TABLE_VIEW
                                     TRUE );
-use HTML::StateTable::Types     qw( Str );
+use HTML::StateTable::Types     qw( Object Str );
 use HTML::StateTable::Util      qw( ensure_class_loaded throw );
 use Unexpected::Functions       qw( UnknownView Unspecified );
+use Try::Tiny;
 use Moo;
 
 =pod
@@ -29,6 +30,18 @@ A factory class for table objects
 Defines the following attributes;
 
 =over 3
+
+=item log
+
+Optional logging object used to log errors
+
+=item has_log
+
+Predicate
+
+=cut
+
+has 'log' => is => 'ro', isa => Object, predicate => 'has_log';
 
 =item meta_key
 
@@ -134,11 +147,12 @@ sub table {
 
    $options->{download_view_name} = $self->view_name;
    $options->{filterable_view_name} = $self->view_name;
+   $options->{log} = $self->log if $self->has_log;
    $options->{page_manager} = $self->page_manager if $self->has_page_manager;
    $options->{renderer_class} = $class if $class;
    $options->{renderer_args}->{query_key} = $self->query_key;
 
-   my $table = $self->_get_class($name)->new($options);
+   my $table = $self->_get_table($name, $options);
 
    $self->_setup_view($table) if $self->_is_data_call($options->{context});
 
@@ -156,14 +170,15 @@ sub new_with_context {
 }
 
 # Private methods
-sub _get_class {
-   my ($self, $name) = @_;
+sub _get_table {
+   my ($self, $name, $options) = @_;
 
    my $class = $self->namespace . "::${name}";
 
-   ensure_class_loaded $class;
+   try { ensure_class_loaded $class }
+   catch { $class = 'HTML::StateTable::Error'; $options->{exception} = $_ };
 
-   return $class;
+   return $class->new($options);
 }
 
 sub _is_data_call {
@@ -199,7 +214,7 @@ sub _setup_view {
 
    throw UnknownView, [$view] unless $context->view($view);
 
-   my $params = $table->request->query_parameters;
+   my $params = $context->request->query_parameters;
    my $name   = $params->{$self->query_key} // NUL;
    my $key    = $self->stash_key;
 
@@ -220,6 +235,34 @@ sub _setup_view {
 }
 
 use namespace::autoclean;
+
+package
+   HTML::StateTable::Error;
+
+use HTML::StateTable::Constants qw( FALSE TRUE );
+use HTML::StateTable::Types     qw( Object Str );
+use Type::Utils                 qw( class_type );
+use HTML::Tiny;
+use Moo;
+
+has 'context' => is => 'ro', isa => Object;
+
+has 'exception' => is => 'ro', isa => Object, required => TRUE;
+
+has 'name' => is => 'ro', isa => Str, default => 'Error';
+
+has '_html' =>
+   is      => 'ro',
+   isa     => class_type('HTML::Tiny'),
+   default => sub { HTML::Tiny->new };
+
+sub process() { FALSE }
+
+sub render() {
+   my $self = shift;
+
+   return $self->_html->div({ class => 'state-table-error' }, $self->exception);
+}
 
 1;
 

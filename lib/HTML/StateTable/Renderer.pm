@@ -104,7 +104,12 @@ sub render {
    my $output;
 
    try   { $output = $self->container }
-   catch { $output = $_ };
+   catch {
+      my $error = $_;
+
+      $output = $self->_html->div({ class => 'state-table-error' }, $error);
+      $self->table->log->error($error) if $self->table->has_log;
+   };
 
    return $output;
 }

@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 55 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 56 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -139,6 +139,18 @@ and C<Searchable> table roles
 =cut
 
 has 'is_filtered' => is => 'rw', isa => Bool, default => FALSE;
+
+=item log
+
+Optional logging object used to log errors
+
+=item has_log
+
+Predicate
+
+=cut
+
+has 'log' => is => 'ro', isa => Object, predicate => 'has_log';
 
 =item max_page_size
 

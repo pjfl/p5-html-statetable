@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Better error handling
           - Set text colour in LESS
           - Only four table roles to doc
           - Only table roles left to POD
