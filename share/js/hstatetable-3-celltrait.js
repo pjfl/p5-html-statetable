@@ -1,21 +1,27 @@
 // -*- coding: utf-8; -*-
 // Package HStateTable.CellTrait.Bool
 HStateTable.CellTrait.Bool = (function() {
+   let bool_colours = [ 'red', 'green'];
    let bool_false = '✗';
-   let bool_true  = '✓';
+   let bool_true = '✓';
    return {
       initialise: function() {
          const options = this.column.options;
+         if (options.bool_colours) bool_colours = options.bool_colours;
          if (options.bool_false) bool_false = options.bool_false;
-         if (options.bool_true)  bool_true  = options.bool_true;
+         if (options.bool_true) bool_true = options.bool_true;
       },
       around: {
          getValue: function(orig, attr) {
             const result = orig(attr);
             if (!result.value || result.value.length == 0 || result.value == 0){
+               this.appendValue(attr, 'style', 'color:' + bool_colours[0]);
                result.value = bool_false;
             }
-            else result.value = bool_true;
+            else {
+               this.appendValue(attr, 'style', 'color:' + bool_colours[1]);
+               result.value = bool_true;
+            }
             return result;
          }
       }

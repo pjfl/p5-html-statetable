@@ -419,21 +419,21 @@ HStateTable.Role.Configurable = (function() {
             this.downloadable ? this.h.button({
                className: 'dialog-button-download',
                onclick: this.handlers['downloadHandler']
-            }, 'Download') : '',
+            }, this.h.span('Download')) : '',
             this.h.div({ className: 'dialog-button-group' }, [
                this.h.button({
                   className: 'dialog-button-clear',
                   onclick: this.handlers['clearHandler']
-               }, 'Clear'),
+               }, this.h.span('Clear')),
                this.h.button({
                   className: 'dialog-button-reset',
                   onclick: this.handlers['resetHandler'],
                   type: 'reset'
-               }, 'Reset'),
+               }, this.h.span('Reset')),
                this.h.button({
                   className: 'dialog-button-save',
                   onclick: this.handlers['saveHandler']
-               }, 'Save')
+               }, this.h.span('Save'))
             ])
          ]);
       }
@@ -540,7 +540,7 @@ HStateTable.Role.Configurable = (function() {
                onchange: this.handlers['changeHandler']
             }, styleOptions);
          }
-         return this.h.form({
+         const form = this.h.form({
             'accept-charset': 'utf-8', className: 'dialog-form',
             enctype: 'multipart/form-data', id: this.table.name + 'Prefs'
          }, [
@@ -563,6 +563,8 @@ HStateTable.Role.Configurable = (function() {
             ]) : '',
             this.renderButtons()
          ]);
+         this.table.animateButtons(form);
+         return form;
       }
    }
    Object.assign(PreferenceForm.prototype, HStateTable.Util.Markup);
@@ -954,21 +956,23 @@ HStateTable.Role.Form = (function() {
             const action = buttonConfig['action'];
             const attr = {};
             if (this.isDisabled(buttonConfig)) attr.disabled = true;
+            const value = this.h.span(buttonConfig['value']);
             let control;
             if (this.handlers[action]) {
                attr.onclick = this.handlers[action];
-               control = this.h.button(attr, buttonConfig['value']);
+               control = this.h.button(attr, value);
             }
             else {
                attr.href = action;
-               control = this.h.a(attr, buttonConfig['value']);
-               control.classList.add('table-button');
+               control = this.h.a(attr, value);
             }
+            control.classList.add('table-button');
             const old = this.buttons[action];
             if (old && container.contains(old))
                container.replaceChild(control, old);
             else container.append(control);
             this.buttons[action] = control;
+            this.table.animateButtons();
          }
       }
       async sendForm(buttonConfig) {
@@ -1277,7 +1281,9 @@ HStateTable.Role.Searchable = (function() {
          }.bind(this);
       }
       searchAction(text) {
-         return this.h.span({ className: 'search-button' },this.h.button(text));
+         return this.h.span({
+            className: 'search-button'
+         },this.h.button(this.h.span(text)));
       }
       searchHidden(selectElements) {
          const hidden = this.h.span({ className: 'search-hidden'});

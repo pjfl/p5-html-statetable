@@ -166,9 +166,14 @@ HStateTable.Renderer = (function() {
       async next() {
          if (this.index > 0) return this.records[this.index++];
          const { object } = await this.bitch.sucks(this.table.prepareURL());
-         this.records = object['records'];
-         this.rowCount = parseInt(object['row-count']);
-         return this.records[this.index++];
+         if (object['records']) {
+            this.records = object['records'];
+            this.rowCount = parseInt(object['row-count']);
+            return this.records[this.index++];
+         }
+         this.records = [];
+         this.rowCount = 0;
+         return this.records[0];
       }
       redraw() {
          this.reset();
@@ -455,6 +460,7 @@ HStateTable.Renderer = (function() {
             promises.push(table.render());
          }
          await Promise.all(promises);
+         for (const name in this.tables) this.tables[name].animateButtons();
       }
    }
    return {

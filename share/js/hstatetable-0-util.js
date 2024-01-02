@@ -186,6 +186,23 @@ HStateTable.Util = (function() {
    };
    return {
       Markup: { // A role
+         animateButtons: function(container) {
+            const selector = '.table-form .table-button, .table-form button, .dialog-form button';
+            container ||= this.container;
+            for (const el of container.querySelectorAll(selector)) {
+               el.addEventListener('mousemove', function(event) {
+                  const rect = el.getBoundingClientRect();
+                  const x = Math.floor(
+                     event.pageX - (rect.left + window.scrollX)
+                  );
+                  const y = Math.floor(
+                     event.pageY - (rect.top + window.scrollY)
+                  );
+                  el.style.setProperty('--x', x + 'px');
+                  el.style.setProperty('--y', y + 'px');
+               });
+            }
+         },
          appendValue: function(obj, key, newValue) {
             let existingValue = obj[key] || '';
             if (existingValue) existingValue += ' ';
