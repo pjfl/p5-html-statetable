@@ -13,8 +13,8 @@ HStateTable.Util = (function() {
    };
    const _events = [
       'onchange', 'onclick', 'ondragenter', 'ondragleave',
-      'ondragover', 'ondragstart', 'ondrop', 'onmouseenter', 'onmouseleave',
-      'onmouseover', 'onsubmit'
+      'ondragover', 'ondragstart', 'ondrop', 'oninput',
+      'onmouseenter', 'onmouseleave', 'onmouseover', 'onsubmit'
    ];
    class Bitch {
       _newHeaders() {
@@ -190,6 +190,7 @@ HStateTable.Util = (function() {
             const selector = '.table-form .table-button, .table-form button, .dialog-form button';
             container ||= this.container;
             for (const el of container.querySelectorAll(selector)) {
+               if (el.getAttribute('listener')) continue;
                el.addEventListener('mousemove', function(event) {
                   const rect = el.getBoundingClientRect();
                   const x = Math.floor(
@@ -201,6 +202,7 @@ HStateTable.Util = (function() {
                   el.style.setProperty('--x', x + 'px');
                   el.style.setProperty('--y', y + 'px');
                });
+               el.setAttribute('listener', true);
             }
          },
          appendValue: function(obj, key, newValue) {
@@ -243,11 +245,13 @@ HStateTable.Util = (function() {
             }
          },
          around: function(method, modifier) {
+            const isBindable = func => func.hasOwnProperty('prototype');
             if (!this[method]) {
                throw new Error(`Around no method: ${method}`);
             }
             const original = this[method].bind(this);
-            const around = modifier.bind(this);
+            const around = isBindable(modifier)
+                  ? modifier.bind(this) : modifier;
             this[method] = function(args1, args2, args3, args4, args5) {
                return around(original, args1, args2, args3, args4, args5);
             };

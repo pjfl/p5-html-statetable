@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 57 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 58 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -47,12 +47,12 @@ Defines the following attributes;
 
 =item caption
 
-An immutable string with a null default. If set will display as the tables
+An mutable string with a null default. If set will display as the tables
 caption
 
 =cut
 
-has 'caption' => is => 'ro', isa => SimpleStr, default => NUL;
+has 'caption' => is => 'rw', isa => SimpleStr, default => NUL;
 
 =item cell_class
 
@@ -160,6 +160,14 @@ C<page_size> attribute
 =cut
 
 has 'max_page_size' => is => 'ro', isa => NonZeroPositiveInt, default => 100;
+
+=item max_width
+
+A string with a null default. Used to set the maximum width on the table
+
+=cut
+
+has 'max_width' => is => 'ro', isa => SimpleStr, default => NUL;
 
 =item name
 

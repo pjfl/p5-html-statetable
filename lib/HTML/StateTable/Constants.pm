@@ -221,7 +221,7 @@ List of column names to serialise
 =cut
 
 sub SERIALISE_COLUMN_ATTR () {
-   return qw( cell_traits filterable label name options
+   return qw( cell_traits filterable label min_width name options
               searchable sort_column sortable title width );
 }
 

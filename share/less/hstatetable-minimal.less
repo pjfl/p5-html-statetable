@@ -1,14 +1,15 @@
 #colours() {
     active-column: bisque;
     button-bg: bisque;
-    button-border: #e3e3e3; // grey89
+    button-border: gainsboro;
+    button-disabled-bg: gainsboro;
     button-hover: limegreen;
     button-text: black;
-    close-bg: orange;
+    close-bg: red;
     contrast: white;
     control-text: gray;
     error-bg: lightpink;
-    header-border: gray;
+    line-border: gray;
     link: seagreen;
     message-bg: khaki;
     panel-bg: ivory;
@@ -17,7 +18,9 @@
     row-highlight: lightpink;
     row-inactive: gainsboro;
     row-odd: linen;
-    tag-bg: #e9e9ed;
+    search-display-bg: gainsboro;
+    search-display-shadow: rgba(255,255,255,0.6);
+    tag-bg: bisque;
     text: black;
     title-bg: linen;
     title-border: orange;
@@ -30,10 +33,17 @@
     system: Roboto, system-ui, sans-serif;
 }
 #grads() {
+    button-bg: linear-gradient(0deg, #colours[button-bg], whitesmoke);
+    button-disabled-bg: linear-gradient(
+        0deg, #colours[button-disabled-bg], whitesmoke
+    );
     button-border-bg: radial-gradient(
         #colours[button-hover], transparent, transparent
     );
     error-fade: linear-gradient(to right, transparent, #colours[error-bg] 80%);
+    search-display: linear-gradient(
+        0deg, #colours[search-display-bg], whitesmoke
+    );
 }
 body {
     counter-reset: section;
@@ -73,7 +83,7 @@ body {
         }
         th {
             background: #colours[panel-bg];
-            border-right: 1px solid; border-color: #colours[header-border];
+            border-right: 1px solid; border-color: #colours[line-border];
             font-family: #fonts[system]; font-weight: normal;
             white-space: nowrap;
             .column-header {
@@ -143,8 +153,50 @@ body {
     .preference-link {
         cursor: pointer; display: inline-block;
     }
-    .search-box input.search-field {
-        border-radius: 5px;
+    .search-box {
+        display: inline-block;
+        .search-wrapper {
+            display: flex; align-items: stretch;
+            .search-hidden {
+                display: inline-block; overflow: hidden; position: relative;
+                vertical-align: top;
+                select {
+                    cursor: pointer; left: 0; opacity: 0; position: absolute;
+                    top: 5px;
+                }
+                .search-arrow {
+                    border: 3px solid transparent; border-bottom-width: 0;
+                    border-top: 3px solid #colours[line-border];
+                    font-size: 0; height: 0; line-height: 0; position: absolute;
+                    right: 4px; top: 9px; width: 0;
+                }
+                .search-display {
+                    background: #colours[search-display-bg];
+                    background-image: #grads[search-display];
+                    border-radius: 50px 0 0 50px;
+                    border-right: 1px solid #colours[line-border];
+                    box-shadow: inset 1px 1px 0 #colours[search-display-shadow];
+                    color: #colours[control-text]; display: inline-block;
+                    font-family: #fonts[system]; font-size: 0.8rem;
+                    padding: 0.25rem 1rem 0.25rem 0.5rem; vertical-align: top;
+                }
+            }
+            .search-button button, .search-button button::after {
+                border-top-left-radius: 2px;
+                border-bottom-left-radius: 2px;
+            }
+            input.search-field {
+                color: inherit; border: none; border-radius: 0 2px 2px 0;
+                border-bottom: 2px inset #colours[button-border];
+                border-right: 1px solid #colours[line-border];
+                border-top: 2px inset #colours[button-border];
+                font-family: #fonts[data];
+                margin: 0; outline: 0; padding: 0 0.25rem;
+            }
+            input.search-field:placeholder-shown {
+                font-style: italic;
+            }
+        }
     }
     .section-row {
         background: #colours[row-inactive]; font-family: #fonts[system];
@@ -181,7 +233,6 @@ body {
     .active-control,
     .bottom-left-control,
     .bottom-right-control,
-    .search-box,
     .top-left-control,
     .top-right-control {
         display: inline-block;
@@ -223,16 +274,10 @@ body {
         color: #colours[link]; cursor: pointer; font-family: #fonts[data];
         font-size: x-small; padding: 2px 0.25rem;
     }
-    .dialog-close, .filter-dialog, .preference-dialog {
+    .filter-dialog, .preference-dialog {
+        background: #colours[panel-bg]; border: 1px solid; border-radius: 3px;
         box-shadow: 3px 3px 3px #colours[panel-shadow];
-    }
-    .dialog-close:hover {
-        box-shadow: inset 0 0 3px #colours[panel-shadow];
-    }
-    .filter-dialog,
-    .preference-dialog {
-        background: #colours[panel-bg]; border: 1px solid;
-        border-radius: 3px; position: absolute; top: 25px; z-index: 10;
+        position: absolute; top: 25px; z-index: 10;
     }
     .preference-dialog.control-right {
         right: 0;
@@ -251,16 +296,20 @@ body {
         justify-content: space-between;
     }
     .dialog-close {
-        align-items: center; background: #colours[close-bg];
-        border-radius: 3px; color: #colours[contrast]; cursor: pointer;
-        filter: sepia(66%); font-family: #fonts[system]; font-size: smaller;
+        align-items: center; background: #grads[button-bg];
+        border-radius: 3px;
+        box-shadow: 2px 2px 2px #colours[panel-shadow];
+        color: #colours[link]; cursor: pointer;
+        font-family: #fonts[system]; font-size: smaller;
         font-weight: bold; height: 100%; margin-top: 2px; padding: 0 0.25rem;
         img {
             height: 16px; width: 16px; vertical-align: middle;
         }
     }
     .dialog-close:hover {
-        filter: sepia(0%);
+        background: #colours[close-bg];
+        box-shadow: inset 0 0 3px #colours[panel-shadow];
+        color: #colours[text];
     }
     .dialog-form {
         padding: 0 1rem 0.25rem 1rem;
@@ -277,8 +326,7 @@ body {
     .dialog-input button {
         margin-right: 0.25rem;
     }
-    .dialog-input span,
-    .dialog-input label {
+    .dialog-input > span, .dialog-input label {
         color: #colours[text];
         font-family: #fonts[system]; font-size: 0.8rem; line-height: 1rem;
     }
@@ -319,19 +367,19 @@ body {
     .chart-container, .table-container {
         display: inline-block; padding-top: 0.5rem; vertical-align: top;
     }
-    .table-form .table-button,
-    .table-form button {
+    .table-form .table-button, .table-form button {
         margin-right: 0.5rem;
     }
     .table-form .table-button:last-child, .table-form button:last-child {
         margin-right: 0;
     }
     .table-form .table-button, .table-form button, .dialog-form button {
-        background: #colours[button-bg];
+        background: #grads[button-bg];
         border: 2px outset #colours[button-border]; border-radius: 50px;
-        color: #colours[link]; display: inline-block; line-height: 0.8rem;
-        overflow: hidden; padding: 0.25rem 0.75rem; position: relative;
-        text-decoration: none; transition: 0.5s;
+        color: #colours[link]; cursor: pointer; display: inline-block;
+        line-height: 0.8rem; overflow: hidden; padding: 0.25rem 0.75rem;
+        position: relative; text-decoration: none;
+        transition: border 0.5s, color 0.5s;
         span {
             font-size: 0.7rem; letter-spacing: 0.1rem;
             position: relative; text-decoration: none;
@@ -356,8 +404,17 @@ body {
     }
     .table-form .table-button::after, .table-form button::after,
     .dialog-form button::after {
-        background: #colours[button-bg]; border-radius: 50px; content: '';
+        background: #grads[button-bg];
+        border-radius: 50px; content: '';
         inset: 3px; position: absolute; z-index: 2;
+    }
+    .table-form .table-button[disabled=disabled],
+    .table-form .table-button[disabled=disabled]::after,
+    .table-form button[disabled=disabled],
+    .table-form button[disabled=disabled]::after,
+    .dialog-form button[disabled=disabled],
+    .dialog-form button[disabled=disabled]::after {
+        background: #grads[button-disabled-bg];
     }
     .highcharts-figure {
         margin: 0;

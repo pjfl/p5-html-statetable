@@ -106,7 +106,9 @@ HStateTable.ColumnTrait.Filterable = (function() {
          return function(event) {
             event.preventDefault();
             this.rs.search({
-               filterColumn: this.column.name, filterValue: value
+               filterColumn: this.column.name,
+               filterValue: value,
+               page: 1
             });
             this.dialogHandler(event);
          }.bind(this);

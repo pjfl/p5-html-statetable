@@ -153,6 +153,15 @@ has 'label' => is => 'lazy', isa => Str, default => sub {
    return join SPC, map { ucfirst } split m{ [\s]+ }mx, $self->name;
 };
 
+=item min_width
+
+Optional immutable string. Used to set a minimum width on the column when it
+displays
+
+=cut
+
+has 'min_width' => is => 'ro', isa => Str;
+
 =item name
 
 A required immutable non empty simple string. The column name

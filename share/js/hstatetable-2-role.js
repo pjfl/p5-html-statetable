@@ -953,9 +953,8 @@ HStateTable.Role.Form = (function() {
       }
       render(container) {
          for (const buttonConfig of this.buttonConfig) {
-            const action = buttonConfig['action'];
             const attr = {};
-            if (this.isDisabled(buttonConfig)) attr.disabled = true;
+            const action = buttonConfig['action'];
             const value = this.h.span(buttonConfig['value']);
             let control;
             if (this.handlers[action]) {
@@ -967,6 +966,8 @@ HStateTable.Role.Form = (function() {
                control = this.h.a(attr, value);
             }
             control.classList.add('table-button');
+            if (this.isDisabled(buttonConfig))
+               control.setAttribute('disabled', 'disabled');
             const old = this.buttons[action];
             if (old && container.contains(old))
                container.replaceChild(control, old);
@@ -1264,7 +1265,6 @@ HStateTable.Role.Searchable = (function() {
             const searchValue = this.rs.state('searchValue');
             const colName = this.rs.nameMap('searchColumn');
             const valName = this.rs.nameMap('searchValue');
-            if (searchValue) this.rs.state('page', 1);
             const url = orig(args);
             const params = url.searchParams;
             if (searchValue) {
@@ -1281,23 +1281,30 @@ HStateTable.Role.Searchable = (function() {
          }.bind(this);
       }
       searchAction(text) {
-         return this.h.span({
-            className: 'search-button'
-         },this.h.button(this.h.span(text)));
+         const btn = this.h.button(this.h.span(text));
+         if (!this.rs.state('searchValue'))
+            btn.setAttribute('disabled', 'disabled');
+         return this.h.span({ className: 'search-button' }, btn);
       }
       searchHidden(selectElements) {
          const hidden = this.h.span({ className: 'search-hidden'});
          for (const select of selectElements) { hidden.append(select) }
          return hidden;
       }
-      searchInput() {
-         return this.h.text({
+      searchInput(action) {
+         const btn = action.firstChild;
+         this.searchField = this.h.text({
             className: 'search-field',
             name: this.rs.nameMap('searchValue'),
+            oninput: function() {
+               if (this.searchField.value) btn.removeAttribute('disabled');
+               else btn.setAttribute('disabled', 'disabled');
+            }.bind(this),
             placeholder: this.placeholder,
             size: 10,
             value: this.rs.state('searchValue') || ''
          });
+         return this.searchField;
       }
       searchSelect(selectElements) {
          if (!this.searchableColumns.length) return;
@@ -1314,22 +1321,31 @@ HStateTable.Role.Searchable = (function() {
             if (selected) attr['selected'] = 'selected';
             options.push(this.h.option(attr, column.label));
          }
+         const searchDisplay = this.h.span(
+            { className: 'search-display' }, selectPrefix
+         );
+         selectElements.push(searchDisplay);
          selectElements.push(this.h.span({ className: 'search-arrow' }));
-         const select = this.h.select({
-            className: 'search-select', name: this.rs.nameMap('searchColumn')
+         this.searchSelector = this.h.select({
+            className: 'search-select',
+            onchange: function() {
+               const select = this.searchSelector;
+               const text = select.options[select.selectedIndex].text;
+               searchDisplay.textContent = text;
+            }.bind(this),
+            name: this.rs.nameMap('searchColumn')
          }, this.h.option({ className: 'search-select', value: '' }, 'All'));
-         for (const anOption of options) { select.append(anOption) }
-         selectElements.push(select);
-         return select;
+         for (const anOption of options) this.searchSelector.append(anOption);
+         selectElements.push(this.searchSelector);
+         return this.searchSelector;
       }
       renderSearch(container) {
          const selectElements = [];
          const select = this.searchSelect(selectElements);
-         const input = this.searchInput();
+         const action = this.searchAction('Search');
+         const input = this.searchInput(action);
          const wrapper = this.h.span({ className: 'search-wrapper' }, [
-            this.searchHidden(selectElements),
-            input,
-            this.searchAction('Search')
+            this.searchHidden(selectElements), input, action
          ]);
          const handler = function(event) {
             event.preventDefault();

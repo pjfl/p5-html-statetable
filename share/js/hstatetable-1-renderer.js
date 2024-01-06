@@ -52,13 +52,15 @@ HStateTable.Renderer = (function() {
          this.downloadable = config['downloadable'];
          this.filterable   = config['filterable'];
          this.label        = config['label'];
+         this.minWidth     = config['min_width']
+            ? ('min-width:' + config['min_width'] + ';') : '';
          this.name         = config['name'];
          this.options      = config['options'] || {};
          this.sortable     = config['sortable'];
          this.title        = config['title'];
          this.traits       = config['traits'] || [];
          this.width        = config['width']
-            ? ('min-width:' + config['width'] + ';') : '';
+            ? ('width:' + config['width'] + ';') : '';
          this.header;
          this.rowSelector  = {};
          this.sortDesc     = this.rs.state('sortDesc');
@@ -81,10 +83,11 @@ HStateTable.Renderer = (function() {
       }
       render() {
          this.rowSelector = {};
-         const attr = {};
+         const attr = { style: '' };
          let content = [this.label || this.ucfirst(this.name)];
          if (this.title) attr.title = this.title;
-         if (this.width) attr.style = this.width;
+         if (this.minWidth) attr.style += this.minWidth;
+         if (this.width) attr.style += this.width;
          if (this.sortable) {
             if (this.rs.state('sortColumn') == this.name) {
                attr.className = 'active-sort-column';
@@ -225,11 +228,15 @@ HStateTable.Renderer = (function() {
          this.renderStyle   = this.properties['render-style'];
          this.rows          = [];
          this.rowCount      = 0;
-         this.table         = this.h.table({ id: this.name });
          this.resultset     = new Resultset(this);
          this.titleLocation = this.properties['title-location'] || 'inner';
          this.topContent    = false;
 
+         const attr = { id: this.name, style: '' };
+         if (this.properties['max-width']) this.appendValue(
+            attr, 'style', 'max-width:' + this.properties['max-width']
+         );
+         this.table = this.h.table(attr);
          if (this.caption.length)
             this.table.append(this.h.caption(this.caption));
          this.table.append(this.header);
