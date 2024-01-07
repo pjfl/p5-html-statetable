@@ -1357,7 +1357,7 @@ HStateTable.Role.Searchable = (function() {
          const control = this.h.form({
             className: 'search-box', method: 'get', onsubmit: handler
          }, wrapper);
-         control.setAttribute('listener', true);
+         control.setAttribute('submitlistener', true);
          this.control = this.display(container, 'control', control);
       }
       renderMessages(container) {

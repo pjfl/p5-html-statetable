@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Unified dialog titles
           - Shiny buttons
           - Refreshing button styling
           - Better error handling

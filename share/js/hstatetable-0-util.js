@@ -144,6 +144,7 @@ HStateTable.Util = (function() {
       label(attr, content)    { return this._tag('label', attr, content) }
       li(attr, content)       { return this._tag('li', attr, content) }
       nav(attr, content)      { return this._tag('nav', attr, content) }
+      object(attr, content)   { return this._tag('object', attr, content) }
       option(attr, content)   { return this._tag('option', attr, content) }
       select(attr, content)   { return this._tag('select', attr, content) }
       span(attr, content)     { return this._tag('span', attr, content) }
@@ -190,7 +191,7 @@ HStateTable.Util = (function() {
             const selector = '.table-form .table-button, .table-form button, .dialog-form button';
             container ||= this.container;
             for (const el of container.querySelectorAll(selector)) {
-               if (el.getAttribute('listener')) continue;
+               if (el.getAttribute('movelistener')) continue;
                el.addEventListener('mousemove', function(event) {
                   const rect = el.getBoundingClientRect();
                   const x = Math.floor(
@@ -202,7 +203,7 @@ HStateTable.Util = (function() {
                   el.style.setProperty('--x', x + 'px');
                   el.style.setProperty('--y', y + 'px');
                });
-               el.setAttribute('listener', true);
+               el.setAttribute('movelistener', true);
             }
          },
          appendValue: function(obj, key, newValue) {
