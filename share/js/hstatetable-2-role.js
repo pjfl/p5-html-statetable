@@ -172,6 +172,10 @@ HStateTable.Role.Chartable = (function() {
          if (!this.previousState) this.previousState = state;
          else if (!this.rs.stateChanged(this.previousState)) return;
          this.previousState = state;
+         let loaded = false;
+         try { if (Highcharts.chart) loaded = true; }
+         catch(e) {}
+         if (!loaded) return;
          const url = this.table.prepareURL({ disablePaging: true });
          const { object } = await this.bitch.sucks(url);
          const results = object['records'];

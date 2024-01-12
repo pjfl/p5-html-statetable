@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Protection against Highcharts no being available
           - Unified dialog titles
           - Shiny buttons
           - Refreshing button styling
