@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Fixes resetting page to one when searching/filtering
           - Protection against Highcharts no being available
           - Unified dialog titles
           - Shiny buttons

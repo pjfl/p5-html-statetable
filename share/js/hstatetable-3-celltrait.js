@@ -1,7 +1,7 @@
 // -*- coding: utf-8; -*-
 // Package HStateTable.CellTrait.Bool
 HStateTable.CellTrait.Bool = (function() {
-   let bool_colours = [ 'red', 'green'];
+   let bool_colours = [ 'firebrick', 'seagreen'];
    let bool_false = '✗';
    let bool_true = '✓';
    return {

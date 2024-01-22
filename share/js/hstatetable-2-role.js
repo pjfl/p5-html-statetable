@@ -1264,8 +1264,7 @@ HStateTable.Role.Searchable = (function() {
             this.renderMessages(container);
             return container;
          }.bind(this);
-         methods['prepareURL'] = function(orig, args) {
-            args ||= {};
+         methods['prepareURL'] = function(orig, args = {}) {
             const searchValue = this.rs.state('searchValue');
             const colName = this.rs.nameMap('searchColumn');
             const valName = this.rs.nameMap('searchValue');
@@ -1355,7 +1354,11 @@ HStateTable.Role.Searchable = (function() {
             event.preventDefault();
             if (!input.value) return;
             const column = select ? select.value : '';
-            const attr = { 'searchColumn': column, 'searchValue': input.value };
+            const attr = {
+               page: 1,
+               searchColumn: column,
+               searchValue: input.value
+            };
             this.rs.search(attr).redraw();
          }.bind(this);
          const control = this.h.form({
@@ -1415,7 +1418,11 @@ HStateTable.Role.Tagable = (function() {
          this.control;
          this.prevTag = '_initial_';
          this.handler = function(tag) {
-            const attr = { searchColumn: this.searchColumn, searchValue: tag };
+            const attr = {
+               page: 1,
+               searchColumn: this.searchColumn,
+               searchValue: tag
+            };
             return function(event) {
                event.preventDefault();
                this.rs.search(attr).redraw();
