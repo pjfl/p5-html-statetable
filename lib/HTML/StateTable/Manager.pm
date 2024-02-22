@@ -175,8 +175,7 @@ sub _get_table {
 
    my $class = $self->namespace . "::${name}";
 
-   try { ensure_class_loaded $class }
-   catch { $class = 'HTML::StateTable::Error'; $options->{exception} = $_ };
+   ensure_class_loaded $class;
 
    return $class->new($options);
 }
@@ -235,34 +234,6 @@ sub _setup_view {
 }
 
 use namespace::autoclean;
-
-package
-   HTML::StateTable::Error;
-
-use HTML::StateTable::Constants qw( FALSE TRUE );
-use HTML::StateTable::Types     qw( Object Str );
-use Type::Utils                 qw( class_type );
-use HTML::Tiny;
-use Moo;
-
-has 'context' => is => 'ro', isa => Object;
-
-has 'exception' => is => 'ro', isa => Object, required => TRUE;
-
-has 'name' => is => 'ro', isa => Str, default => 'Error';
-
-has '_html' =>
-   is      => 'ro',
-   isa     => class_type('HTML::Tiny'),
-   default => sub { HTML::Tiny->new };
-
-sub process() { FALSE }
-
-sub render() {
-   my $self = shift;
-
-   return $self->_html->div({ class => 'state-table-error' }, $self->exception);
-}
 
 1;
 

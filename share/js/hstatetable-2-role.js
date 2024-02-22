@@ -554,11 +554,12 @@ HStateTable.Role.Configurable = (function() {
                this.sortBy,
                this.h.label([this.sortDesc, 'Desc'])
             ]),
-            this.h.div({ className: 'dialog-input' }, [
-               this.h.label({ htmlFor: 'pageSize' }, 'Show up to\xA0'),
-               this.pageSize,
-               this.h.span('\xA0rows')
-            ]),
+            this.table.resultset.enablePaging
+               ? this.h.div({ className: 'dialog-input' }, [
+                  this.h.label({ htmlFor: 'pageSize' }, 'Show up to\xA0'),
+                  this.pageSize,
+                  this.h.span('\xA0rows')
+               ]) : '',
             this.animation ? this.h.div({ className: 'dialog-input' }, [
                this.h.label({
                   htmlFor: 'renderStyle'
@@ -774,7 +775,7 @@ HStateTable.Role.Downloadable = (function() {
          const control = this.displayLink ? this.h.a({
             className: 'download-link', onclick: this.downloadHandler
          }, [
-            this.h.span({ className: 'sprite sprite-download' }), this.label
+            this.h.span({ className: 'download-label' }), this.label
          ]) : this.h.span();
          this.control = this.display(container, 'control', control);
       }
@@ -786,7 +787,11 @@ HStateTable.Role.Downloadable = (function() {
          HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
          this.downloadControl = new DownloadControl(this, modifiedMethods);
       },
-      around: modifiedMethods
+      around: modifiedMethods,
+      downloader: function(url, filename) {
+         const downloader = new Downloader('');
+         downloader.handler(url, filename);
+      }
    };
 })();
 // Package HStateTable.Role.Filterable
@@ -889,31 +894,86 @@ HStateTable.Role.Form = (function() {
          this.pageManager  = table.pageManager;
          this.rs           = table.resultset;
          const config      = table.roles['form'];
-         this.buttonConfig = config['buttons'];
          this.confirm      = config['confirm'];
-         this.location     = config['location'];
          this.url          = new URL(config['url']);
+         this.buttonConfig = {};
          this.buttons      = {};
          this.handlers     = {};
+         this.location     = [];
          this.form;
-         this.control = 'render' + this.location['control'] + 'Control';
-         this.table.setControlState(this.control);
-         for (const buttonConfig of this.buttonConfig) {
-            if (buttonConfig['method'] == 'get') continue;
-            this.handlers[buttonConfig['action']] = function(event) {
-               event.preventDefault();
-               if (!confirm(this.confirm.replace(/\*/, buttonConfig['value'])))
-                  return;
-               this.sendForm(buttonConfig);
-            }.bind(this);
+         const locationControl = config['location']['control'];
+         if (this.h.typeOf(locationControl) == 'array')
+            this.location = locationControl;
+         else this.location = [ locationControl ];
+         if (this.h.typeOf(config['buttons']) == 'array') {
+            this.buttonConfig[this.location[0]] = config['buttons'];
          }
+         else this.buttonConfig = config['buttons'];
+         for (const key of Object.keys(this.buttonConfig))
+            this._actionHandlers(this.buttonConfig[key]);
+         for (const location of this.location)
+            this._controlBinding(location, methods);
          methods['orderedContent'] = function(orig) {
             this.form = this.h.form({ className: 'table-form' }, orig());
             return this.form;
          }.bind(this);
-         methods[this.control] = function(orig) {
+      }
+      _actionHandlers(buttonConfigs) {
+         for (const buttonConfig of buttonConfigs) {
+            const action = buttonConfig['action'];
+            const display = buttonConfig['display'] || '';
+            if (buttonConfig['method'] == 'get' && display == 'modal') {
+               const noButtons = buttonConfig['noButtons'] || false;
+               this.handlers[action] = function(event) {
+                  event.preventDefault();
+                  if (this.isDisabled(buttonConfig)) return;
+                  const selected = this.formData();
+                  const url = new URL(action);
+                  url.searchParams.set('selected', selected);
+                  const modal = HFilters.Modal.create({
+                     callback: function(ok, popup, data) {
+                        if (ok && data)
+                           this.sendForm(buttonConfig, selected, data);
+                     }.bind(this),
+                     cancelCallback: function() {},
+                     formClass: buttonConfig['formclass'],
+                     initValue: null,
+                     noButtons: noButtons,
+                     title: buttonConfig['value'],
+                     url: url
+                  });
+                  this.table.modal = modal;
+               }.bind(this);
+            }
+            else if (buttonConfig['method'] == 'get') {
+               this.handlers[action] = function(event) {
+                  event.preventDefault();
+                  const url = new URL(action);
+                  url.searchParams.set('selected', this.formData());
+                  if (this.pageManager) this.pageManager.renderLocation(url);
+               }.bind(this);
+            }
+            else {
+               this.handlers[action] = function(event) {
+                  event.preventDefault();
+                  if (!buttonConfig['noconfirm']) {
+                     const value = buttonConfig['value'];
+                     const message = this.confirm.replace(/\*/, value);
+                     if (!confirm(message)) return;
+                  }
+                  const url = new URL(window.location.href);
+                  const selected = url.searchParams.get('selected');
+                  this.sendForm(buttonConfig, selected);
+               }.bind(this);
+            }
+         }
+      }
+      _controlBinding(location, methods) {
+         const control = 'render' + location + 'Control';
+         this.table.setControlState(control);
+         methods[control] = function(orig) {
             const container = orig();
-            this.render(container);
+            this.render(container, location);
             return container;
          }.bind(this);
       }
@@ -926,7 +986,13 @@ HStateTable.Role.Form = (function() {
          }
          return false;
       }
-      formData(buttonConfig) {
+      renderAll() {
+         for (const location of this.location) {
+            const control = 'render' + location + 'Control';
+            this.table[control]();
+         }
+      }
+      formData() {
          const selector = [];
          for (const column of this.table.columns) {
             if (!Object.keys(column.rowSelector).length) continue;
@@ -935,7 +1001,7 @@ HStateTable.Role.Form = (function() {
             }
             break;
          }
-         return { action: buttonConfig['action'], selector: selector };
+         return selector;
       }
       isDisabled(buttonConfig) {
          if (buttonConfig['selection'] == 'disable_on_select')
@@ -955,21 +1021,23 @@ HStateTable.Role.Form = (function() {
          }
          return false;
       }
-      render(container) {
-         for (const buttonConfig of this.buttonConfig) {
-            const attr = {};
+      render(container, location) {
+         for (const buttonConfig of this.buttonConfig[location]) {
             const action = buttonConfig['action'];
+            const attr = { className: buttonConfig['classes'] || '' };
+            if (this.handlers[action]) attr.onclick = this.handlers[action];
             const value = this.h.span(buttonConfig['value']);
             let control;
-            if (this.handlers[action]) {
-               attr.onclick = this.handlers[action];
-               control = this.h.button(attr, value);
-            }
-            else {
+            if (buttonConfig['method'] == 'get') {
                attr.href = action;
                control = this.h.a(attr, value);
             }
+            else {
+               control = this.h.button(attr, value);
+            }
             control.classList.add('table-button');
+            if (this.handlers[action])
+               control.setAttribute('clicklistener', true);
             if (this.isDisabled(buttonConfig))
                control.setAttribute('disabled', 'disabled');
             const old = this.buttons[action];
@@ -980,23 +1048,54 @@ HStateTable.Role.Form = (function() {
             this.table.animateButtons();
          }
       }
-      async sendForm(buttonConfig) {
-         const action  = buttonConfig['action'];
+      async sendForm(buttonConfig, selected = '', data = {}) {
+         const action = buttonConfig['action'];
+         const url = new URL(window.location.href);
+         const directory = url.searchParams.get('directory');
          const manager = this.pageManager;
-         const token   = this.rs.token;
-         if (!action.match(/:/)) {
-            const data = { data: this.formData(buttonConfig), _verify: token };
-            const { location, object } = await this.bitch.blows(
-               this.url, { json: JSON.stringify(data) }
-            );
-            if (manager && location) manager.renderMessage(location);
-            this.rs.redraw();
+         const token = this.rs.token;
+         if (action.match(/:/)) {
+            const name = buttonConfig['field'] || 'name';
+            const fields = [
+               this.h.hidden({ name: '_verify', value: token }),
+               this.h.hidden({ name: 'directory', value: directory }),
+               this.h.hidden({ name: 'selected', value: selected }),
+            ];
+            let enctype;
+            if (data.value) {
+               fields.push(this.h.hidden({ name: name, value: data.value }));
+            }
+            else if (data.files) {
+               enctype = 'multipart/form-data';
+               const file = this.h.file({ name: name });
+               file.files = data.files;
+               fields.push(file);
+            }
+            const options = {
+               headers: { prefer: 'render=partial' }, form: this.h.form(fields)
+            };
+            if (enctype) options.enctype = enctype;
+            const { location, text } = await this.bitch.blows(action, options);
+            if (manager && location) {
+               manager.renderMessage(location);
+               manager.renderLocation(location);
+            }
+            else if (text) {
+               console.warn('Unexpected text response');
+            }
          }
          else {
-            const attr = { name: '_verify', value: token };
-            const form = this.h.form(this.h.hidden(attr));
+            const form = {
+               data: {
+                  action: action,
+                  directory: directory,
+                  selected: selected,
+                  selector: this.formData()
+               },
+               _verify: token
+            };
             const { location, text } = await this.bitch.blows(
-               action, { headers: { prefer: 'render=partial' }, form: form }
+               this.url, { json: JSON.stringify(form) }
             );
             if (manager && location) {
                manager.renderMessage(location);
@@ -1005,6 +1104,7 @@ HStateTable.Role.Form = (function() {
             else if (text) {
                console.warn('Unexpected text response');
             }
+            else this.rs.redraw();
          }
       }
    }
@@ -1409,25 +1509,15 @@ HStateTable.Role.Tagable = (function() {
          this.rs            = table.resultset;
          const config       = table.roles['tagable'];
          this.appendTo      = config['append-to'];
+         this.breadcrumbs   = config['breadcrumbs'] || false;
+         this.direction     = config['direction'] || 'left';
          this.enablePopular = config['enable-popular'];
          this.location      = config['location']['control'];
          this.searchColumn  = config['search-column'];
          this.section       = config['section'];
-         this.tagColumn     = config['tag-column'];
          this.tags          = config['tags'];
          this.control;
          this.prevTag = '_initial_';
-         this.handler = function(tag) {
-            const attr = {
-               page: 1,
-               searchColumn: this.searchColumn,
-               searchValue: tag
-            };
-            return function(event) {
-               event.preventDefault();
-               this.rs.search(attr).redraw();
-            }.bind(this);
-         }.bind(this);
          if (this.appendTo) {
             this.table.columnIndex[this.appendTo].cellTraits.push('Tagable');
             return;
@@ -1446,15 +1536,7 @@ HStateTable.Role.Tagable = (function() {
             return;
          }
          const content = this.h.ul({ className: 'cell-content-append' });
-         for (const tag of this.tags) {
-            const arrow = this.h.span({ className: 'tag-arrow-left' });
-            const value = this.h.span({
-               className: 'tag-value', onclick: this.handler(tag)
-            }, tag);
-            content.append(
-               this.h.li({ className: 'cell-tag' }, [arrow, value])
-            );
-         }
+         this.appendTags(content);
          const location = 'render' + this.location + 'Control';
          this.table.setControlState(location);
          methods[location] = function(orig) {
@@ -1463,6 +1545,25 @@ HStateTable.Role.Tagable = (function() {
             this.control = this.display(container, 'control', control);
             return container;
          }.bind(this);
+      }
+      appendTags(content) {
+         const direction = this.direction;
+         for (const name of this.tags) {
+            const arrow = this.h.span({ className: 'tag-arrow-' + direction });
+            let value;
+            if (this.breadcrumbs) {
+               value = this.h.a({
+                  className: 'tag-value breadcrumbs', href: name[1]
+               }, name[0]);
+            }
+            else {
+               value = this.h.span({
+                  className: 'tag-value', onclick: this.searchHandler(name)
+               }, name);
+            }
+            const tag = direction == 'left' ? [arrow, value] : [value, arrow];
+            content.append(this.h.li({ className: 'cell-tag' }, tag));
+         }
       }
       renderSection(tag) {
          const cells = [];
@@ -1475,10 +1576,20 @@ HStateTable.Role.Tagable = (function() {
          cells.push(this.h.td({
             className: 'section-tag', colSpan: colSpan
          }, this.h.span({
-            className: 'tag-value', onclick: this.handler(tag)
+            className: 'tag-value', onclick: this.searchHandler(tag)
          }, label)));
          this.prevTag = tag ? tag : '';
          return this.h.tr({ className: 'section-row' }, cells);
+      }
+      searchHandler(tagName) {
+         return function(event) {
+            event.preventDefault();
+            this.rs.search({
+               page: 1,
+               searchColumn: this.searchColumn,
+               searchValue: tagName
+            }).redraw();
+         }.bind(this);
       }
    }
    Object.assign(TagControl.prototype, HStateTable.Util.Markup);

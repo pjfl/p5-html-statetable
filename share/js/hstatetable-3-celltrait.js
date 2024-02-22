@@ -14,7 +14,8 @@ HStateTable.CellTrait.Bool = (function() {
       around: {
          getValue: function(orig, attr) {
             const result = orig(attr);
-            if (!result.value || result.value.length == 0 || result.value == 0){
+            if (result.value.length == 0) return result;
+            if (!result.value || result.value == 0) {
                this.appendValue(attr, 'style', 'color:' + bool_colours[0]);
                result.value = bool_false;
             }
@@ -49,7 +50,7 @@ HStateTable.CellTrait.Checkbox = (function() {
             this.appendValue(attr, 'className', 'checkbox');
             if (col.width) this.appendValue(attr, 'style', col.width);
             const handler = function(event) {
-               col.table[col.table.formControl.control]();
+               if (col.table.formControl) col.table.formControl.renderAll();
             }.bind(this);
             let name = col.name;
             let box;
@@ -98,6 +99,53 @@ HStateTable.CellTrait.DateTime = (function() {
                result.value = date + ' ' + time;
             }
             return result;
+         }
+      }
+   };
+})();
+// Package HStateTable.CellTrait.Icon
+HStateTable.CellTrait.Icon = (function() {
+   return {
+      around: {
+         getValue: function(orig, attr) {
+            const result = orig(attr);
+            return {
+               value: this.h.img({ className: 'icon', src: result.value })
+            };
+         }
+      }
+   };
+})();
+// Package HStateTable.CellTrait.Modal
+HStateTable.CellTrait.Modal = (function() {
+   return {
+      around: {
+         getValue: function(orig, attr) {
+            const result = orig(attr);
+            const href = result.link;
+            const url = new URL(href)
+            const trigger = this.column.options['trigger-modal'];
+            if (url.searchParams.get(trigger) != 'true') return result;
+            delete result.link;
+            const onclick = function(event) {
+               event.preventDefault();
+               const modal = HFilters.Modal.create({
+                  callback: function(ok, popup, data) {
+                     if (ok && data) console.log(data);
+                  }.bind(this),
+                  cancelCallback: function() {},
+                  formClass: 'filemanager',
+                  initValue: null,
+                  noButtons: true,
+                  title: 'File Preview',
+                  url: href
+               });
+               this.column.table.modal = modal;
+            }.bind(this);
+            const anchorAttr = { href: href, onclick: onclick };
+            const value = this.h.a(anchorAttr, result.value);
+            value.setAttribute('clicklistener', true);
+            return { value: value };
          }
       }
    };

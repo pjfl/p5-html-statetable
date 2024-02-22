@@ -2,6 +2,7 @@ package HTML::StateTable::Renderer;
 
 use HTML::StateTable::Constants qw( TRUE );
 use HTML::StateTable::Types     qw( ArrayRef HashRef Str Table );
+use HTML::StateTable::Util      qw( throw );
 use Type::Utils                 qw( class_type );
 use HTML::Tiny;
 use Try::Tiny;
@@ -105,10 +106,10 @@ sub render {
 
    try   { $output = $self->container }
    catch {
-      my $error = $_;
+      my $table = $self->table;
 
-      $output = $self->_html->div({ class => 'state-table-error' }, $error);
-      $self->table->log->error($error) if $self->table->has_log;
+      $table->log->error("${_}", $table->context) if $table->has_log;
+      throw "${_}";
    };
 
    return $output;

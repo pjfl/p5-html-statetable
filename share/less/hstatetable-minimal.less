@@ -51,8 +51,7 @@ body {
 .state-table {
     display: inline-block; text-align: left; vertical-align: top;
     caption {
-        font-family: #fonts[system]; text-align: left;
-        text-transform: uppercase; white-space: nowrap;
+        display: none;
     }
     table {
         border-collapse: collapse; display: block; margin: 0.25rem 0 0.5rem;
@@ -74,6 +73,9 @@ body {
         }
         td a:active, td a:hover {
             font-style: italic;
+        }
+        td img.icon {
+            height: 20px; width: 20px; vertical-align: middle;
         }
         td.checkbox {
             text-align: center;
@@ -230,12 +232,8 @@ body {
     .status-messages strong {
         font-family: #fonts[data];
     }
-    .active-control,
-    .bottom-left-control,
-    .bottom-right-control,
-    .top-left-control,
-    .top-right-control {
-        display: inline-block;
+    .active-control {
+        display: inline;
     }
     .bottom-control,
     .top-control {
@@ -245,13 +243,18 @@ body {
     .top-control.visible {
         display: flex; justify-content: space-between;
     }
+    .bottom-left-control,
+    .bottom-right-control {
+        display: flex;
+    }
     .top-left-control,
     .top-right-control {
+        align-items: center; display: inline-flex; justify-content: flex-start;
         margin-top: 0.25rem;
     }
     .cell-content-append {
         display: inline-block; list-style: none; margin-top: 0;
-        margin-bottom: 0; padding: 0 0.25rem;
+        margin-bottom: 0; padding: 0;
     }
     .cell-tag {
         display: inline-block; margin: 0; padding-right: 0.25rem;
@@ -265,14 +268,28 @@ body {
         border-right-color: #colours[tag-bg];
         height: 0; width: 0;
     }
+    .cell-tag .tag-arrow-right {
+        border-top: 12px solid transparent;
+        border-bottom: 12px solid transparent; border-left: 12px solid;
+        border-left-color: #colours[tag-bg];
+        height: 0; width: 0;
+    }
     .cell-tag .tag-arrow-left::after {
         content: '.'; display: inline-block; font-size: larger;
         position: absolute; transform: translate(0.25rem, -100%);
+    }
+    .cell-tag .tag-arrow-right::before {
+        content: '.'; display: inline-block; font-size: larger;
+        position: absolute; transform: translate(-0.75rem, -100%);
     }
     .cell-tag .tag-value {
         background: #colours[tag-bg]; border-radius: 0 3px 3px 0;
         color: #colours[link]; cursor: pointer; font-family: #fonts[data];
         font-size: x-small; padding: 2px 0.25rem;
+    }
+    .cell-tag .tag-value.breadcrumbs {
+        border-radius: 3px 0 0 3px; font-size: medium;
+        padding-bottom: 0.45rem; padding-top: 0.3rem; text-decoration: none;
     }
     .filter-dialog, .preference-dialog {
         background: #colours[panel-bg]; border: 1px solid; border-radius: 5px;
@@ -365,6 +382,9 @@ body {
     .chart-container, .table-container {
         display: inline-block; padding-top: 0.5rem; vertical-align: top;
     }
+    .table-form .credit-control {
+        display: flex; justify-content: space-between; padding-bottom: 0.5rem;
+    }
     .table-form .table-button, .table-form button {
         margin-right: 0.5rem;
     }
@@ -448,8 +468,8 @@ body {
         border-right: 1px solid; font-family: #fonts[system]; font-size: 0.8rem;
         font-weight: normal; padding-right: 0.5rem; white-space: nowrap;
     }
-    .state-table caption {
-        display: none;
+    .credit-control {
+        justify-content: flex-start;
     }
     .state-table td:first-child {
         border: 0; font-family: #fonts[data]; font-size: 1rem;
@@ -459,9 +479,6 @@ body {
     }
     .table-form .table-button:first-child, .table-form button:first-child {
         margin-left: 0.5rem;
-    }
-    .table-form .credit-control {
-        display: flex; padding-bottom: 0.5rem;
     }
 }
 .state-table .state-table table {

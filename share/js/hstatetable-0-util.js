@@ -36,14 +36,21 @@ HStateTable.Util = (function() {
          let want = options.response || 'text'; delete options.response;
          this._setHeaders(options);
          if (options.form) {
-            options.headers.set(
-               'Content-Type', 'application/x-www-form-urlencoded'
-            );
             const form = options.form; delete options.form;
             const data = new FormData(form);
             data.set('_submit', form.getAttribute('submitter'));
-            const params = new URLSearchParams(data);
-            options.body = params.toString();
+            const type = options.enctype || 'application/x-www-form-urlencoded';
+            delete options.enctype;
+            if (type == 'multipart/form-data') {
+               const files = options.files; delete options.files;
+               if (files && files[0]) data.append('file', files[0]);
+               options.body = data;
+            }
+            else {
+               options.headers.set('Content-Type', type);
+               const params = new URLSearchParams(data);
+               options.body = params.toString();
+            }
          }
          if (options.json) {
             options.headers.set('Content-Type', 'application/json');
@@ -133,6 +140,7 @@ HStateTable.Util = (function() {
          }
          return el;
       }
+      typeOf(x)               { return _typeof(x) }
       a(attr, content)        { return this._tag('a', attr, content) }
       caption(attr, content)  { return this._tag('caption', attr, content) }
       div(attr, content)      { return this._tag('div', attr, content) }
@@ -166,6 +174,10 @@ HStateTable.Util = (function() {
       }
       checkbox(attr) {
          attr['type'] = 'checkbox';
+         return this._tag('input', attr);
+      }
+      file(attr) {
+         attr['type'] = 'file';
          return this._tag('input', attr);
       }
       hidden(attr) {
