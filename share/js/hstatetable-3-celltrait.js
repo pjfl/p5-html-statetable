@@ -15,6 +15,7 @@ HStateTable.CellTrait.Bool = (function() {
          getValue: function(orig, attr) {
             const result = orig(attr);
             if (result.value.length == 0) return result;
+            this.appendValue(attr, 'className', 'boolean');
             if (!result.value || result.value == 0) {
                this.appendValue(attr, 'style', 'color:' + bool_colours[0]);
                result.value = bool_false;

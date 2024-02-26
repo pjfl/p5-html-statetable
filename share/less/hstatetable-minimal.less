@@ -77,7 +77,7 @@ body {
         td img.icon {
             height: 20px; width: 20px; vertical-align: middle;
         }
-        td.checkbox {
+        td.boolean, td.checkbox {
             text-align: center;
         }
         td.number {
@@ -467,6 +467,9 @@ body {
     td:first-child {
         border-right: 1px solid; font-family: #fonts[system]; font-size: 0.8rem;
         font-weight: normal; padding-right: 0.5rem; white-space: nowrap;
+    }
+    td.boolean {
+        text-align: left;
     }
     .credit-control {
         justify-content: flex-start;

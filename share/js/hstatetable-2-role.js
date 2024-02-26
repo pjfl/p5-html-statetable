@@ -322,11 +322,13 @@ HStateTable.Role.Configurable = (function() {
          const order = [];
          for (const row of rows) order.push(row.id.split(/\./)[1]);
          const columns = [];
-         const col0 = this.table.columns[0];
-         if (col0.cellTraits.includes('Checkbox')) columns.push(col0);
+         const colFirst = this.table.columns[0];
+         const colLast = this.table.columns[this.table.columns.length - 1];
+         if (colFirst.cellTraits.includes('Checkbox')) columns.push(colFirst);
          for (const columnName of order) {
             columns.push(this.table.columnIndex[columnName]);
          }
+         if (colLast.cellTraits.includes('Checkbox')) columns.push(colLast);
          return columns;
       }
       findCell(target) {
