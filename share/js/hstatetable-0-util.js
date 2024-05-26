@@ -146,6 +146,7 @@ HStateTable.Util = (function() {
       div(attr, content)      { return this._tag('div', attr, content) }
       figure(attr, content)   { return this._tag('figure', attr, content) }
       form(attr, content)     { return this._tag('form', attr, content) }
+      h3(attr, content)       { return this._tag('h3', attr, content) }
       h5(attr, content)       { return this._tag('h5', attr, content) }
       img(attr)               { return this._tag('img', attr) }
       input(attr, content)    { return this._tag('input', attr, content) }
@@ -161,8 +162,8 @@ HStateTable.Util = (function() {
       tbody(attr, content)    { return this._tag('tbody', attr, content) }
       td(attr, content)       { return this._tag('td', attr, content) }
       th(attr, content)       { return this._tag('th', attr, content) }
-      tr(attr, content)       { return this._tag('tr', attr, content) }
       thead(attr, content)    { return this._tag('thead', attr, content) }
+      tr(attr, content)       { return this._tag('tr', attr, content) }
       ul(attr, content)       { return this._tag('ul', attr, content) }
       button(attr, content) {
          if (_typeof(attr) == 'object') attr['type'] ||= 'submit';

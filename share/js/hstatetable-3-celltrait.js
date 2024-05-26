@@ -125,6 +125,7 @@ HStateTable.CellTrait.Modal = (function() {
             const result = orig(attr);
             const href = result.link;
             const url = new URL(href)
+            const icons = this.column.options['modal-icons'] || '/icons.svg';
             const trigger = this.column.options['trigger-modal'];
             if (url.searchParams.get(trigger) != 'true') return result;
             delete result.link;
@@ -136,6 +137,7 @@ HStateTable.CellTrait.Modal = (function() {
                   }.bind(this),
                   cancelCallback: function() {},
                   formClass: 'filemanager',
+                  icons,
                   initValue: null,
                   noButtons: true,
                   title: 'File Preview',

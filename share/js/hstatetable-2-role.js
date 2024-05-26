@@ -931,7 +931,8 @@ HStateTable.Role.Form = (function() {
                   if (this.isDisabled(buttonConfig)) return;
                   const selected = this.formData();
                   const url = new URL(action);
-                  url.searchParams.set('selected', selected);
+                  if (selected.length)
+                     url.searchParams.set('selected', selected);
                   const modal = HFilters.Modal.create({
                      callback: function(ok, popup, data) {
                         if (ok && data)
@@ -951,7 +952,9 @@ HStateTable.Role.Form = (function() {
                this.handlers[action] = function(event) {
                   event.preventDefault();
                   const url = new URL(action);
-                  url.searchParams.set('selected', this.formData());
+                  const selected = this.formData();
+                  if (selected.length)
+                     url.searchParams.set('selected', selected);
                   if (this.pageManager) this.pageManager.renderLocation(url);
                }.bind(this);
             }

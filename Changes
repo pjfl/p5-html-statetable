@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Caption now optional first div
           - Fixes column reorder with selector in last column
           - Better errors. Modal popups. More buttons. Flexible tag names
           - Fixes resetting page to one when searching/filtering

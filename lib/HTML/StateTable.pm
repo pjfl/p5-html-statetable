@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 63 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 64 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -95,12 +95,15 @@ function
 
 =item has_context
 
-Predicate for the C<context> attribute
+Predicate for the C<context> attribute. Weakened reference
 
 =cut
 
-has 'context' => is => 'ro', isa => Context, weak_ref => TRUE,
-   predicate => 'has_context';
+has 'context' =>
+   is        => 'ro',
+   isa       => Context,
+   predicate => 'has_context',
+   weak_ref  => TRUE;
 
 =item displayable_columns
 

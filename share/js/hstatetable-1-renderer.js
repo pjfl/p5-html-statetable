@@ -238,8 +238,6 @@ HStateTable.Renderer = (function() {
             attr, 'style', 'max-width:' + this.properties['max-width']
          );
          this.table = this.h.table(attr);
-         if (this.caption.length)
-            this.table.append(this.h.caption(this.caption));
          this.table.append(this.header);
          this.table.append(this.body);
          this.applyRoles(true);
@@ -314,18 +312,24 @@ HStateTable.Renderer = (function() {
          return row;
       }
       orderedContent() {
+         let content;
          if (this.titleLocation == 'outer') {
-            return [
+            content = [
                this.titleControl, this.topControl,
                this.table,
                this.bottomControl, this.creditControl
             ];
          }
-         return [
-            this.topControl, this.titleControl,
-            this.table,
-            this.creditControl, this.bottomControl
-         ];
+         else {
+            content = [
+               this.topControl, this.titleControl,
+               this.table,
+               this.creditControl, this.bottomControl
+            ];
+         }
+         if (this.caption.length)
+            content.unshift(this.h.div({ className: 'caption' }, this.caption));
+         return content;
       }
       prepareURL(args) {
          args ||= {};
