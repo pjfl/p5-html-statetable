@@ -2,13 +2,11 @@ package HTML::StateTable::Role::Reorderable;
 
 use utf8; # -*- coding: utf-8; -*-
 
-use HTML::StateTable::Constants qw( FALSE TRUE );
+use HTML::StateTable::Constants qw( FALSE NUL TRUE );
 use HTML::StateTable::Types     qw( Bool Str );
 use Moo::Role;
 
 has 'reorderable' => is => 'ro', isa => Bool, default => TRUE;
-
-has 'reorderable_label' => is => 'ro', isa => Str, default => '♋'; # ‡ ♋
 
 has 'reorderable_label_title' => is => 'ro', isa => Str,
    default => 'Drag and drop to reorder columns';
@@ -27,7 +25,7 @@ around 'sorted_columns' => sub {
    return @columns unless scalar keys %{$position};
 
    return map { $_->[1] } sort { $a->[0] <=> $b->[0] }
-          map { [ $position->{$_->name} // 0, $_ ] } @columns;
+          map { [ $position->{$_->name} // $index++, $_ ] } @columns;
 };
 
 after 'BUILD' => sub {
@@ -44,7 +42,6 @@ sub serialise_reorderable {
    my $self = shift;
 
    return {
-      label => $self->reorderable_label,
       title => $self->reorderable_label_title,
    };
 }

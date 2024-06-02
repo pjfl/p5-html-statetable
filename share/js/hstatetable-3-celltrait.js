@@ -111,7 +111,11 @@ HStateTable.CellTrait.Icon = (function() {
          getValue: function(orig, attr) {
             const result = orig(attr);
             return {
-               value: this.h.img({ className: 'icon', src: result.value })
+               value: this.h.icon({
+                  className: 'icon',
+                  icons: this.column.table.icons,
+                  name: result.value
+               })
             };
          }
       }

@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 64 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 65 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -133,6 +133,15 @@ has 'empty_text' =>
    is      => 'ro',
    isa     => NonEmptySimpleStr,
    default => 'No data to display';
+
+=item icons
+
+An immutable string with a null default. URI of the SVG file containing named
+symbols. If not supplied default UTF-8 characters will be used instead
+
+=cut
+
+has 'icons' => is => 'lazy', isa => SimpleStr, default => sub { NUL };
 
 =item is_filtered
 
@@ -729,7 +738,7 @@ sub next_row {
    my $result = $self->next_result;
 
    return unless defined $result;
-
+ 
    return $self->row_class->new( result => $result, table => $self );
 }
 

@@ -467,16 +467,22 @@ HStateTable.Role.Configurable = (function() {
             cells.push(cell);
          }
          if (this.reorderable) {
-            const orderControl = this.table.orderControl;
-            cell = this.h.td({
-               className: 'grab-handle-cell'
-            }, this.h.div({
-               className: 'grab-handle', title: orderControl.title
-            }, orderControl.label));
+            const grab = this._createGrabIcon();
+            cell = this.h.td({ className: 'grab-handle-cell' }, grab);
             cell.setAttribute('data-cell', 'Order');
             cells.push(cell);
          }
          return cells;
+      }
+      _createGrabIcon() {
+         const icons = this.table.icons;
+         const title = this.table.orderControl.title;
+         if (!icons)
+            return this.h.span({ className: 'grab-handle text', title }, '♋');
+         const attr = { className: 'drag-icon', icons, name: 'grab' };
+         return this.h.span({
+            className: 'grab-handle', title
+         }, this.h.icon(attr));
       }
       renderHeaderCells() {
          return [
@@ -612,11 +618,6 @@ HStateTable.Role.Configurable = (function() {
          return column && column.displayed;
       }
       render() {
-         const close = this.control.dialogClose;
-         const attr  = { className: 'dialog-close' };
-         const isURL = close.match(/:/) ? true : false;
-         if (!isURL) attr.className = 'dialog-close text';
-         const label = isURL ? this.h.img({ src: close }) : close;
          const dialog = this.h.div({ className: 'preference-dialog' }, [
             this.h.div({
                className: 'dialog-title',
@@ -625,7 +626,7 @@ HStateTable.Role.Configurable = (function() {
                this.h.span({
                   className: 'dialog-title-text'
                }, this.control.dialogTitle),
-               this.h.span(attr, label)
+               this._createCloseIcon()
             ]),
             this.form.render(this.getState())
          ]);
@@ -635,16 +636,21 @@ HStateTable.Role.Configurable = (function() {
                ? this.table.topControl : this.table.bottomControl;
          this.dialog = this.display(container, 'dialog', dialog);
       }
+      _createCloseIcon() {
+         const icons = this.table.icons;
+         if (!icons)
+            return this.h.span({ className: 'dialog-close text' }, 'X');
+         const attr = { className: 'close-icon', icons, name: 'close' };
+         return this.h.span({ className: 'dialog-close' }, this.h.icon(attr));
+      }
    }
    Object.assign(Preference.prototype, HStateTable.Util.Markup);
    class ConfigControl {
       constructor(table, methods) {
          const config = table.roles['configurable'];
          this.control;
-         this.dialogClose = config['dialog-close'] || 'x';
          this.dialogState = false;
          this.dialogTitle = config['dialog-title'] || '';
-         this.label = config['label'] || 'V';
          this.location = config['location'];
          this.controlLocation = this.location['control'];
          this.rs = table.resultset;
@@ -676,16 +682,21 @@ HStateTable.Role.Configurable = (function() {
          }.bind(this);
       }
       render(container) {
-         const attr  = { className: 'preference-control' };
-         const isURL = this.label.match(/:/) ? true : false;
-         if (!isURL) attr.className = 'preference-control text';
-         const label = isURL ? this.h.img({ src: this.label }) : this.label;
          const control = this.h.a({
             className: 'preference-link',
             onclick: this.dialogHandler,
             title: this.dialogTitle
-         }, this.h.span(attr, label));
+         }, this._createControlIcon());
          this.control = this.display(container, 'control', control);
+      }
+      _createControlIcon() {
+         const icons = this.table.icons;
+         if (!icons)
+            return this.h.span({ className: 'preference-control text' }, '⚙');
+         const attr = { className: 'control-icon', icons, name: 'control' };
+         return this.h.span({
+            className: 'preference-control'
+         }, this.h.icon(attr));
       }
    }
    Object.assign(ConfigControl.prototype, HStateTable.Util.Markup);
@@ -802,7 +813,6 @@ HStateTable.Role.Filterable = (function() {
       constructor(table, methods) {
          const config = table.roles['filterable'];
          this.dialogTitle = config['dialog-title'];
-         this.label = config['label'];
          this.location = config['location'];
          this.messageLabel = config['message-label'];
          this.messages;
@@ -817,7 +827,7 @@ HStateTable.Role.Filterable = (function() {
          methods['createColumn'] = function(orig, table, config) {
             const column = orig(table, config);
             if (column.filterable) {
-               const args = { dialogTitle: this.dialogTitle, label: this.label};
+               const args = { dialogTitle: this.dialogTitle };
                this.applyTraits(column, this.ns, ['Filterable'], args);
             }
             return column;
@@ -940,6 +950,7 @@ HStateTable.Role.Form = (function() {
                      }.bind(this),
                      cancelCallback: function() {},
                      formClass: buttonConfig['formclass'],
+                     icons: this.table.icons,
                      initValue: null,
                      noButtons: noButtons,
                      title: buttonConfig['value'],
@@ -1320,7 +1331,6 @@ HStateTable.Role.Reorderable = (function() {
       constructor(table, methods) {
          const config = table.roles['reorderable'];
          this.table = table;
-         this.label = config['label'] || '+';
          this.title = config['title'] || '';
       }
    }

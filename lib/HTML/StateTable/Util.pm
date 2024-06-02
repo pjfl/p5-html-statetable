@@ -195,6 +195,8 @@ sub _get_order {
 
    return \$order_column unless $type =~ m{ \A text \z }imx;
 
+   return \$order_column if ($column_info->{sort_case} // q()) eq 'sensitive';
+
    return \"LOWER($order_column)"; #"
 }
 

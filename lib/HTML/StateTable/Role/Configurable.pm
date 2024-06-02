@@ -2,7 +2,7 @@ package HTML::StateTable::Role::Configurable;
 
 use utf8; # -*- coding: utf-8; -*-
 
-use HTML::StateTable::Constants qw( DOT FALSE TRUE );
+use HTML::StateTable::Constants qw( DOT FALSE NUL TRUE );
 use HTML::StateTable::Types     qw( Bool HashRef Str );
 use Moo::Role;
 
@@ -37,7 +37,7 @@ will not be serialised and any persistent configuration will not be applied
 
 =cut
 
-has 'configurable' => is => 'ro', isa => Bool, default => TRUE;
+has 'configurable' => is => 'rw', isa => Bool, default => TRUE;
 
 =item configurable_action
 
@@ -60,15 +60,6 @@ configurable control displayed by the front end
 has 'configurable_control_location' => is => 'ro', isa => Str,
    default => 'TopRight';
 
-=item configurable_dialog_close
-
-An immutable lazy string which defaults to C<X>. The default display character
-used to close the preferences dialog
-
-=cut
-
-has 'configurable_dialog_close' => is => 'lazy', isa => Str, default => 'X';
-
 =item configurable_dialog_title
 
 An immutable string which defaults to C<Defaults>. Displayed in the title bar
@@ -78,15 +69,6 @@ of the preferences dialog
 
 has 'configurable_dialog_title' => is => 'ro', isa => Str,
    default => 'Defaults';
-
-=item configurable_label
-
-An immutable lazy string which defaults to C<⚙>. Displayed as the open dialog
-control for the preferences dialog
-
-=cut
-
-has 'configurable_label' => is => 'lazy', isa => Str, default => '⚙';
 
 =item configurable_params
 
@@ -159,9 +141,7 @@ sub serialise_configurable {
    my $action = $self->configurable_action;
 
    return {
-      'dialog-close' => $self->configurable_dialog_close,
       'dialog-title' => $self->configurable_dialog_title,
-      'label'        => $self->configurable_label,
       'location'     => { control => $self->configurable_control_location },
       'url'          => $self->context->uri_for_action($action, [$name]),
    };

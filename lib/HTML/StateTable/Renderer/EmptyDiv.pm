@@ -214,6 +214,7 @@ sub _serialise_properties {
       'caption'         => $table->caption,
       'data-url'        => $uri->as_string,
       'enable-paging'   => json_bool $table->paging,
+      'icons'           => $table->icons,
       'max-page-size'   => $table->max_page_size,
       'max-width'       => $table->max_width,
       'no-count'        => json_bool $table->no_count,

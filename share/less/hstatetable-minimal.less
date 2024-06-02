@@ -78,10 +78,10 @@ body {
         td a:active, td a:hover {
             font-style: italic;
         }
-        td img.icon {
-            height: 20px; width: 20px; vertical-align: middle;
+        td svg.icon {
+            height: 20px; width: 20px; vertical-align: text-bottom;
         }
-        td.boolean, td.checkbox, td:has(img.icon) {
+        td.boolean, td.checkbox, td:has(svg.icon) {
             text-align: center;
         }
         td.number {
@@ -149,7 +149,7 @@ body {
     }
     .preference-control {
         display: inline-block;
-        img {
+        img, svg {
             height: 24px; width: 24px; vertical-align: middle;
         }
     }
@@ -249,7 +249,7 @@ body {
     }
     .bottom-left-control,
     .bottom-right-control {
-        display: flex;
+        align-items: center; display: flex;
     }
     .top-left-control,
     .top-right-control {
@@ -319,7 +319,7 @@ body {
     .dialog-close {
         align-items: center; background: #grads[button-bg];
         border-radius: 3px; box-shadow: 2px 2px 2px #colours[panel-shadow];
-        color: #colours[close]; cursor: pointer;
+        color: #colours[close]; cursor: pointer; display: inline-flex;
         font-family: #fonts[system]; font-size: smaller;
         font-weight: bold; height: 100%; margin-top: 2px; padding: 0 0.25rem;
         img, object {
@@ -359,8 +359,8 @@ body {
     }
     .filter-label {
         display: inline-block;
-        img {
-            height: 1rem; width: 1rem; vertical-align: middle;
+        img, svg {
+            height: 1rem; width: 1rem; vertical-align: text-bottom;
         }
     }
     .filter-label.text {
@@ -377,6 +377,10 @@ body {
     .filter-value:hover {
         font-style: italic;
     }
+    .grab-handle {
+        display: inline-block; height: 20px; width: 20px;
+        vertical-align: bottom;
+    }
     .grab-handle-cell {
         cursor: grab; text-align: center;
     }
@@ -387,7 +391,7 @@ body {
         display: inline-block; padding-top: 0.5rem; vertical-align: top;
     }
     .table-form .credit-control {
-        display: flex; justify-content: space-between; padding-bottom: 0.5rem;
+        display: flex; justify-content: space-between;
     }
     .table-form .table-button, .table-form button {
         margin-right: 0.5rem;
@@ -479,7 +483,7 @@ body {
         margin-left: 0.5rem;
     }
     .credit-control {
-        justify-content: flex-start;
+        justify-content: flex-start; padding-bottom: 0.5rem;
     }
     .state-table td:first-child {
         border: 0; font-family: #fonts[data]; font-size: 1rem;

@@ -43,7 +43,6 @@ HStateTable.ColumnTrait.Filterable = (function() {
          this.dialog;
          this.dialogState = false;
          this.dialogTitle = args['dialogTitle'] || ' ';
-         this.label = args['label'] || 'V';
          this.records;
          this.table = column.table;
          this.rs = column.table.resultset;
@@ -64,16 +63,22 @@ HStateTable.ColumnTrait.Filterable = (function() {
             return container;
          }.bind(this);
       }
+      _createFilterIcon(labelAttr) {
+         const icons = this.table.icons;
+         if (!icons) {
+            labelAttr.className = 'filter-label text';
+            return '∇'
+         }
+         const attr = { className: 'filter-icon', icons, name: 'filter' };
+         return this.h.icon(attr);
+      }
       renderAnchor() {
          const attr  = { className: 'filter-label' };
-         const isURL = this.label.match(/:/) ? true : false;
-         if (!isURL) attr.className = 'filter-label text';
-         const label = isURL ? this.h.img({ src: this.label }) : this.label;
          return this.h.a({
             className: 'filter-control',
             onclick: this.dialogHandler,
             title: this.dialogTitle
-         }, this.h.span(attr, label));
+         }, this.h.span(attr, this._createFilterIcon(attr)));
       }
       async renderValues() {
          const url = this.table.prepareURL({
@@ -94,13 +99,17 @@ HStateTable.ColumnTrait.Filterable = (function() {
          this.dialog = this.h.div({ className: 'filter-dialog' }, [
             this.h.div({
                className: 'dialog-title', onclick: this.dialogHandler
-            }, [
-               this.dialogTitle,
-               this.h.span({ className: 'dialog-close' }, 'x' )
-            ]),
+            }, [ this.dialogTitle, this._createCloseIcon() ]),
             await this.renderValues()
          ]);
          this.column.header.append(this.dialog);
+      }
+      _createCloseIcon() {
+         const icons = this.table.icons;
+         if (!icons)
+            return this.h.span({ className: 'dialog-close text' }, 'X');
+         const attr = { className: 'close-icon', icons, name: 'close' };
+         return this.h.span({ className: 'dialog-close' }, this.h.icon(attr));
       }
       selectHandler(value) {
          return function(event) {

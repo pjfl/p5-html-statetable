@@ -44,16 +44,6 @@ the filter dialog
 
 has 'filterable_dialog_title' => is => 'ro', isa => Str, default => 'Filter';
 
-=item filterable_label
-
-A lazy immutable string which defaults to C<∇>. Displayed in the header,
-triggers the display of the filter dialog
-
-=cut
-
-has 'filterable_label' => is => 'lazy', isa => Str, default => '∇';
-# Alternate labels ↣ ↓ ⛢ ∀ ∇ 
-
 =item filterable_message_label
 
 An immutable string which defaults to C<<Filtering on column>>. Displayed
@@ -255,7 +245,6 @@ sub serialise_filterable {
    return {
       'apply'         => { before => json_bool TRUE },
       'dialog-title'  => $self->filterable_dialog_title,
-      'label'         => $self->filterable_label,
       'location'      => { messages => $self->filterable_message_location },
       'message-label' => $self->filterable_message_label,
       'remove-label'  => $self->filterable_remove_label,

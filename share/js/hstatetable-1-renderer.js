@@ -224,6 +224,7 @@ HStateTable.Renderer = (function() {
          this.columnIndex   = {};
          this.columns       = [];
          this.header        = this.h.thead();
+         this.icons         = this.properties['icons'];
          this.modal         = {};
          this.pageManager   = eval(this.properties['page-manager'] || '');
          this.renderStyle   = this.properties['render-style'];

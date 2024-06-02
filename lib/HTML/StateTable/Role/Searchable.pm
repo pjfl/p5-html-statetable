@@ -53,9 +53,10 @@ after 'BUILD' => sub {
    my $self = shift;
 
    if (!$self->searchable_method && !$self->has_searchable_columns) {
-      $self->searchable(0);
+      $self->searchable(FALSE);
    }
-   else { $self->add_role('searchable', __PACKAGE__) }
+
+   $self->add_role('searchable', __PACKAGE__) if $self->searchable;
 
    return;
 };

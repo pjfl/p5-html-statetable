@@ -114,6 +114,9 @@ HStateTable.Util = (function() {
       }
    }
    class HtmlTiny {
+      _frag(content) {
+         return document.createRange().createContextualFragment(content);
+      }
       _tag(tag, attr, content) {
          const el = document.createElement(tag);
          const type = _typeof(attr);
@@ -184,6 +187,22 @@ HStateTable.Util = (function() {
       hidden(attr) {
          attr['type'] = 'hidden';
          return this._tag('input', attr);
+      }
+      icon(attr) {
+         const {
+            attrs = {}, className, height = 20, icons, name,
+            presentational = true, width = 20
+         } = attr;
+         if (Array.isArray(className)) className = `${className.join(' ')}`;
+         const newAttrs = {
+            'aria-hidden': presentational ? 'true' : null,
+            class: className, height, width, ...attrs
+         };
+         const svg = `
+<svg ${Object.keys(newAttrs).filter(attr => newAttrs[attr]).map(attr => `${attr}="${newAttrs[attr]}"`).join(' ')}>
+   <use href="${icons}#icon-${name}"></use>
+</svg>`;
+         return this._frag(svg.trim());
       }
       radio(attr) {
          attr['type'] = 'radio';

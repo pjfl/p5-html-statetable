@@ -126,7 +126,7 @@ has 'value' =>
 
       return ${$value} if is_scalarref $value;
 
-      return $self->row->result->get_column($self->column->as)
+      return $self->result->get_column($self->column->as)
          if $self->column->is_generated;
 
       return $self->row->compound_method($value) if !ref $value;
