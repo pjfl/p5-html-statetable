@@ -1,5 +1,5 @@
 // -*- coding: utf-8; -*-
-HStateTable.ColumnTrait.CheckAll = (function() {
+WCom.Table.ColumnTrait.CheckAll = (function() {
    class CheckAll {
       constructor(column, methods) {
          this.column = column;
@@ -25,7 +25,7 @@ HStateTable.ColumnTrait.CheckAll = (function() {
          );
       }
    }
-   Object.assign(CheckAll.prototype, HStateTable.Util.Markup);
+   Object.assign(CheckAll.prototype, WCom.Util.Markup);
    const modifiedMethods = {};
    return {
       initialise: function() {
@@ -34,8 +34,8 @@ HStateTable.ColumnTrait.CheckAll = (function() {
       around: modifiedMethods
    };
 })();
-// Package HStateTable.ColumnTrait.Filterable
-HStateTable.ColumnTrait.Filterable = (function() {
+// Package WCom.Table.ColumnTrait.Filterable
+WCom.Table.ColumnTrait.Filterable = (function() {
    class Filterable {
       constructor(column, methods, args) {
          args ||= {};
@@ -123,7 +123,7 @@ HStateTable.ColumnTrait.Filterable = (function() {
          }.bind(this);
       }
    }
-   Object.assign(Filterable.prototype, HStateTable.Util.Markup);
+   Object.assign(Filterable.prototype, WCom.Util.Markup);
    const modifiedMethods = {};
    return {
       initialise: function(args) {

@@ -1,17 +1,18 @@
 // -*- coding: utf-8; -*-
-// Package HStateTable.Renderer
-if (!HStateTable.CellTrait) HStateTable.CellTrait = {};
-if (!HStateTable.ColumnTrait) HStateTable.ColumnTrait = {};
-if (!HStateTable.RowTrait) HStateTable.RowTrait = {};
-if (!HStateTable.Role) HStateTable.Role = {};
-HStateTable.Renderer = (function() {
+// Package WCom.Table.Renderer
+if (!WCom.Table) WCom.Table = {};
+if (!WCom.Table.CellTrait) WCom.Table.CellTrait = {};
+if (!WCom.Table.ColumnTrait) WCom.Table.ColumnTrait = {};
+if (!WCom.Table.RowTrait) WCom.Table.RowTrait = {};
+if (!WCom.Table.Role) WCom.Table.Role = {};
+WCom.Table.Renderer = (function() {
    const dsName       = 'tableConfig';
    const triggerClass = 'state-table';
-   const CellTraits   = HStateTable.CellTrait;
-   const ColumnTraits = HStateTable.ColumnTrait;
-   const RowTraits    = HStateTable.RowTrait;
-   const TableRoles   = HStateTable.Role;
-   const TableUtils   = HStateTable.Util;
+   const CellTraits   = WCom.Table.CellTrait;
+   const ColumnTraits = WCom.Table.ColumnTrait;
+   const RowTraits    = WCom.Table.RowTrait;
+   const TableRoles   = WCom.Table.Role;
+   const TableUtils   = WCom.Util;
    class Cell {
       constructor(column, row) {
          this.column = column;
@@ -29,7 +30,7 @@ HStateTable.Renderer = (function() {
          if (this.isHTMLOfClass(value, triggerClass)) {
             cell = this.h.td(attr);
             cell.innerHTML = value;
-            HStateTable.Renderer.manager.scan(cell);
+            WCom.Table.Renderer.manager.scan(cell);
          }
          else {
             let content;
@@ -43,6 +44,7 @@ HStateTable.Renderer = (function() {
    };
    Object.assign(Cell.prototype, TableUtils.Markup); // Apply role
    Object.assign(Cell.prototype, TableUtils.Modifiers); // Apply another role
+   Object.assign(Cell.prototype, TableUtils.String); // Apply another role
    class Column {
       constructor(table, config) {
          this.table        = table;
@@ -103,6 +105,7 @@ HStateTable.Renderer = (function() {
    };
    Object.assign(Column.prototype, TableUtils.Markup);
    Object.assign(Column.prototype, TableUtils.Modifiers);
+   Object.assign(Column.prototype, TableUtils.String);
    class Row {
       constructor(table, result, index) {
          this.table   = table;
@@ -208,6 +211,7 @@ HStateTable.Renderer = (function() {
          return false;
       }
    };
+   Object.assign(Resultset.prototype, TableUtils.Bitch);
    Object.assign(Resultset.prototype, TableUtils.Markup);
    class Table {
       constructor(container, config) {
@@ -440,6 +444,7 @@ HStateTable.Renderer = (function() {
    };
    Object.assign(Table.prototype, TableUtils.Markup);
    Object.assign(Table.prototype, TableUtils.Modifiers);
+   Object.assign(Table.prototype, TableUtils.String);
    class Manager {
       constructor() {
          this._isConstructing = true;

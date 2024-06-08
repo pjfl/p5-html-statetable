@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Renames JS files
           - Uses icons. Moves utf8 default characters to JS
           - Caption now optional first div
           - Fixes column reorder with selector in last column

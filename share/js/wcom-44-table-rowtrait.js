@@ -1,5 +1,5 @@
-// Package HStateTable.RowTrait.Active
-HStateTable.RowTrait.Active = (function() {
+// Package WCom.Table.RowTrait.Active
+WCom.Table.RowTrait.Active = (function() {
    return {
       around: {
          render: function(orig, attr) {
@@ -12,8 +12,8 @@ HStateTable.RowTrait.Active = (function() {
       }
    };
 })();
-// Package HStateTable.RowTrait.HighlightRow
-HStateTable.RowTrait.HighlightRow = (function() {
+// Package WCom.Table.RowTrait.HighlightRow
+WCom.Table.RowTrait.HighlightRow = (function() {
    return {
       around: {
          render: function(orig, attr) {

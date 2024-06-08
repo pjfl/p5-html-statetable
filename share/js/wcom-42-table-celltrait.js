@@ -1,6 +1,6 @@
 // -*- coding: utf-8; -*-
-// Package HStateTable.CellTrait.Bool
-HStateTable.CellTrait.Bool = (function() {
+// Package WCom.Table.CellTrait.Bool
+WCom.Table.CellTrait.Bool = (function() {
    let bool_colours = [ 'firebrick', 'seagreen'];
    let bool_false = '✗';
    let bool_true = '✓';
@@ -29,8 +29,8 @@ HStateTable.CellTrait.Bool = (function() {
       }
    };
 })();
-// Package HStateTable.CellTrait.Capitalise
-HStateTable.CellTrait.Capitalise = (function() {
+// Package WCom.Table.CellTrait.Capitalise
+WCom.Table.CellTrait.Capitalise = (function() {
    return {
       around: {
          getValue: function(orig, attr) {
@@ -41,8 +41,8 @@ HStateTable.CellTrait.Capitalise = (function() {
       }
    };
 })();
-// Package HStateTable.CellTrait.Checkbox
-HStateTable.CellTrait.Checkbox = (function() {
+// Package WCom.Table.CellTrait.Checkbox
+WCom.Table.CellTrait.Checkbox = (function() {
    return {
       around: {
          getValue: function(orig, attr) {
@@ -74,8 +74,8 @@ HStateTable.CellTrait.Checkbox = (function() {
       }
    };
 })();
-// Package HStateTable.CellTrait.Date
-HStateTable.CellTrait.Date = (function() {
+// Package WCom.Table.CellTrait.Date
+WCom.Table.CellTrait.Date = (function() {
    return {
       around: {
          getValue: function(orig, attr) {
@@ -86,8 +86,8 @@ HStateTable.CellTrait.Date = (function() {
       }
    };
 })();
-// Package HStateTable.CellTrait.DateTime
-HStateTable.CellTrait.DateTime = (function() {
+// Package WCom.Table.CellTrait.DateTime
+WCom.Table.CellTrait.DateTime = (function() {
    return {
       around: {
          getValue: function(orig, attr) {
@@ -104,8 +104,8 @@ HStateTable.CellTrait.DateTime = (function() {
       }
    };
 })();
-// Package HStateTable.CellTrait.Icon
-HStateTable.CellTrait.Icon = (function() {
+// Package WCom.Table.CellTrait.Icon
+WCom.Table.CellTrait.Icon = (function() {
    return {
       around: {
          getValue: function(orig, attr) {
@@ -121,8 +121,8 @@ HStateTable.CellTrait.Icon = (function() {
       }
    };
 })();
-// Package HStateTable.CellTrait.Modal
-HStateTable.CellTrait.Modal = (function() {
+// Package WCom.Table.CellTrait.Modal
+WCom.Table.CellTrait.Modal = (function() {
    return {
       around: {
          getValue: function(orig, attr) {
@@ -135,7 +135,7 @@ HStateTable.CellTrait.Modal = (function() {
             delete result.link;
             const onclick = function(event) {
                event.preventDefault();
-               const modal = HFilters.Modal.create({
+               const modal = WCom.Modal.create({
                   callback: function(ok, popup, data) {
                      if (ok && data) console.log(data);
                   }.bind(this),
@@ -157,8 +157,8 @@ HStateTable.CellTrait.Modal = (function() {
       }
    };
 })();
-// Package HStateTable.CellTrait.Numeric
-HStateTable.CellTrait.Numeric = (function() {
+// Package WCom.Table.CellTrait.Numeric
+WCom.Table.CellTrait.Numeric = (function() {
    return {
       around: {
          getValue: function(orig, attr) {
@@ -169,8 +169,8 @@ HStateTable.CellTrait.Numeric = (function() {
       }
    };
 })();
-// Package HStateTable.CellTrait.Tagable
-HStateTable.CellTrait.Tagable = (function() {
+// Package WCom.Table.CellTrait.Tagable
+WCom.Table.CellTrait.Tagable = (function() {
    return {
       around: {
          getValue: function(orig, attr) {
@@ -203,8 +203,8 @@ HStateTable.CellTrait.Tagable = (function() {
       }
    };
 })();
-// Package HStateTable.CellTrait.Time
-HStateTable.CellTrait.Time = (function() {
+// Package WCom.Table.CellTrait.Time
+WCom.Table.CellTrait.Time = (function() {
    return {
       around: {
          getValue: function(orig, attr) {

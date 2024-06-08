@@ -1,5 +1,5 @@
-// Package HStateTable.Role.Active
-HStateTable.Role.Active = (function() {
+// Package WCom.Table.Role.Active
+WCom.Table.Role.Active = (function() {
    class Active {
       constructor(table, methods) {
          this.table = table;
@@ -51,19 +51,19 @@ HStateTable.Role.Active = (function() {
          this.activeForm = this.display(container, 'activeForm', activeForm);
       }
    }
-   Object.assign(Active.prototype, HStateTable.Util.Markup);
-   Object.assign(Active.prototype, HStateTable.Util.Modifiers);
+   Object.assign(Active.prototype, WCom.Util.Markup);
+   Object.assign(Active.prototype, WCom.Util.Modifiers);
    const modifiedMethods = {};
    return {
       initialise: function() {
-         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
+         WCom.Util.Modifiers.resetModifiers(modifiedMethods);
          this.active = new Active(this, modifiedMethods);
       },
       around: modifiedMethods
    };
 })();
-// Package HStateTable.Role.Animation
-HStateTable.Role.Animation = (function() { // TODO: Finish this
+// Package WCom.Table.Role.Animation
+WCom.Table.Role.Animation = (function() { // TODO: Finish this
    class Animation {
       constructor(table, methods) {
          this.table = table;
@@ -123,18 +123,18 @@ HStateTable.Role.Animation = (function() { // TODO: Finish this
          }
       }
    }
-   Object.assign(Animation.prototype, HStateTable.Util.Markup);
+   Object.assign(Animation.prototype, WCom.Util.Markup);
    const modifiedMethods = {};
    return {
       initialise: function() {
-         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
+         WCom.Util.Modifiers.resetModifiers(modifiedMethods);
          this.animation = new Animation(this, modifiedMethods);
       },
       around: modifiedMethods
    };
 })();
-// Package HStateTable.Role.Chartable
-HStateTable.Role.Chartable = (function() {
+// Package WCom.Table.Role.Chartable
+WCom.Table.Role.Chartable = (function() {
    class Chartable {
       constructor(table, methods) {
          const config = table.roles['chartable'];
@@ -194,40 +194,41 @@ HStateTable.Role.Chartable = (function() {
          Highcharts.chart(this.chartable, config);
       }
    }
-   Object.assign(Chartable.prototype, HStateTable.Util.Markup);
+   Object.assign(Chartable.prototype, WCom.Util.Bitch);
+   Object.assign(Chartable.prototype, WCom.Util.Markup);
    const modifiedMethods = {};
    return {
       initialise: function() {
-         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
+         WCom.Util.Modifiers.resetModifiers(modifiedMethods);
          this.chartable = new Chartable(this, modifiedMethods);
       },
       around: modifiedMethods
    };
 })();
-// Package HStateTable.Role.CheckAll
-HStateTable.Role.CheckAll = (function() {
+// Package WCom.Table.Role.CheckAll
+WCom.Table.Role.CheckAll = (function() {
    class CheckAllControl {
       constructor(table, methods) {
          methods['createColumn'] = function(orig, table, config) {
             const column = orig(table, config);
             if (column.options['checkall'])
-               this.applyTraits(column, HStateTable.ColumnTrait, ['CheckAll']);
+               this.applyTraits(column, WCom.Table.ColumnTrait, ['CheckAll']);
             return column;
          };
       }
    }
-   Object.assign(CheckAllControl.prototype, HStateTable.Util.Modifiers);
+   Object.assign(CheckAllControl.prototype, WCom.Util.Modifiers);
    const modifiedMethods = {};
    return {
       initialise: function() {
-         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
+         WCom.Util.Modifiers.resetModifiers(modifiedMethods);
          this.checkAllControl = new CheckAllControl(this, modifiedMethods);
       },
       around: modifiedMethods
    };
 })();
-// Package HStateTable.Role.Configurable
-HStateTable.Role.Configurable = (function() {
+// Package WCom.Table.Role.Configurable
+WCom.Table.Role.Configurable = (function() {
    class PreferenceHandlers{
       constructor(preference) {
          this.preference = preference;
@@ -401,7 +402,7 @@ HStateTable.Role.Configurable = (function() {
          return data;
       }
    }
-   Object.assign(PreferenceHandlers.prototype, HStateTable.Util.Markup);
+   Object.assign(PreferenceHandlers.prototype, WCom.Util.Markup);
    class PreferenceForm {
       constructor(preference) {
          this.preference = preference;
@@ -580,7 +581,8 @@ HStateTable.Role.Configurable = (function() {
          return form;
       }
    }
-   Object.assign(PreferenceForm.prototype, HStateTable.Util.Markup);
+   Object.assign(PreferenceForm.prototype, WCom.Util.Markup);
+   Object.assign(PreferenceForm.prototype, WCom.Util.String);
    class Preference {
       constructor(table, control) {
          this.table = table;
@@ -644,7 +646,7 @@ HStateTable.Role.Configurable = (function() {
          return this.h.span({ className: 'dialog-close' }, this.h.icon(attr));
       }
    }
-   Object.assign(Preference.prototype, HStateTable.Util.Markup);
+   Object.assign(Preference.prototype, WCom.Util.Markup);
    class ConfigControl {
       constructor(table, methods) {
          const config = table.roles['configurable'];
@@ -699,18 +701,18 @@ HStateTable.Role.Configurable = (function() {
          }, this.h.icon(attr));
       }
    }
-   Object.assign(ConfigControl.prototype, HStateTable.Util.Markup);
+   Object.assign(ConfigControl.prototype, WCom.Util.Markup);
    const modifiedMethods = {};
    return {
       initialise: function() {
-         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
+         WCom.Util.Modifiers.resetModifiers(modifiedMethods);
          this.configControl = new ConfigControl(this, modifiedMethods);
       },
       around: modifiedMethods
    };
 })();
-// Package HStateTable.Role.Downloadable
-HStateTable.Role.Downloadable = (function() {
+// Package WCom.Table.Role.Downloadable
+WCom.Table.Role.Downloadable = (function() {
    class Downloader {
       constructor(label) {
          this.label = label || '';
@@ -741,7 +743,7 @@ HStateTable.Role.Downloadable = (function() {
          this.clickLink(await this.createLink(url, filename));
       }
    }
-   Object.assign(Downloader.prototype, HStateTable.Util.Markup); // Apply role
+   Object.assign(Downloader.prototype, WCom.Util.Markup); // Apply role
    class DownloadControl {
       constructor(table, methods) {
          this.table       = table;
@@ -793,11 +795,11 @@ HStateTable.Role.Downloadable = (function() {
          this.control = this.display(container, 'control', control);
       }
    }
-   Object.assign(DownloadControl.prototype, HStateTable.Util.Markup);
+   Object.assign(DownloadControl.prototype, WCom.Util.Markup);
    const modifiedMethods = {};
    return {
       initialise: function() {
-         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
+         WCom.Util.Modifiers.resetModifiers(modifiedMethods);
          this.downloadControl = new DownloadControl(this, modifiedMethods);
       },
       around: modifiedMethods,
@@ -807,8 +809,8 @@ HStateTable.Role.Downloadable = (function() {
       }
    };
 })();
-// Package HStateTable.Role.Filterable
-HStateTable.Role.Filterable = (function() {
+// Package WCom.Table.Role.Filterable
+WCom.Table.Role.Filterable = (function() {
    class FilterControl {
       constructor(table, methods) {
          const config = table.roles['filterable'];
@@ -816,7 +818,7 @@ HStateTable.Role.Filterable = (function() {
          this.location = config['location'];
          this.messageLabel = config['message-label'];
          this.messages;
-         this.ns = HStateTable.ColumnTrait;
+         this.ns = WCom.Table.ColumnTrait;
          this.removeLabel = config['remove-label'];
          this.table = table;
          this.rs = table.resultset;
@@ -887,19 +889,19 @@ HStateTable.Role.Filterable = (function() {
          this.messages = this.display(container, 'messages', messages);
       }
    }
-   Object.assign(FilterControl.prototype, HStateTable.Util.Markup);
-   Object.assign(FilterControl.prototype, HStateTable.Util.Modifiers);
+   Object.assign(FilterControl.prototype, WCom.Util.Markup);
+   Object.assign(FilterControl.prototype, WCom.Util.Modifiers);
    const modifiedMethods = {};
    return {
       initialise: function() {
-         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
+         WCom.Util.Modifiers.resetModifiers(modifiedMethods);
          this.filterControl = new FilterControl(this, modifiedMethods);
       },
       around: modifiedMethods
    };
 })();
-// Package HStateTable.Role.Form
-HStateTable.Role.Form = (function() {
+// Package WCom.Table.Role.Form
+WCom.Table.Role.Form = (function() {
    class FormControl {
       constructor(table, methods) {
          this.table        = table;
@@ -943,7 +945,7 @@ HStateTable.Role.Form = (function() {
                   const url = new URL(action);
                   if (selected.length)
                      url.searchParams.set('selected', selected);
-                  const modal = HFilters.Modal.create({
+                  const modal = WCom.Modal.create({
                      callback: function(ok, popup, data) {
                         if (ok && data)
                            this.sendForm(buttonConfig, selected, data);
@@ -1124,37 +1126,37 @@ HStateTable.Role.Form = (function() {
          }
       }
    }
-   Object.assign(FormControl.prototype, HStateTable.Util.Markup);
-   Object.assign(FormControl.prototype, HStateTable.Util.Modifiers);
+   Object.assign(FormControl.prototype, WCom.Util.Markup);
+   Object.assign(FormControl.prototype, WCom.Util.Modifiers);
    const modifiedMethods = {};
    return {
       initialise: function() {
-         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
+         WCom.Util.Modifiers.resetModifiers(modifiedMethods);
          this.formControl = new FormControl(this, modifiedMethods);
       },
       around: modifiedMethods
    };
 })();
-// Package HStateTable.Role.HighlightRow
-HStateTable.Role.HighlightRow = (function() {
+// Package WCom.Table.Role.HighlightRow
+WCom.Table.Role.HighlightRow = (function() {
    class HighlightRow {
       constructor(table, methods) {
          this.table = table;
          this.table.rowTraits['highlightRow'] = {};
       }
    }
-   Object.assign(HighlightRow.prototype, HStateTable.Util.Modifiers);
+   Object.assign(HighlightRow.prototype, WCom.Util.Modifiers);
    const modifiedMethods = {};
    return {
       initialise: function() {
-         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
+         WCom.Util.Modifiers.resetModifiers(modifiedMethods);
          this.highlightRow = new HighlightRow(this, modifiedMethods);
       },
       around: modifiedMethods
    };
 })();
-// Package HStateTable.Role.Pageable
-HStateTable.Role.Pageable = (function() {
+// Package WCom.Table.Role.Pageable
+WCom.Table.Role.Pageable = (function() {
    class PageControl {
       constructor(table, methods) {
          const config = table.roles['pageable'];
@@ -1259,18 +1261,18 @@ HStateTable.Role.Pageable = (function() {
          this.list = this.display(container, 'list', list);
       }
    }
-   Object.assign(PageControl.prototype, HStateTable.Util.Markup);
+   Object.assign(PageControl.prototype, WCom.Util.Markup);
    const modifiedMethods = {};
    return {
       initialise: function() {
-         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
+         WCom.Util.Modifiers.resetModifiers(modifiedMethods);
          this.pageControl = new PageControl(this, modifiedMethods);
       },
       around: modifiedMethods
    };
 })();
-// Package HStateTable.Role.PageSize
-HStateTable.Role.PageSize = (function() {
+// Package WCom.Table.Role.PageSize
+WCom.Table.Role.PageSize = (function() {
    class PageSizeControl {
       constructor(table, methods) {
          const config = table.roles['pagesize'];
@@ -1315,18 +1317,18 @@ HStateTable.Role.PageSize = (function() {
          this.list = this.display(container, 'list', list);
       }
    }
-   Object.assign(PageSizeControl.prototype, HStateTable.Util.Markup);
+   Object.assign(PageSizeControl.prototype, WCom.Util.Markup);
    const modifiedMethods = {};
    return {
       initialise: function() {
-         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
+         WCom.Util.Modifiers.resetModifiers(modifiedMethods);
          this.pageSizeControl = new PageSizeControl(this, modifiedMethods);
       },
       around: modifiedMethods
    };
 })();
-// Package HStateTable.Role.Reorderable
-HStateTable.Role.Reorderable = (function() {
+// Package WCom.Table.Role.Reorderable
+WCom.Table.Role.Reorderable = (function() {
    class OrderControl {
       constructor(table, methods) {
          const config = table.roles['reorderable'];
@@ -1337,14 +1339,14 @@ HStateTable.Role.Reorderable = (function() {
    const modifiedMethods = {};
    return {
       initialise: function() {
-         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
+         WCom.Util.Modifiers.resetModifiers(modifiedMethods);
          this.orderControl = new OrderControl(this, modifiedMethods);
       },
       around: modifiedMethods
    };
 })();
-// Package HStateTable.Role.Searchable
-HStateTable.Role.Searchable = (function() {
+// Package WCom.Table.Role.Searchable
+WCom.Table.Role.Searchable = (function() {
    class SearchControl {
       constructor(table, methods) {
          const config = table.roles['searchable'];
@@ -1506,18 +1508,19 @@ HStateTable.Role.Searchable = (function() {
          this.messages = this.display(container, 'messages', messages);
       }
    }
-   Object.assign(SearchControl.prototype, HStateTable.Util.Markup);
+   Object.assign(SearchControl.prototype, WCom.Util.Markup);
+   Object.assign(SearchControl.prototype, WCom.Util.String);
    const modifiedMethods = {};
    return {
       initialise: function() {
-         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
+         WCom.Util.Modifiers.resetModifiers(modifiedMethods);
          this.searchControl = new SearchControl(this, modifiedMethods);
       },
       around: modifiedMethods
    };
 })();
-// Package HStateTable.Role.Tagable
-HStateTable.Role.Tagable = (function() {
+// Package WCom.Table.Role.Tagable
+WCom.Table.Role.Tagable = (function() {
    class TagControl {
       constructor(table, methods) {
          this.table         = table;
@@ -1607,11 +1610,11 @@ HStateTable.Role.Tagable = (function() {
          }.bind(this);
       }
    }
-   Object.assign(TagControl.prototype, HStateTable.Util.Markup);
+   Object.assign(TagControl.prototype, WCom.Util.Markup);
    const modifiedMethods = {};
    return {
       initialise: function() {
-         HStateTable.Util.Modifiers.resetModifiers(modifiedMethods);
+         WCom.Util.Modifiers.resetModifiers(modifiedMethods);
          this.tagControl = new TagControl(this, modifiedMethods);
       },
       around: modifiedMethods
