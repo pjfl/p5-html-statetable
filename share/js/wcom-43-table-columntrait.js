@@ -123,6 +123,7 @@ WCom.Table.ColumnTrait.Filterable = (function() {
          }.bind(this);
       }
    }
+   Object.assign(Filterable.prototype, WCom.Util.Bitch);
    Object.assign(Filterable.prototype, WCom.Util.Markup);
    const modifiedMethods = {};
    return {

@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Rationalised JS package names
           - Renames JS files
           - Uses icons. Moves utf8 default characters to JS
           - Caption now optional first div

@@ -402,6 +402,7 @@ WCom.Table.Role.Configurable = (function() {
          return data;
       }
    }
+   Object.assign(PreferenceHandlers.prototype, WCom.Util.Bitch);
    Object.assign(PreferenceHandlers.prototype, WCom.Util.Markup);
    class PreferenceForm {
       constructor(preference) {
@@ -743,6 +744,7 @@ WCom.Table.Role.Downloadable = (function() {
          this.clickLink(await this.createLink(url, filename));
       }
    }
+   Object.assign(Downloader.prototype, WCom.Util.Bitch);
    Object.assign(Downloader.prototype, WCom.Util.Markup); // Apply role
    class DownloadControl {
       constructor(table, methods) {
@@ -1042,7 +1044,7 @@ WCom.Table.Role.Form = (function() {
       render(container, location) {
          for (const buttonConfig of this.buttonConfig[location]) {
             const action = buttonConfig['action'];
-            const attr = { className: buttonConfig['classes'] || '' };
+            const attr = {};
             if (this.handlers[action]) attr.onclick = this.handlers[action];
             const value = this.h.span(buttonConfig['value']);
             let control;
@@ -1054,6 +1056,8 @@ WCom.Table.Role.Form = (function() {
                control = this.h.button(attr, value);
             }
             control.classList.add('table-button');
+            if (buttonConfig['classes'])
+               control.classList.add(buttonConfig['classes']);
             if (this.handlers[action])
                control.setAttribute('clicklistener', true);
             if (this.isDisabled(buttonConfig))
@@ -1063,8 +1067,8 @@ WCom.Table.Role.Form = (function() {
                container.replaceChild(control, old);
             else container.append(control);
             this.buttons[action] = control;
-            this.table.animateButtons();
          }
+         this.table.animateButtons(container, '.table-button');
       }
       async sendForm(buttonConfig, selected = '', data = {}) {
          const action = buttonConfig['action'];
@@ -1126,6 +1130,7 @@ WCom.Table.Role.Form = (function() {
          }
       }
    }
+   Object.assign(FormControl.prototype, WCom.Util.Bitch);
    Object.assign(FormControl.prototype, WCom.Util.Markup);
    Object.assign(FormControl.prototype, WCom.Util.Modifiers);
    const modifiedMethods = {};
@@ -1483,6 +1488,7 @@ WCom.Table.Role.Searchable = (function() {
          }, wrapper);
          control.setAttribute('submitlistener', true);
          this.control = this.display(container, 'control', control);
+         this.table.animateButtons(wrapper);
       }
       renderMessages(container) {
          const rs = this.rs;

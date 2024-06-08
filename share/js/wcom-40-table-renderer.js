@@ -478,7 +478,11 @@ WCom.Table.Renderer = (function() {
             promises.push(table.render());
          }
          await Promise.all(promises);
-         for (const name in this.tables) this.tables[name].animateButtons();
+         for (const name in this.tables) {
+            const table = this.tables[name];
+            const animate = () => { table.animateButtons(table.container) };
+            setTimeout(animate, 500);
+         }
       }
    }
    return {

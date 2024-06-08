@@ -140,8 +140,8 @@ WCom.Table.CellTrait.Modal = (function() {
                      if (ok && data) console.log(data);
                   }.bind(this),
                   cancelCallback: function() {},
-                  formClass: 'filemanager',
-                  icons,
+                  formClass: 'classic',
+                  icons: icons,
                   initValue: null,
                   noButtons: true,
                   title: 'File Preview',
