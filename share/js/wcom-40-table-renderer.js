@@ -448,8 +448,8 @@ WCom.Table.Renderer = (function() {
    class Manager {
       constructor() {
          this._isConstructing = true;
-         this.tables = {}; // TODO: Figure out if we can let this go
-         this.onReady(function() { this.createTables() }.bind(this));
+         this.tables = {};
+         TableUtils.Event.onReady(function() { this.createTables()}.bind(this));
       }
       async createTables() {
          await this.scan(document);
@@ -461,14 +461,6 @@ WCom.Table.Renderer = (function() {
                if (!this._isConstructing) resolve(false);
             }, 250);
          }.bind(this));
-      }
-      onReady(callback) {
-         if (document.readyState != 'loading') callback();
-         else if (document.addEventListener)
-            document.addEventListener('DOMContentLoaded', callback);
-         else document.attachEvent('onreadystatechange', function() {
-            if (document.readyState == 'complete') callback();
-         });
       }
       async scan(content) {
          const promises = [];
