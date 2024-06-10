@@ -379,6 +379,7 @@ WCom.Table.Renderer = (function() {
          this.renderCreditControl();
          this.renderBottomLeftControl();
          this.renderBottomRightControl();
+         this.animateButtons(this.container);
       }
       renderBody() {
          const newBody = this.h.tbody();
@@ -452,7 +453,7 @@ WCom.Table.Renderer = (function() {
          TableUtils.Event.onReady(function() { this.createTables()}.bind(this));
       }
       async createTables() {
-         await this.scan(document);
+         await this.scan();
          this._isConstructing = false;
       }
       isConstructing() {
@@ -462,7 +463,7 @@ WCom.Table.Renderer = (function() {
             }, 250);
          }.bind(this));
       }
-      async scan(content) {
+      async scan(content = document, option = {}) {
          const promises = [];
          for (const el of content.getElementsByClassName(triggerClass)) {
             const table = new Table(el, JSON.parse(el.dataset[dsName]));
@@ -470,11 +471,6 @@ WCom.Table.Renderer = (function() {
             promises.push(table.render());
          }
          await Promise.all(promises);
-         for (const name in this.tables) {
-            const table = this.tables[name];
-            const animate = () => { table.animateButtons(table.container) };
-            setTimeout(animate, 500);
-         }
       }
    }
    return {

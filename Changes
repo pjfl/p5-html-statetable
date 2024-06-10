@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Update copyright year. Animate buttons in table render
           - Moved onReady function to utils
           - Rationalised JS package names
           - Renames JS files
