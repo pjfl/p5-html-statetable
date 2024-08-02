@@ -12,7 +12,7 @@ WCom.Table.Renderer = (function() {
    const ColumnTraits = WCom.Table.ColumnTrait;
    const RowTraits    = WCom.Table.RowTrait;
    const TableRoles   = WCom.Table.Role;
-   const TableUtils   = WCom.Util;
+   const Utils        = WCom.Util;
    class Cell {
       constructor(column, row) {
          this.column = column;
@@ -27,10 +27,11 @@ WCom.Table.Renderer = (function() {
          const attr = {};
          const { append, link, value } = this.getValue(attr);
          let cell;
-         if (this.isHTMLOfClass(value, triggerClass)) {
+         if (this.isHTML(value)) {
             cell = this.h.td(attr);
             cell.innerHTML = value;
-            WCom.Table.Renderer.manager.scan(cell);
+            if (this.isHTMLOfClass(value, triggerClass))
+               WCom.Table.Renderer.manager.scan(cell);
          }
          else {
             let content;
@@ -42,9 +43,9 @@ WCom.Table.Renderer = (function() {
          return cell;
       }
    };
-   Object.assign(Cell.prototype, TableUtils.Markup); // Apply role
-   Object.assign(Cell.prototype, TableUtils.Modifiers); // Apply another role
-   Object.assign(Cell.prototype, TableUtils.String); // Apply another role
+   Object.assign(Cell.prototype, Utils.Markup); // Apply role
+   Object.assign(Cell.prototype, Utils.Modifiers); // Apply another role
+   Object.assign(Cell.prototype, Utils.String); // Apply another role
    class Column {
       constructor(table, config) {
          this.table        = table;
@@ -103,9 +104,9 @@ WCom.Table.Renderer = (function() {
          return this.header;
       }
    };
-   Object.assign(Column.prototype, TableUtils.Markup);
-   Object.assign(Column.prototype, TableUtils.Modifiers);
-   Object.assign(Column.prototype, TableUtils.String);
+   Object.assign(Column.prototype, Utils.Markup);
+   Object.assign(Column.prototype, Utils.Modifiers);
+   Object.assign(Column.prototype, Utils.String);
    class Row {
       constructor(table, result, index) {
          this.table   = table;
@@ -127,8 +128,8 @@ WCom.Table.Renderer = (function() {
          return row;
       }
    };
-   Object.assign(Row.prototype, TableUtils.Markup);
-   Object.assign(Row.prototype, TableUtils.Modifiers);
+   Object.assign(Row.prototype, Utils.Markup);
+   Object.assign(Row.prototype, Utils.Modifiers);
    class State {
       constructor(table) {
          this.page       = 1;
@@ -211,8 +212,8 @@ WCom.Table.Renderer = (function() {
          return false;
       }
    };
-   Object.assign(Resultset.prototype, TableUtils.Bitch);
-   Object.assign(Resultset.prototype, TableUtils.Markup);
+   Object.assign(Resultset.prototype, Utils.Bitch);
+   Object.assign(Resultset.prototype, Utils.Markup);
    class Table {
       constructor(container, config) {
          this.container  = container;
@@ -443,14 +444,14 @@ WCom.Table.Renderer = (function() {
          if (control.match(/Top/)) this.topContent = true;
       }
    };
-   Object.assign(Table.prototype, TableUtils.Markup);
-   Object.assign(Table.prototype, TableUtils.Modifiers);
-   Object.assign(Table.prototype, TableUtils.String);
+   Object.assign(Table.prototype, Utils.Markup);
+   Object.assign(Table.prototype, Utils.Modifiers);
+   Object.assign(Table.prototype, Utils.String);
    class Manager {
       constructor() {
          this._isConstructing = true;
          this.tables = {};
-         TableUtils.Event.onReady(function() { this.createTables()}.bind(this));
+         Utils.Event.onReady(function() { this.createTables() }.bind(this));
       }
       async createTables() {
          await this.scan();

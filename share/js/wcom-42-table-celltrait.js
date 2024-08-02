@@ -130,6 +130,7 @@ WCom.Table.CellTrait.Modal = (function() {
             const href = result.link;
             const url = new URL(href)
             const icons = this.column.options['modal-icons'] || '/icons.svg';
+            const title = this.column.options['title'] || 'Modal Dialog';
             const trigger = this.column.options['trigger-modal'];
             if (url.searchParams.get(trigger) != 'true') return result;
             delete result.link;
@@ -141,10 +142,10 @@ WCom.Table.CellTrait.Modal = (function() {
                   }.bind(this),
                   cancelCallback: function() {},
                   formClass: 'classic',
-                  icons: icons,
+                  icons,
                   initValue: null,
                   noButtons: true,
-                  title: 'File Preview',
+                  title,
                   url: href
                });
                this.column.table.modal = modal;
