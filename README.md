@@ -21,7 +21,7 @@ Defines the following attributes;
 
 - caption
 
-    An immutable string with a null default. If set will display as the tables
+    An mutable string with a null default. If set will display as the tables
     caption
 
 - cell\_class
@@ -42,7 +42,7 @@ Defines the following attributes;
 
 - has\_context
 
-    Predicate for the `context` attribute
+    Predicate for the `context` attribute. Weakened reference
 
 - displayable\_columns
 
@@ -55,15 +55,32 @@ Defines the following attributes;
 
     A string to display when there is no data
 
+- icons
+
+    An immutable string with a null default. URI of the SVG file containing named
+    symbols. If not supplied default UTF-8 characters will be used instead
+
 - is\_filtered
 
     A mutable boolean that defaults to false. Is set to true by the `Filterable`
     and `Searchable` table roles
 
+- log
+
+    Optional logging object used to log errors
+
+- has\_log
+
+    Predicate
+
 - max\_page\_size
 
     A non zero positive integer that defaults to 100. The hard limit on the
     `page_size` attribute
+
+- max\_width
+
+    A string with a null default. Used to set the maximum width on the table
 
 - name
 
@@ -296,7 +313,7 @@ Peter Flanigan, `<pjfl@cpan.org>`
 
 # License and Copyright
 
-Copyright (c) 2023 Peter Flanigan. All rights reserved
+Copyright (c) 2024 Peter Flanigan. All rights reserved
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself. See [perlartistic](https://metacpan.org/pod/perlartistic)

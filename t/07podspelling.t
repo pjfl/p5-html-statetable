@@ -63,9 +63,11 @@ downloader
 flanigan
 instantiation
 merchantability
+mouseover
 peter
 redis
 renderer
+reorderable
 resultset
 resultsets
 serialisable
@@ -73,3 +75,5 @@ serialiser
 sortable
 sql
 statetable
+SVG
+

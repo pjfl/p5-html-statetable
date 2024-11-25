@@ -30,14 +30,6 @@ Defines the following attributes;
 
 =over 3
 
-=item container_tag
-
-Which HTML element to wrap the rows in. Defaults to C<table>
-
-=cut
-
-has 'container_tag' => is => 'ro', isa => Str, default => 'table';
-
 =item container
 
 The HTML C<container_tag>, applied attributes C<data>, and the table
@@ -54,6 +46,14 @@ has 'container' =>
 
       return $self->_html->$tag($self->data, $self->rows);
    };
+
+=item container_tag
+
+Which HTML element to wrap the rows in. Defaults to C<table>
+
+=cut
+
+has 'container_tag' => is => 'ro', isa => Str, default => 'table';
 
 =item data
 
