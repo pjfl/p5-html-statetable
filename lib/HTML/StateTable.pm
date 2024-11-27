@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 71 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.1.%d', q$Rev: 72 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -28,16 +28,122 @@ HTML::StateTable - Displays tables from DBIC resultsets
 
 =head1 Synopsis
 
-   use HTML::StateTable;
+   package YourApp::Table::User;
+
+   use HTML::StateTable::Constants qw( FALSE NUL SPC TABLE_META TRUE );
+   use Moo;
+   use HTML::StateTable::Moo;
+
+   extends 'HTML::StateTable';
+   with    'HTML::StateTable::Role::Configurable';
+   with    'HTML::StateTable::Role::Searchable';
+   with    'HTML::StateTable::Role::CheckAll';
+   with    'HTML::StateTable::Role::Form';
+   with    'HTML::StateTable::Role::Active';
+
+   has '+form_buttons' => default => sub {
+      return [{
+         action    => 'user/remove',
+         class     => 'remove-item',
+         selection => 'select_one',
+         value     => 'Remove User',
+      }];
+   };
+
+   has '+icons' => default => sub {
+      return shift->context->request->uri_for('img/icons.svg')->as_string;
+   };
+
+   set_table_name 'user';
+
+   has_column 'id' =>
+      cell_traits => ['Numeric'],
+      label       => 'ID',
+      width       => '3rem';
+
+   has_column 'name' =>
+      label      => 'User Name',
+      link       => sub {
+         my $self    = shift;
+         my $context = $self->table->context;
+
+         return  $context->uri_for_action('user/view', [$self->result->id]);
+      },
+      searchable => TRUE,
+      sortable   => TRUE,
+      title      => 'Sort by user',
+      width      => '10rem';
+
+   has_column 'role_id' =>
+      cell_traits => ['Capitalise'],
+      label       => 'Role',
+      searchable  => TRUE,
+      sortable    => TRUE,
+      title       => 'Sort by role',
+      value       => 'role.name';
+
+   has_column 'timezone' =>
+      value => sub {
+         my $self    = shift;
+         my $profile = $self->result->profile;
+
+         return $profile ? $profile->preference('timezone') : local_tz;
+      },
+      width => '15rem';
+
+   has_column 'check' =>
+      cell_traits => ['Checkbox'],
+      label       => SPC,
+      value       => 'id';
+
+   use namespace::autoclean -except => TABLE_META;
 
 =head1 Description
 
 A rich description of the required table is serialised to the browser via the
-data attributes of an empty C<div> element. The JS running in the browser
+data attributes of an empty HTML C<div> element. The JS running in the browser
 renders the table a fetches row data from the server which it also renders.
 User interactions with the table result in mutated query parameters on the
 request for row data to the server. New row data is rendered without any page
-reload
+reload. Stateful
+
+=head2 JavaScript
+
+Files F<wcom-*.js> are included in the F<share/js> directory of the source
+tree. These will be installed to the F<File::ShareDir> distribution level
+shared data files. Nothing further is done with these files. They should be
+concatenated in sort order by filename and the result placed under the
+webservers document root. Link to this from the web applications pages. Doing
+this is outside the scope of this distribution
+
+When content is loaded the JS method
+C<WCom.Table.Renderer.manager.scan(content)> must be called to inflate the
+otherwise empty HTML C<div> element. The function
+C<WCom.Util.Event.onReady(callback)> is available to install the scan when the
+page loads
+
+=head2 Styling
+
+A file F<hstatetable-minimal.less> is included in the F<share/less> directory
+of the source tree.  This will be installed to L<File::ShareDir> distribution
+level shared data files. Nothing further is done with this file. It would need
+compiling using the Node.js LESS compiler to produce a CSS file which should be
+placed under the web servers document root and then linked to in the header of
+the web applications pages. This is outside the scope of this distribution
+
+=head2 Example Usage
+
+There is a simple L<Catalyst> test application in the F<t/lib> directory of the
+source tree.
+
+Catalyst components can create and stash a table object which are rendered
+in the template by a call to the table objects C<render> method
+
+There is a repository for an example application on Github
+(https://github.com/pjfl/p5-app-mcat). This contains a number of example tables
+and the uses to which they can be put. That application uses L<Web::Compenents>
+which is also an Plack based MVC framework whose autoloaded components share
+the same method signatures with L<Catalyst>
 
 =head1 Configuration and Environment
 
@@ -70,7 +176,9 @@ has 'cell_class' =>
 
 A lazy privately mutable array reference of C<Column> objects in sorted order
 
-Handles C<all_columns> via array trait
+=item all_columns
+
+Handled via array trait on C<columns>
 
 =cut
 
@@ -110,7 +218,9 @@ has 'context' =>
 A lazy hash reference of booleans keyed by column name. Indicates that the
 column is displayable
 
-Handles C<is_displayable_column> via the hash trait
+=item is_displayable_column
+
+Handled via the hash trait on C<displayable_columns>
 
 =cut
 
@@ -222,12 +332,14 @@ has 'page' =>
 
 =item page_control_location
 
-An immutable non empty simple string which defaults to 'BottomRight'. The
+An immutable non empty simple string which defaults to 'BottomLeft'. The
 location of the page control
 
 =cut
 
-has 'page_control_location' => is => 'ro', isa => NonEmptySimpleStr,
+has 'page_control_location' =>
+   is      => 'ro',
+   isa     => NonEmptySimpleStr,
    default => 'BottomLeft';
 
 =item page_manager
@@ -255,17 +367,19 @@ has 'page_size' =>
 
 =item page_size_control_location
 
-An immutable non empty simple string which defaults to 'BottomLeft'. The
+An immutable non empty simple string which defaults to 'BottomRight'. The
 location of the page size control
 
 =cut
 
-has 'page_size_control_location' => is => 'ro', isa => NonEmptySimpleStr,
+has 'page_size_control_location' =>
+   is      => 'ro',
+   isa     => NonEmptySimpleStr,
    default => 'BottomRight';
 
 =item pager
 
-The pager object on the prepared resultset
+The pager object on the prepared resultset. Lazy and immutable
 
 =cut
 
@@ -282,9 +396,9 @@ has 'paging' => is => 'rw', isa => Bool, default => TRUE;
 
 =item prepared_resultset
 
-A required lazy C<ResultSet> built from the C<resultset> attribute. The
-builder method is C<build_prepared_resultset>. The prepared resultset restricts
-the row retrieved from the database to those requested by the C<Searchable> and
+A required lazy C<ResultSet> built from the C<resultset> attribute. The builder
+method is C<build_prepared_resultset>. The prepared resultset restricts the
+rows retrieved from the database to those requested by the C<Searchable> and
 C<Filterable> table roles
 
 =item has_prepared_resultset
@@ -315,7 +429,7 @@ has 'render_style' =>
 
 =item renderer
 
-The object used to render the table
+The object used to render the table. Lazy and immutable
 
 =cut
 
@@ -351,7 +465,7 @@ has 'renderer_class' =>
 
 =item request
 
-A lazy C<Request> object supplied by the C<context>
+A lazy weakened reference to the C<Request> object supplied by the C<context>
 
 =cut
 
@@ -369,7 +483,7 @@ has 'request' =>
 
 =item resultset
 
-A L<DBIx::Class::ResultSet> object
+A L<DBIx::Class::ResultSet> object. Lazy and immutable
 
 =cut
 
@@ -405,7 +519,8 @@ has 'row_class' =>
 =item row_count
 
 The total row count as return by either the resultset pager object or the
-prepared resultset count depending on whether paging is enabled
+prepared resultset count depending on whether paging is enabled. Lazy immutable
+positive integer with no initialiser
 
 =cut
 
@@ -426,7 +541,9 @@ has 'row_count' =>
 A lazy hash reference of booleans keyed by column name. Indicates that the
 column is serialisable
 
-Handles C<is_serialisable_column> via the hash trait
+=item is_serialisable_column
+
+Handled via the hash trait on C<serialisable_columns>
 
 =cut
 
@@ -487,7 +604,7 @@ has 'sortable' =>
 
 =item sortable_columns
 
-A lazy array reference of C<Column> objects
+A lazy array reference of C<Column> objects with no initialiser
 
 =cut
 
@@ -511,9 +628,11 @@ has 'title_location' => is => 'ro', isa => SimpleStr, default => 'inner';
 
 =item visisble_columns
 
-A lazy array reference of C<Column> objects that are not hidden.
+A lazy array reference of C<Column> objects that are not hidden
 
-Handles C<all_visible_columns> via the array trait
+=item all_visible_columns
+
+Handled via the array trait on C<visible_columns>
 
 =cut
 
@@ -569,8 +688,8 @@ Defines the following methods;
 
 =item BUILDARGS
 
-Modifies the method in the base class. Allow the renderer to be specified
-without a fully qualified package name
+Modifies the method in the base class. Allow the C<renderer_class> to be
+specified without a fully qualified package name
 
 =cut
 
@@ -606,7 +725,9 @@ sub BUILD {
    return;
 }
 
-=item add_role( $role_name, $class_name )
+=item add_role
+
+   $table->add_role( $role_name, $class_name );
 
 Called by the applied table roles this method registers the role and it's
 class with the serialiser. Each table role is expected to implement a method
@@ -625,7 +746,8 @@ sub add_role {
 =item apply_params
 
 If context is provided extracts query parameter values from the request and
-applies them to the table attributes
+applies them to the table attributes. Query parameters are; C<sort>, C<desc>,
+C<page>, and C<page_size>
 
 =cut
 
@@ -718,7 +840,7 @@ sub get_serialisable_columns {
 
 =item next_result
 
-Call C<next> on the resultset and returns the result
+Call C<next> on the prepared resultset and returns the result
 
 =cut
 
@@ -728,8 +850,8 @@ sub next_result {
 
 =item next_row
 
-Call C<next_result> to obtain the next result object which it uses to
-instantiate a row object which it returns
+Call C<next_result> to obtain the next result object which is used to
+instantiate a row object which is returns
 
 =cut
 
@@ -742,7 +864,9 @@ sub next_row {
    return $self->row_class->new( result => $result, table => $self );
 }
 
-=item param_value( $name )
+=item param_value
+
+   $value = $table->param_value( $name );
 
 If context has been provided returns the named query parameter. Will look for
 "<table name>_<param name>" in the query parameters and return it if it
@@ -780,7 +904,9 @@ sub reset_resultset {
    return shift->prepared_resultset->reset;
 }
 
-=item serialiser( $moniker, \&writer, \%args )
+=item serialiser
+
+   $serialiser = $table->serialiser( $moniker, \&writer, \%args );
 
 Returns the requested serialiser object. The C<moniker> is the serialiser
 class without the prefix. The C<writer> is a code reference that is called
@@ -812,7 +938,9 @@ sub serialiser {
    return $class->new($args);
 }
 
-=item sort_column( $column_name )
+=item sort_column
+
+   $column = $table->sort_column( $column_name );
 
 Accessor mutator for C<sort_column_name> attribute. Returns the current sort
 column object
@@ -832,9 +960,12 @@ sub sort_column {
    return $self->get_column($self->sort_column_name);
 }
 
-=item sorted_columns( @columns )
+=item sorted_columns
 
-Returns the list of column objects sorted by their position attribute value
+   @columns = $table->sorted_columns( @columns );
+
+Returns the supplied list of column objects sorted by their position attribute
+value
 
 =cut
 

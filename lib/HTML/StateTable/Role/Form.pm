@@ -108,7 +108,6 @@ sub serialise_form {
    return {
       buttons  => $self->_serialise_buttons,
       confirm  => $self->form_confirm_message,
-      hidden   => $self->form_hidden,
       location => { control => $self->form_control_location },
       url      => $self->context->uri_for_action($self->form_action, [$name]),
    };

@@ -33,7 +33,7 @@ A base class which should be subclassed by a view in the consuming application
 
 =head1 Configuration and Environment
 
-Defines no attributes;
+Defines no attributes
 
 =head1 Subroutines/Methods
 
@@ -78,7 +78,7 @@ filename extension
 
 =back
 
-The serialised output is written the the context response object by one of the
+The serialised output is written to the context response object by one of the
 output methods listed. Also sets response headers for content type and
 disposition. Returns true
 

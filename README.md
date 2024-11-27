@@ -4,16 +4,108 @@ HTML::StateTable - Displays tables from DBIC resultsets
 
 # Synopsis
 
-    use HTML::StateTable;
+    package YourApp::Table::User;
+
+    use HTML::StateTable::Constants qw( FALSE NUL SPC TABLE_META TRUE );
+    use Moo;
+    use HTML::StateTable::Moo;
+
+    extends 'HTML::StateTable';
+    with    'HTML::StateTable::Role::Configurable';
+    with    'HTML::StateTable::Role::Searchable';
+    with    'HTML::StateTable::Role::CheckAll';
+    with    'HTML::StateTable::Role::Form';
+    with    'HTML::StateTable::Role::Active';
+
+    has '+form_buttons' => default => sub {
+       return [{
+          action    => 'user/remove',
+          class     => 'remove-item',
+          selection => 'select_one',
+          value     => 'Remove User',
+       }];
+    };
+
+    has '+icons' => default => sub {
+       return shift->context->request->uri_for('img/icons.svg')->as_string;
+    };
+
+    set_table_name 'user';
+
+    has_column 'id' =>
+       cell_traits => ['Numeric'],
+       label       => 'ID',
+       width       => '3rem';
+
+    has_column 'name' =>
+       label      => 'User Name',
+       link       => sub {
+          my $self    = shift;
+          my $context = $self->table->context;
+
+          return  $context->uri_for_action('user/view', [$self->result->id]);
+       },
+       searchable => TRUE,
+       sortable   => TRUE,
+       title      => 'Sort by user',
+       width      => '10rem';
+
+    has_column 'role_id' =>
+       cell_traits => ['Capitalise'],
+       label       => 'Role',
+       searchable  => TRUE,
+       sortable    => TRUE,
+       title       => 'Sort by role',
+       value       => 'role.name';
+
+    has_column 'timezone' =>
+       value => sub {
+          my $self    = shift;
+          my $profile = $self->result->profile;
+
+          return $profile ? $profile->preference('timezone') : local_tz;
+       },
+       width => '15rem';
+
+    has_column 'check' =>
+       cell_traits => ['Checkbox'],
+       label       => SPC,
+       value       => 'id';
+
+    use namespace::autoclean -except => TABLE_META;
 
 # Description
 
 A rich description of the required table is serialised to the browser via the
-data attributes of an empty `div` element. The JS running in the browser
+data attributes of an empty HTML `div` element. The JS running in the browser
 renders the table a fetches row data from the server which it also renders.
 User interactions with the table result in mutated query parameters on the
 request for row data to the server. New row data is rendered without any page
-reload
+reload. Stateful
+
+## JavaScript
+
+Files `wcom-*.js` are included in the `share/js` directory of the source
+tree. These will be installed to the `File::ShareDir` distribution level
+shared data files. Nothing further is done with these files. They should be
+concatenated in sort order by filename and the result placed under the
+webservers document root. Link to this from the web applications pages. Doing
+this is outside the scope of this distribution
+
+When content is loaded the JS method
+`WCom.Table.Renderer.manager.scan(content)` must be called to inflate the
+otherwise empty HTML `div` element. The function
+`WCom.Util.Event.onReady(callback)` is available to install the scan when the
+page loads
+
+## Styling
+
+A file `hstatetable-minimal.less` is included in the `share/less` directory
+of the source tree.  This will be installed to [File::ShareDir](https://metacpan.org/pod/File%3A%3AShareDir) distribution
+level shared data files. Nothing further is done with this file. It would need
+compiling using the Node.js LESS compiler to produce a CSS file which should be
+placed under the web servers document root and then linked to in the header of
+the web applications pages. This is outside the scope of this distribution
 
 # Configuration and Environment
 
@@ -32,7 +124,9 @@ Defines the following attributes;
 
     A lazy privately mutable array reference of `Column` objects in sorted order
 
-    Handles `all_columns` via array trait
+- all\_columns
+
+    Handled via array trait on `columns`
 
 - context
 
@@ -49,7 +143,9 @@ Defines the following attributes;
     A lazy hash reference of booleans keyed by column name. Indicates that the
     column is displayable
 
-    Handles `is_displayable_column` via the hash trait
+- is\_displayable\_column
+
+    Handled via the hash trait on `displayable_columns`
 
 - empty\_text
 
@@ -99,7 +195,7 @@ Defines the following attributes;
 
 - page\_control\_location
 
-    An immutable non empty simple string which defaults to 'BottomRight'. The
+    An immutable non empty simple string which defaults to 'BottomLeft'. The
     location of the page control
 
 - page\_manager
@@ -114,12 +210,12 @@ Defines the following attributes;
 
 - page\_size\_control\_location
 
-    An immutable non empty simple string which defaults to 'BottomLeft'. The
+    An immutable non empty simple string which defaults to 'BottomRight'. The
     location of the page size control
 
 - pager
 
-    The pager object on the prepared resultset
+    The pager object on the prepared resultset. Lazy and immutable
 
 - paging
 
@@ -128,9 +224,9 @@ Defines the following attributes;
 
 - prepared\_resultset
 
-    A required lazy `ResultSet` built from the `resultset` attribute. The
-    builder method is `build_prepared_resultset`. The prepared resultset restricts
-    the row retrieved from the database to those requested by the `Searchable` and
+    A required lazy `ResultSet` built from the `resultset` attribute. The builder
+    method is `build_prepared_resultset`. The prepared resultset restricts the
+    rows retrieved from the database to those requested by the `Searchable` and
     `Filterable` table roles
 
 - has\_prepared\_resultset
@@ -144,7 +240,7 @@ Defines the following attributes;
 
 - renderer
 
-    The object used to render the table
+    The object used to render the table. Lazy and immutable
 
 - renderer\_args
 
@@ -156,11 +252,11 @@ Defines the following attributes;
 
 - request
 
-    A lazy `Request` object supplied by the `context`
+    A lazy weakened reference to the `Request` object supplied by the `context`
 
 - resultset
 
-    A [DBIx::Class::ResultSet](https://metacpan.org/pod/DBIx%3A%3AClass%3A%3AResultSet) object
+    A [DBIx::Class::ResultSet](https://metacpan.org/pod/DBIx%3A%3AClass%3A%3AResultSet) object. Lazy and immutable
 
 - row\_class
 
@@ -170,14 +266,17 @@ Defines the following attributes;
 - row\_count
 
     The total row count as return by either the resultset pager object or the
-    prepared resultset count depending on whether paging is enabled
+    prepared resultset count depending on whether paging is enabled. Lazy immutable
+    positive integer with no initialiser
 
 - serialisable\_columns
 
     A lazy hash reference of booleans keyed by column name. Indicates that the
     column is serialisable
 
-    Handles `is_serialisable_column` via the hash trait
+- is\_serialisable\_column
+
+    Handled via the hash trait on `serialisable_columns`
 
 - sort\_column\_name
 
@@ -195,7 +294,7 @@ Defines the following attributes;
 
 - sortable\_columns
 
-    A lazy array reference of `Column` objects
+    A lazy array reference of `Column` objects with no initialiser
 
 - title\_location
 
@@ -205,9 +304,11 @@ Defines the following attributes;
 
 - visisble\_columns
 
-    A lazy array reference of `Column` objects that are not hidden.
+    A lazy array reference of `Column` objects that are not hidden
 
-    Handles `all_visible_columns` via the array trait
+- all\_visible\_columns
+
+    Handled via the array trait on `visible_columns`
 
 # Subroutines/Methods
 
@@ -215,15 +316,17 @@ Defines the following methods;
 
 - BUILDARGS
 
-    Modifies the method in the base class. Allow the renderer to be specified
-    without a fully qualified package name
+    Modifies the method in the base class. Allow the `renderer_class` to be
+    specified without a fully qualified package name
 
 - BUILD
 
     Called after object instantiation it applies parameters from the query string
     in the request object if context has been provided
 
-- add\_role( $role\_name, $class\_name )
+- add\_role
+
+        $table->add_role( $role_name, $class_name );
 
     Called by the applied table roles this method registers the role and it's
     class with the serialiser. Each table role is expected to implement a method
@@ -232,7 +335,8 @@ Defines the following methods;
 - apply\_params
 
     If context is provided extracts query parameter values from the request and
-    applies them to the table attributes
+    applies them to the table attributes. Query parameters are; `sort`, `desc`,
+    `page`, and `page_size`
 
 - build\_prepared\_resultset
 
@@ -248,14 +352,16 @@ Defines the following methods;
 
 - next\_result
 
-    Call `next` on the resultset and returns the result
+    Call `next` on the prepared resultset and returns the result
 
 - next\_row
 
-    Call `next_result` to obtain the next result object which it uses to
-    instantiate a row object which it returns
+    Call `next_result` to obtain the next result object which is used to
+    instantiate a row object which is returns
 
-- param\_value( $name )
+- param\_value
+
+        $value = $table->param_value( $name );
 
     If context has been provided returns the named query parameter. Will look for
     "&lt;table name>\_&lt;param name>" in the query parameters and return it if it
@@ -266,21 +372,28 @@ Defines the following methods;
 
     Resets the resultset so that `next` can be called again
 
-- serialiser( $moniker, \\&writer, \\%args )
+- serialiser
+
+        $serialiser = $table->serialiser( $moniker, \&writer, \%args );
 
     Returns the requested serialiser object. The `moniker` is the serialiser
     class without the prefix. The `writer` is a code reference that is called
     to write the serialised output. The `args` are passed to the constructor
     call for the serialiser object
 
-- sort\_column( $column\_name )
+- sort\_column
+
+        $column = $table->sort_column( $column_name );
 
     Accessor mutator for `sort_column_name` attribute. Returns the current sort
     column object
 
-- sorted\_columns( @columns )
+- sorted\_columns
 
-    Returns the list of column objects sorted by their position attribute value
+        @columns = $table->sorted_columns( @columns );
+
+    Returns the supplied list of column objects sorted by their position attribute
+    value
 
 # Diagnostics
 

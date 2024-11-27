@@ -15,7 +15,7 @@ my $prereqs  = {
     'version' => '0.88'
   },
   'requires' => {
-    'HTML::Parser' => '3.72',
+    'HTML::Parser' => '3.76',
     'HTML::Tiny' => '1.08',
     'JSON::MaybeXS' => '1.004004',
     'Module::Runtime' => '0.016',
@@ -24,7 +24,7 @@ my $prereqs  = {
     'Ref::Util' => '0.204',
     'Sub::Exporter' => '0.987',
     'Sub::Install' => '0.929',
-    'Text::CSV_XS' => '1.49',
+    'Text::CSV_XS' => '1.56',
     'Try::Tiny' => '0.31',
     'Type::Tiny' => '2.002001',
     'Unexpected' => 'v1.0.3',

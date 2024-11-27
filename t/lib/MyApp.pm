@@ -13,14 +13,10 @@ __PACKAGE__->setup();
       namespace => 'MyApp::Table', view_name => 'SerialiseTable'
    );
 
-   sub table {
-      my ($c, $table_name, $options) = @_;
+   sub new_table {
+      my ($self, $table_name, $options) = @_;
 
-      $options //= {};
-      $options = { resultset => $options } if blessed $options;
-      $options->{context} = $c;
-
-      return $table_manager->table($table_name, $options);
+      return $table_manager->new_with_context($table_name, $options);
    }
 
    sub verification_token {
