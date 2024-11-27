@@ -107,6 +107,20 @@ compiling using the Node.js LESS compiler to produce a CSS file which should be
 placed under the web servers document root and then linked to in the header of
 the web applications pages. This is outside the scope of this distribution
 
+## Example Usage
+
+There is a simple [Catalyst](https://metacpan.org/pod/Catalyst) test application in the `t/lib` directory of the
+source tree.
+
+Catalyst components can create and stash a table object which are rendered
+in the template by a call to the table objects `render` method
+
+There is a repository for an example application on Github
+(https://github.com/pjfl/p5-app-mcat). This contains a number of example tables
+and the uses to which they can be put. That application uses [Web::Compenents](https://metacpan.org/pod/Web%3A%3ACompenents)
+which is also an Plack based MVC framework whose autoloaded components share
+the same method signatures with [Catalyst](https://metacpan.org/pod/Catalyst)
+
 # Configuration and Environment
 
 Defines the following attributes;

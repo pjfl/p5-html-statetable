@@ -54,6 +54,7 @@ ResultRole
 ResultSet
 SERIALISERS
 SPC
+Stateful
 TopLeft
 UnknownView
 chartable
@@ -61,7 +62,9 @@ csv
 divs
 downloader
 flanigan
+initialiser
 instantiation
+js
 merchantability
 mouseover
 peter

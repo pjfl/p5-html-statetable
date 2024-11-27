@@ -1,5 +1,7 @@
 Revision history for HTML::StateTable
 
+0.2.1     2024-11-27 20:15:10
+          - Bumping version number
           - More guide related POD added
           - Completed POD
           - Cell rendering can handle embed markup
