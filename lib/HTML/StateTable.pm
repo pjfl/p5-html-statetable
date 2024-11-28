@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev: 1 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev: 2 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -141,7 +141,7 @@ in the template by a call to the table objects C<render> method
 
 There is a repository for an example application on Github
 (https://github.com/pjfl/p5-app-mcat). This contains a number of example tables
-and the uses to which they can be put. That application uses L<Web::Compenents>
+and the uses to which they can be put. That application uses L<Web::Components>
 which is also an Plack based MVC framework whose autoloaded components share
 the same method signatures with L<Catalyst>
 

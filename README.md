@@ -117,7 +117,7 @@ in the template by a call to the table objects `render` method
 
 There is a repository for an example application on Github
 (https://github.com/pjfl/p5-app-mcat). This contains a number of example tables
-and the uses to which they can be put. That application uses [Web::Compenents](https://metacpan.org/pod/Web%3A%3ACompenents)
+and the uses to which they can be put. That application uses [Web::Components](https://metacpan.org/pod/Web%3A%3AComponents)
 which is also an Plack based MVC framework whose autoloaded components share
 the same method signatures with [Catalyst](https://metacpan.org/pod/Catalyst)
 
