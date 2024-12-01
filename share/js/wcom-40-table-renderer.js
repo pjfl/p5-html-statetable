@@ -451,10 +451,12 @@ WCom.Table.Renderer = (function() {
       constructor() {
          this._isConstructing = true;
          this.tables = {};
-         Utils.Event.onReady(function() { this.createTables() }.bind(this));
+         WCom.Util.Event.register(function(content, options) {
+            this.createTables(content, options)
+         }.bind(this));
       }
-      async createTables() {
-         await this.scan();
+      async createTables(content, options) {
+         await this.scan(content, options);
          this._isConstructing = false;
       }
       isConstructing() {
@@ -464,7 +466,7 @@ WCom.Table.Renderer = (function() {
             }, 250);
          }.bind(this));
       }
-      async scan(content = document, option = {}) {
+      async scan(content = document, options = {}) {
          const promises = [];
          for (const el of content.getElementsByClassName(triggerClass)) {
             const table = new Table(el, JSON.parse(el.dataset[dsName]));

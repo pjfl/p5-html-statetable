@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Registers scan with Util.Event
           - Prereq fixes
 
 0.2.1     2024-11-27 20:15:10
