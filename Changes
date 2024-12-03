@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Added a render and serialisation test
           - Registers scan with Util.Event
           - Prereq fixes
 

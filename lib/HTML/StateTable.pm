@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev: 3 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev: 4 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -24,7 +24,7 @@ use MooX::HandlesVia;
 
 =head1 Name
 
-HTML::StateTable - Displays tables from DBIC resultsets
+HTML::StateTable - Displays tables from DBIC resultsets and other iterators
 
 =head1 Synopsis
 
