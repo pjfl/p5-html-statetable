@@ -1,6 +1,6 @@
 # Name
 
-HTML::StateTable - Displays tables from DBIC resultsets
+HTML::StateTable - Displays tables from DBIC resultsets and other iterators
 
 # Synopsis
 
