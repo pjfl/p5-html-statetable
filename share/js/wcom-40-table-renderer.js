@@ -451,9 +451,8 @@ WCom.Table.Renderer = (function() {
       constructor() {
          this._isConstructing = true;
          this.tables = {};
-         WCom.Util.Event.register(function(content, options) {
-            this.createTables(content, options)
-         }.bind(this));
+         const scan = function(c, o) { this.createTables(c, o) }.bind(this);
+         WCom.Util.Event.registerOnload(scan);
       }
       async createTables(content, options) {
          await this.scan(content, options);

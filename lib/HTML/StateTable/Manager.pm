@@ -154,7 +154,7 @@ sub table {
 
    my $table = $self->_get_table($name, $options);
 
-   $self->_setup_view($table) if $self->_is_data_call($options->{context});
+   $self->_setup_view($table) if $self->_is_data_request($options->{context});
 
    return $table;
 }
@@ -180,7 +180,7 @@ sub _get_table {
    return $class->new($options);
 }
 
-sub _is_data_call {
+sub _is_data_request {
    my ($self, $context) = @_;
 
    throw Unspecified, ['context'] unless $context;

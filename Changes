@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Changed event register method name in JS utils
           - Fixed author email address
           - Added a render and serialisation test
           - Registers scan with Util.Event

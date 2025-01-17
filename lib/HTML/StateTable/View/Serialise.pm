@@ -1,10 +1,10 @@
 package HTML::StateTable::View::Serialise;
 
-use Encode                      qw( encode_utf8 );
 use HTML::StateTable::Constants qw( DOT EXCEPTION_CLASS EXTENSION_TYPE FALSE
                                     ITERATOR_DOWNLOAD_KEY NUL
                                     SERIALISE_TABLE_KEY SERIALISERS TRUE
                                     TYPE_EXTENSION );
+use Encode                      qw( encode_utf8 );
 use HTML::StateTable::Util      qw( dquote throw );
 use Ref::Util                   qw( is_coderef is_hashref is_globref is_ref
                                     is_scalarref );
