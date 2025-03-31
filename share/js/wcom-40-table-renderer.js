@@ -449,14 +449,8 @@ WCom.Table.Renderer = (function() {
    Object.assign(Table.prototype, Utils.String);
    class Manager {
       constructor() {
-         this._isConstructing = true;
          this.tables = {};
-         const scan = function(c, o) { this.createTables(c, o) }.bind(this);
-         WCom.Util.Event.registerOnload(scan);
-      }
-      async createTables(content, options) {
-         await this.scan(content, options);
-         this._isConstructing = false;
+         WCom.Util.Event.registerOnload(this.scan.bind(this));
       }
       isConstructing() {
          return new Promise(function(resolve) {
@@ -466,6 +460,7 @@ WCom.Table.Renderer = (function() {
          }.bind(this));
       }
       async scan(content = document, options = {}) {
+         this._isConstructing = true;
          const promises = [];
          for (const el of content.getElementsByClassName(triggerClass)) {
             const table = new Table(el, JSON.parse(el.dataset[dsName]));
@@ -473,6 +468,7 @@ WCom.Table.Renderer = (function() {
             promises.push(table.render());
          }
          await Promise.all(promises);
+         this._isConstructing = false;
       }
    }
    return {

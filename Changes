@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Improved construction in Manager
           - Changed event register method name in JS utils
           - Fixed author email address
           - Added a render and serialisation test
