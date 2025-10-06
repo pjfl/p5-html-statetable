@@ -88,6 +88,9 @@ body {
         td.number {
             text-align: right;
         }
+        td.remainder {
+            word-wrap: anywhere;
+        }
         th {
             background: #colours[panel-bg];
             border-right: 1px solid; border-color: #colours[line-border];
@@ -299,10 +302,16 @@ body {
     .filter-dialog, .preference-dialog {
         background: #colours[panel-bg]; border: 1px solid; border-radius: 5px;
         box-shadow: 3px 3px 3px #colours[panel-shadow];
-        position: absolute; top: 25px; z-index: 10;
+        position: absolute; z-index: 10;
+    }
+    .filter-dialog {
+        top: 25px;
+    }
+    .preference-dialog {
+        top: 2rem;
     }
     .preference-dialog.control-right {
-        right: 0;
+        right: 0.5rem;
     }
     table.preference-columns {
         border: 2px transparent solid; user-select: none;
@@ -408,6 +417,7 @@ body {
         position: relative; text-decoration: none;
         transition: border 0.5s, color 0.5s;
         span {
+            font-family: #fonts[system];
             font-size: 0.7rem; letter-spacing: 0.1rem;
             position: relative; text-decoration: none;
             text-transform: uppercase; z-index: 3;

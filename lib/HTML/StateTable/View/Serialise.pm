@@ -8,7 +8,7 @@ use Encode                      qw( encode_utf8 );
 use HTML::StateTable::Util      qw( dquote throw );
 use Ref::Util                   qw( is_coderef is_hashref is_globref is_ref
                                     is_scalarref );
-use Scalar::Util                qw( blessed );
+use Scalar::Util                qw( blessed weaken );
 use Unexpected::Functions       qw( Unspecified );
 
 use Moo;
@@ -95,7 +95,7 @@ sub process {
 
       throw 'Format [_1] unknown', [$format] unless $serialiser_class;
 
-      my $response   = $context->response;
+      my $response   = $context->response; weaken $response;
       my $writer     = sub { $response->write(encode_utf8(join NUL, @_)) };
       my $table      = $stashed->{table};
       my $args       = $stashed->{serialiser_args};

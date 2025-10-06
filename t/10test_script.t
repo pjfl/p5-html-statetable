@@ -1,10 +1,18 @@
 use t::boilerplate;
 
-use HTTP::Request::Common;
+use English        qw( -no_match_vars );
 use HTML::Entities qw( decode_entities );
-use JSON::MaybeXS qw( decode_json );
+use JSON::MaybeXS  qw( decode_json );
+use HTTP::Request::Common;
 use Plack::Test;
 use Test::More;
+
+if ($ENV{TEST_MEMORY}) {
+   eval "use Test::Memory::Cycle";
+
+   plan skip_all => 'Test::Memory::Cycle required but not installed'
+      if $EVAL_ERROR;
+}
 
 {  package Test::Result;
 
@@ -134,7 +142,9 @@ is $context->stash->{view}, 'SerialiseTable', 'Serialise table view';
 
 ensure_class_loaded 'MyApp::View::SerialiseTable';
 
-MyApp::View::SerialiseTable->new->process($context);
+my $serialiser = MyApp::View::SerialiseTable->new;
+
+$serialiser->process($context);
 
 $data = decode_json($output);
 
@@ -143,6 +153,16 @@ is $data->{'row-count'}, $max_rows, 'Data row count';
 is $data->{'records'}->[0]->{bar}, 'bar1', 'First row first column';
 
 is $data->{'records'}->[2]->{baz}, 'baz3', 'Last row last column';
+
+if ($ENV{TEST_MEMORY}) {
+   memory_cycle_ok( $req, 'Request has no memory cycles' );
+
+   memory_cycle_ok( $context, 'Context has no memory cycles' );
+
+   memory_cycle_ok( $table, 'Table has no memory cycles' );
+
+   memory_cycle_ok( $serialiser, 'Serialiser has no memory cycles' );
+}
 
 done_testing;
 

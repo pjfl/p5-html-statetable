@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Added Remainder cell trait
           - Improved construction in Manager
           - Changed event register method name in JS utils
           - Fixed author email address

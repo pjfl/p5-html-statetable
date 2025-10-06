@@ -1,7 +1,7 @@
 // -*- coding: utf-8; -*-
 // Package WCom.Table.CellTrait.Bool
 WCom.Table.CellTrait.Bool = (function() {
-   let bool_colours = [ 'firebrick', 'seagreen'];
+   let bool_colours = ['firebrick', 'seagreen'];
    let bool_false = '✗';
    let bool_true = '✓';
    return {
@@ -165,6 +165,18 @@ WCom.Table.CellTrait.Numeric = (function() {
          getValue: function(orig, attr) {
             const result = orig(attr);
             this.appendValue(attr, 'className', 'number');
+            return result;
+         }
+      }
+   };
+})();
+// Package WCom.Table.CellTrait.Remainder
+WCom.Table.CellTrait.Remainder = (function() {
+   return {
+      around: {
+         getValue: function(orig, attr) {
+            const result = orig(attr);
+            this.appendValue(attr, 'className', 'remainder');
             return result;
          }
       }

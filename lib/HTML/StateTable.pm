@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev: 7 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev: 8 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -13,7 +13,7 @@ use HTML::StateTable::Util      qw( ensure_class_loaded foreign_sort throw
                                     trim );
 use List::Util                  qw( first );
 use Ref::Util                   qw( is_arrayref is_coderef is_hashref );
-use Scalar::Util                qw( blessed );
+use Scalar::Util                qw( blessed weaken );
 use Unexpected::Functions       qw( Unspecified );
 use Moo;
 use MooX::HandlesVia;
@@ -153,7 +153,7 @@ Defines the following attributes;
 
 =item caption
 
-An mutable string with a null default. If set will display as the tables
+A mutable string with a null default. If set will display as the tables
 caption
 
 =cut

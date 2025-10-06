@@ -166,7 +166,11 @@ Proxy for C<table>
 =cut
 
 sub new_with_context {
-   my ($self, $name, $options) = @_; return $self->table($name, $options);
+   my ($self, $name, $options) = @_;
+
+   throw Unspecified, ['context'] unless $options->{context};
+
+   return $self->table($name, $options);
 }
 
 # Private methods
@@ -183,7 +187,7 @@ sub _get_table {
 sub _is_data_request {
    my ($self, $context) = @_;
 
-   throw Unspecified, ['context'] unless $context;
+   return FALSE unless $context;
 
    my $requested_with = $context->request->header('X-Requested-With')
       || $context->request->header('x-requested-with');
