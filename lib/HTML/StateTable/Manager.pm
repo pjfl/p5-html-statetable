@@ -6,7 +6,6 @@ use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL QUERY_KEY
 use HTML::StateTable::Types     qw( Object Str );
 use HTML::StateTable::Util      qw( ensure_class_loaded throw );
 use Unexpected::Functions       qw( UnknownView Unspecified );
-use Try::Tiny;
 use Moo;
 
 =pod

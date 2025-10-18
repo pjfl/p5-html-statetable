@@ -1,3 +1,5 @@
+@upper-break: 680px;
+@dialog-title-min-width: 6rem;
 #colours() {
     active-column: bisque;
     button-bg: bisque;
@@ -50,7 +52,7 @@ body {
     counter-reset: section;
 }
 .state-table {
-    display: inline-block; text-align: left; vertical-align: top;
+    text-align: left;
     caption {
         display: none;
     }
@@ -330,8 +332,8 @@ body {
         align-items: center; background: #grads[button-bg];
         border-radius: 3px; box-shadow: 2px 2px 2px #colours[panel-shadow];
         color: #colours[close]; cursor: pointer; display: inline-flex;
-        font-family: #fonts[system]; font-size: smaller;
-        font-weight: bold; height: 100%; margin-top: 2px; padding: 0 0.25rem;
+        font-family: #fonts[system]; font-size: smaller; font-weight: bold;
+        height: 100%; margin-top: 2px; padding: 0 0.25rem;
         img, object {
             height: 16px; width: 16px; vertical-align: middle;
         }
@@ -364,7 +366,7 @@ body {
         border-color: #colours[title-border]; border-top-left-radius: 5px;
         border-top-right-radius: 5px; color: #colours[text]; display: flex;
         font-family: #fonts[system]; font-size: 1rem;
-        justify-content: space-between; min-width: 6rem;
+        justify-content: space-between; min-width: @dialog-title-min-width;
         padding: 0.25rem 0.5rem;
     }
     .filter-label {
@@ -398,7 +400,7 @@ body {
         background: #colours[link];
     }
     .chart-container, .table-container {
-        display: inline-block; padding-top: 0.5rem; vertical-align: top;
+        display: inline-block; vertical-align: top;
     }
     .table-form .credit-control {
         display: flex; justify-content: space-between;
@@ -462,7 +464,7 @@ body {
     .highcharts-legend.highcharts-no-tooltip {
         display: none;
     }
-    @media (max-width: 680px) {
+    @media (max-width: @upper-break) {
         table {
             td {
                 display: grid; grid-template-columns: 15ch auto;
