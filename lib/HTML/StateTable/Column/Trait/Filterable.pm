@@ -110,9 +110,9 @@ before 'BUILD' => sub {
       if is_coderef $self->value or is_scalarref $self->value;
 
    if ($self->value =~ m{ \. }mx) {
-      my ($column, @relations) = split m{ \. }mx, $self->value;
+      my @relations = split m{ \. }mx, $self->value;
 
-      $self->_set_filter_column($column);
+      $self->_set_filter_column(pop @relations);
       $self->_set_filter_relation(join DOT, @relations);
    }
    else { $self->_set_filter_column($self->value) }

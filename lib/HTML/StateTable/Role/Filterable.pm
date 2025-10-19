@@ -188,7 +188,7 @@ sub filter_column_values {
 
    return [] unless $column && $column->filterable;
 
-   my $rs = $self->resultset;
+   my $rs = $self->resultset->search;
 
    delete $rs->{attrs}->{'+as'}; delete $rs->{attrs}->{'+select'};
 
@@ -196,7 +196,7 @@ sub filter_column_values {
       my ($related_rs, $relation)
          = $self->_get_related_rs($rs, $column->filter_relation);
       my $pkey    = $self->_get_result_source_pkey($related_rs);
-      my @columns = map { "${relation}.${_}" } ($pkey, $column->filter_field);
+      my @columns = map { "${relation}.${_}" } ($pkey, $column->filter_column);
       my $schema  = $related_rs->result_source->schema;
       my $order   = $schema->storage->sql_maker->_quote($columns[1]);
 
@@ -206,11 +206,11 @@ sub filter_column_values {
          columns => [@columns], group_by => [@columns]
       });
 
-      my $info = $rs->result_source->column_info($column->filter_field);
       my $attr = COL_INFO_TYPE_ATTR;
+      my $info = $rs->result_source->column_info($column->filter_column);
+      my $order_by = 'text' eq lc $info->{$attr} ? \qq{lower($order)} : \$order;
 
-      $order = 'text' eq lc $info->{$attr} ? \qq{lower($order)} : \$order;
-      $rs = $rs->search(undef, { order_by => $order });
+      $rs = $rs->search(undef, { order_by => $order_by });
    }
    else {
       if ($column->is_generated) {
@@ -227,7 +227,7 @@ sub filter_column_values {
       }
    }
 
-   $rs = $rs->search({}, { rows => MAX_FILTER_ROWS });
+   $rs = $rs->search(undef, { rows => MAX_FILTER_ROWS });
 
    return [$rs->get_column($column->filter_column)->all];
 }

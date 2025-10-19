@@ -223,7 +223,9 @@ Returns the result of calling the C<serialise> method on the supplied object
 =cut
 
 sub output_object {
-   my ($self, $context, $object) = @_; return $object->serialise;
+   my ($self, $context, $object) = @_;
+
+   return $object->serialise;
 }
 
 =item output_string( $context, $string )

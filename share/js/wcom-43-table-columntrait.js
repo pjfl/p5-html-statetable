@@ -8,7 +8,8 @@ WCom.Table.ColumnTrait.CheckAll = (function() {
             for (const box of Object.values(this.column.rowSelector)) {
                box.checked = this.column.checkAll.checked;
             }
-            this.column.table[this.column.table.formControl.control]();
+            // TODO: What did this do?
+//            this.column.table[this.column.table.formControl.control]();
          }.bind(this);
          methods['render'] = function(orig) { return this.render() }.bind(this);
       }
