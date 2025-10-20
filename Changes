@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Fixed related tables filter selection dialog
           - Fixed bug in filter values from related tables
           - Replaced maps with variables in CSS
           - Added Remainder cell trait

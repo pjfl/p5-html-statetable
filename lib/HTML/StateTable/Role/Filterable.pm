@@ -188,7 +188,8 @@ sub filter_column_values {
 
    return [] unless $column && $column->filterable;
 
-   my $rs = $self->resultset->search;
+   my $column_name = $column->filter_column;
+   my $rs = $self->resultset->search(undef, { rows => MAX_FILTER_ROWS });
 
    delete $rs->{attrs}->{'+as'}; delete $rs->{attrs}->{'+select'};
 
@@ -196,7 +197,7 @@ sub filter_column_values {
       my ($related_rs, $relation)
          = $self->_get_related_rs($rs, $column->filter_relation);
       my $pkey    = $self->_get_result_source_pkey($related_rs);
-      my @columns = map { "${relation}.${_}" } ($pkey, $column->filter_column);
+      my @columns = map { "${relation}.${_}" } ($pkey, $column_name);
       my $schema  = $related_rs->result_source->schema;
       my $order   = $schema->storage->sql_maker->_quote($columns[1]);
 
@@ -207,27 +208,26 @@ sub filter_column_values {
       });
 
       my $attr = COL_INFO_TYPE_ATTR;
-      my $info = $rs->result_source->column_info($column->filter_column);
+      my $info = $rs->result_source->column_info($column_name);
       my $order_by = 'text' eq lc $info->{$attr} ? \qq{lower($order)} : \$order;
 
       $rs = $rs->search(undef, { order_by => $order_by });
-   }
-   else {
-      if ($column->is_generated) {
-         $rs = $self->_apply_column_sql($rs, $column)->search(undef, {
-            columns => [], group_by => \$column->sql, order_by => \q{1},
-         });
-      }
-      else {
-         $rs = $rs->search(undef, {
-            columns  => [$column->filter_column],
-            distinct => TRUE,
-            order_by => $column->filter_column,
-         });
-      }
+
+      return [ map { [ $_->$column_name => $_->id ] } $rs->all ];
    }
 
-   $rs = $rs->search(undef, { rows => MAX_FILTER_ROWS });
+   if ($column->is_generated) {
+      $rs = $self->_apply_column_sql($rs, $column)->search(undef, {
+         columns => [], group_by => \$column->sql, order_by => \q{1},
+      });
+   }
+   else {
+      $rs = $rs->search(undef, {
+         columns  => [$column_name],
+         distinct => TRUE,
+         order_by => $column_name,
+      });
+   }
 
    return [$rs->get_column($column->filter_column)->all];
 }

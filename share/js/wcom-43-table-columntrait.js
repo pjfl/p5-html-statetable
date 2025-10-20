@@ -89,10 +89,18 @@ WCom.Table.ColumnTrait.Filterable = (function() {
          this.records = object['records'];
          const items = [];
          for (const value of this.records) {
-            items.push(this.h.li({
-               className: 'filter-value',
-               onclick: this.selectHandler(value)
-            }, value));
+            if (typeof value == 'string') {
+               items.push(this.h.li({
+                  className: 'filter-value',
+                  onclick: this.selectHandler(value)
+               }, value));
+            }
+            else {
+               items.push(this.h.li({
+                  className: 'filter-value',
+                  onclick: this.selectHandler(value[1])
+               }, value[0]));
+            }
          }
          return this.h.ul({ className: 'filter-values' }, items);
       }

@@ -867,6 +867,8 @@ WCom.Table.Role.Filterable = (function() {
                params.delete(this.rs.nameMap('pageSize'));
                params.delete(this.rs.nameMap('sortColumn'));
                params.delete(this.rs.nameMap('sortDesc'));
+               params.delete(colName);
+               params.delete(valName);
             }
             else { params.delete(colValuesName) }
             return url;
