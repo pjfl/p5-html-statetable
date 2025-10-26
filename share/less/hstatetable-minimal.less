@@ -1,4 +1,7 @@
 @upper-break: 680px;
+@checkbox-height: 1.25rem;
+@checkbox-knob-width: 20px;
+@checkbox-width: 40px;
 @dialog-title-min-width: 6rem;
 #colours() {
     active-column: bisque;
@@ -7,6 +10,8 @@
     button-disabled-bg: gainsboro;
     button-hover: limegreen;
     button-text: black;
+    checkbox-false-bg: firebrick;
+    checkbox-true-bg: seagreen;
     close: firebrick;
     contrast: whitesmoke;
     control-text: gray;
@@ -168,7 +173,7 @@ body {
     .search-box {
         display: inline-block;
         .search-wrapper {
-            display: flex; align-items: stretch;
+            align-items: stretch; display: flex; line-height: 1rem;
             .search-hidden {
                 display: inline-block; overflow: hidden; position: relative;
                 vertical-align: top;
@@ -190,7 +195,7 @@ body {
                     box-shadow: inset 1px 1px 0 #colours[search-display-shadow];
                     color: #colours[control-text]; display: inline-block;
                     font-family: #fonts[system]; font-size: 0.8rem;
-                    height: 1.6rem; padding: 0.175rem 1rem 0.325rem 0.5rem;
+                    height: 1.6rem; padding: 0.25rem 1rem 0.25rem 0.5rem;
                     vertical-align: top;
                 }
             }
@@ -198,11 +203,17 @@ body {
                 border-top-left-radius: 2px;
                 border-bottom-left-radius: 2px;
             }
+            .search-button button {
+                padding: 1px 0.5rem 1px 0.25rem;
+                .icon-wrapper {
+                    height: 20px; width: 20px;
+                }
+            }
             input.search-field {
                 color: inherit; border: none; border-radius: 0 2px 2px 0;
                 border-bottom: 2px inset #colours[button-border];
                 border-top: 2px inset #colours[button-border];
-                font-family: #fonts[data];
+                font-family: #fonts[data]; line-height: 1rem;
                 margin: 0; outline: 0; padding: 0 0.25rem;
             }
             input.search-field:placeholder-shown {
@@ -345,16 +356,51 @@ body {
         color: #colours[text];
     }
     .dialog-form {
-        padding: 0 1rem 0.25rem 1rem;
+        padding: 0 0.5rem;
+        td:first-child, th {
+            font-family: #fonts[system]; font-size: 0.8rem;
+        }
         table td:first-child, table th:first-child {
             padding-left: 0;
         }
         table td:last-child, table th:last-child {
             padding-right: 0;
         }
+        .checkbox {
+            isolation: isolate; padding-top: 0.25rem; position: relative;
+            text-align: left;
+            input[type=checkbox] {
+                height: @checkbox-height; left: -5px; margin: 0; opacity: 0;
+                position: relative; width: @checkbox-width; z-index: 3;
+            }
+        }
+        .checkbox::after {
+            background: #grads[button-bg];
+            border: 2px inset #colours[button-border]; border-radius: 10px;
+            content: ''; display: block; position: absolute;
+            height: @checkbox-height; left: 0; top: 0.25rem;
+            width: @checkbox-knob-width; z-index: 2;
+        }
+        .checkbox:has(input[type=checkbox]:checked)::after {
+            left: @checkbox-knob-width;
+        }
+        .checkbox::before {
+            background: #colours[checkbox-false-bg];
+            border: 2px inset #colours[button-border]; border-radius: 10px;
+            content: ''; display: block; position: absolute;
+            height: @checkbox-height; left: 0; width: @checkbox-width;
+            z-index: 1;
+        }
+        .checkbox:has(input[type=checkbox]:checked)::before {
+            background: #colours[checkbox-true-bg];
+        }
     }
     .dialog-input {
-        padding: 0.25rem 0;
+        margin-bottom: 0.5rem; padding: 0.25rem 0;
+        select {
+            background: #grads[button-bg]; border-radius: 5px;
+            font-size: 0.85rem; font-family: #fonts[data];
+        }
     }
     .dialog-input button {
         margin-right: 0.25rem;
@@ -393,13 +439,13 @@ body {
     }
     .grab-handle {
         display: inline-block; height: 20px; width: 20px;
-        vertical-align: bottom;
+        vertical-align: top;
     }
     .grab-handle-cell {
-        cursor: grab; text-align: center;
+        cursor: grab; padding-top: 0.25rem; text-align: center;
     }
     .grab-handle-cell:hover {
-        background: #colours[link];
+        background: #colours[selected];
     }
     .chart-container, .table-container {
         display: inline-block; vertical-align: top;
@@ -421,7 +467,7 @@ body {
         position: relative; text-decoration: none;
         transition: border 0.5s, color 0.5s;
         span {
-            font-family: #fonts[system];
+            display: inline-block; font-family: #fonts[system];
             font-size: 0.7rem; letter-spacing: 0.1rem;
             position: relative; text-decoration: none;
             text-transform: uppercase; z-index: 3;

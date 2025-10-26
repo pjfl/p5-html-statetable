@@ -1,7 +1,5 @@
 package HTML::StateTable::Role::Filterable;
 
-use utf8; # -*- coding: utf-8; -*-
-
 use HTML::StateTable::Constants qw( COL_INFO_TYPE_ATTR EXCEPTION_CLASS FALSE
                                     MAX_FILTER_ROWS SERIALISE_TABLE_KEY
                                     SERIALISE_TABLE_VIEW TRUE );
@@ -229,7 +227,7 @@ sub filter_column_values {
       });
    }
 
-   return [$rs->get_column($column->filter_column)->all];
+   return [$rs->get_column($column_name)->all];
 }
 
 =item serialise_filterable

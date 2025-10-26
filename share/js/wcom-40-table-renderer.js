@@ -55,6 +55,8 @@ WCom.Table.Renderer = (function() {
          this.downloadable = config['downloadable'];
          this.filterable   = config['filterable'];
          this.label        = config['label'];
+         this.maxWidth     = config['max_width']
+            ? ('max-width:' + config['max_width'] + ';') : '';
          this.minWidth     = config['min_width']
             ? ('min-width:' + config['min_width'] + ';') : '';
          this.name         = config['name'];
@@ -89,6 +91,7 @@ WCom.Table.Renderer = (function() {
          const attr = { style: '' };
          let content = [this.label || this.ucfirst(this.name)];
          if (this.title) attr.title = this.title;
+         if (this.maxWidth) attr.style += this.maxWidth;
          if (this.minWidth) attr.style += this.minWidth;
          if (this.width) attr.style += this.width;
          if (this.sortable) {
@@ -238,12 +241,13 @@ WCom.Table.Renderer = (function() {
          this.resultset     = new Resultset(this);
          this.titleLocation = this.properties['title-location'] || 'inner';
          this.topContent    = false;
-
-         const attr = { id: this.name, style: '' };
-         if (this.properties['max-width']) this.appendValue(
-            attr, 'style', 'max-width:' + this.properties['max-width']
+         this.table         = this.h.table({ id: this.name });
+         if (this.properties['max-width']) this.table.style.setProperty(
+            'max-width', this.properties['max-width']
          );
-         this.table = this.h.table(attr);
+         if (this.properties['min-width']) this.table.style.setProperty(
+            'min-width', this.properties['min-width']
+         );
          this.table.append(this.header);
          this.table.append(this.body);
          this.applyRoles(true);

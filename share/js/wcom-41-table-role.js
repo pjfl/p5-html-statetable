@@ -1408,7 +1408,7 @@ WCom.Table.Role.Searchable = (function() {
          }.bind(this);
       }
       searchAction(text) {
-         const btn = this.h.button(this.h.span(text));
+         const btn = this.h.button(text);
          if (!this.rs.state('searchValue'))
             btn.setAttribute('disabled', 'disabled');
          return this.h.span({ className: 'search-button' }, btn);
@@ -1466,10 +1466,16 @@ WCom.Table.Role.Searchable = (function() {
          selectElements.push(this.searchSelector);
          return this.searchSelector;
       }
+      renderSearchIcon() {
+         const icons = this.table.icons;
+         if (!icons) return this.h.span('Search');
+         const attr = { className: 'search-icon', icons, name: 'search' };
+         return this.h.icon(attr);
+      }
       renderSearch(container) {
          const selectElements = [];
          const select = this.searchSelect(selectElements);
-         const action = this.searchAction('Search');
+         const action = this.searchAction(this.renderSearchIcon());
          const input = this.searchInput(action);
          const wrapper = this.h.span({ className: 'search-wrapper' }, [
             this.searchHidden(selectElements), input, action

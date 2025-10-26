@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev: 11 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev: 12 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -290,6 +290,14 @@ A string with a null default. Used to set the maximum width on the table
 =cut
 
 has 'max_width' => is => 'ro', isa => SimpleStr, default => NUL;
+
+=item min_width
+
+A string with a null default. Used to set the minimum width on the table
+
+=cut
+
+has 'min_width' => is => 'ro', isa => SimpleStr, default => NUL;
 
 =item name
 
