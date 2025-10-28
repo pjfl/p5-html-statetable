@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Remove had coded reference to icons file
           - Better form dialog and search CSS
           - Fixed related tables filter selection dialog
           - Fixed bug in filter values from related tables

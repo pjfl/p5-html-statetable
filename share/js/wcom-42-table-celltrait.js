@@ -129,9 +129,10 @@ WCom.Table.CellTrait.Modal = (function() {
             const result = orig(attr);
             const href = result.link;
             const url = new URL(href)
-            const icons = this.column.options['modal-icons'] || '/icons.svg';
-            const title = this.column.options['title'] || 'Modal Dialog';
-            const trigger = this.column.options['trigger-modal'];
+            const col = this.column;
+            const icons = col.options['modal-icons'] || col.table.icons;
+            const title = col.options['title'] || 'Modal Dialog';
+            const trigger = col.options['trigger-modal'];
             if (url.searchParams.get(trigger) != 'true') return result;
             delete result.link;
             const onclick = function(event) {
