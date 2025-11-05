@@ -50,6 +50,15 @@ has 'form_buttons' =>
    isa     => ArrayRef[HashRef|Str]|HashRef[ArrayRef[HashRef|Str]],
    default => sub { [] };
 
+=item form_classes
+
+An immutable array of string. Class names that are applied to the C<form>
+element
+
+=cut
+
+has 'form_classes' => is => 'lazy', isa => ArrayRef[Str], default => sub { [] };
+
 =item form_confirm_message
 
 An immutable string. The default "are you sure message"
@@ -107,6 +116,7 @@ sub serialise_form {
 
    return {
       buttons  => $self->_serialise_buttons,
+      classes  => $self->form_classes,
       confirm  => $self->form_confirm_message,
       location => { control => $self->form_control_location },
       url      => $self->context->uri_for_action($self->form_action, [$name]),

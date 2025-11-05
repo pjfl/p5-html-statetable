@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Form role adds form_classes. Display tables with form styling
           - Remove had coded reference to icons file
           - Better form dialog and search CSS
           - Fixed related tables filter selection dialog

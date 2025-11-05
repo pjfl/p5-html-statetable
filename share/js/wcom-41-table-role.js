@@ -912,6 +912,7 @@ WCom.Table.Role.Form = (function() {
          this.pageManager  = table.pageManager;
          this.rs           = table.resultset;
          const config      = table.roles['form'];
+         this.classes      = config['classes'] || [];
          this.confirm      = config['confirm'];
          this.url          = new URL(config['url']);
          this.buttonConfig = {};
@@ -931,10 +932,24 @@ WCom.Table.Role.Form = (function() {
             this._actionHandlers(this.buttonConfig[key]);
          for (const location of this.location)
             this._controlBinding(location, methods);
+         const className = 'table-form ' + this.classes.join(' ');
+         this.withFieldset = this.classes.includes('fieldset') ? true : false;
          methods['orderedContent'] = function(orig) {
-            this.form = this.h.form({ className: 'table-form' }, orig());
+            let content = orig();
+            if (this.withFieldset) {
+               const attr = { className: 'form-wrapper' };
+               content = this.h.fieldset(attr, content);
+            }
+            this.form = this.h.form({ className }, content);
             return this.form;
          }.bind(this);
+         if (this.withFieldset) {
+            methods['renderCaption'] = function(orig) {
+               const caption = this.table.caption;
+               if (!caption.length) return;
+               return this.h.legend({ className: 'form-title' }, caption);
+            }.bind(this);
+         }
       }
       _actionHandlers(buttonConfigs) {
          for (const buttonConfig of buttonConfigs) {

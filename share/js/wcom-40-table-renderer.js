@@ -263,7 +263,7 @@ WCom.Table.Renderer = (function() {
 
          let className = 'top-control';
          if (this.topContent) className += ' visible';
-         this.topControl = this.h.div({ className: className });
+         this.topControl = this.h.div({ className });
          this.topLeftControl = this.h.div({ className: 'top-left-control' });
          this.topControl.append(this.topLeftControl);
          this.topRightControl = this.h.div({ className: 'top-right-control' });
@@ -271,7 +271,7 @@ WCom.Table.Renderer = (function() {
 
          className = 'bottom-control';
          if (this.bottomContent) className += ' visible';
-         this.bottomControl = this.h.div({ className: className });
+         this.bottomControl = this.h.div({ className });
          this.bottomLeftControl
             = this.h.div({ className: 'bottom-left-control' });
          this.bottomControl.append(this.bottomLeftControl);
@@ -337,8 +337,8 @@ WCom.Table.Renderer = (function() {
                this.creditControl, this.bottomControl
             ];
          }
-         if (this.caption.length)
-            content.unshift(this.h.div({ className: 'caption' }, this.caption));
+         const caption = this.renderCaption();
+         if (caption) content.unshift(caption);
          return content;
       }
       prepareURL(args) {
@@ -402,6 +402,10 @@ WCom.Table.Renderer = (function() {
       }
       renderBottomRightControl() {
          return this.bottomRightControl;
+      }
+      renderCaption() {
+         if (!this.caption.length) return;
+         return this.h.div({ className: 'caption' }, this.caption);
       }
       renderCreditControl() {
          return this.creditControl;

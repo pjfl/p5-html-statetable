@@ -26,7 +26,6 @@
     row-inactive: gainsboro;
     row-odd: linen;
     search-display-bg: gainsboro;
-    search-display-shadow: rgba(255,255,255,0.6);
     selected: orange;
     tag-bg: bisque;
     text: black;
@@ -57,13 +56,8 @@ body {
     counter-reset: section;
 }
 .state-table {
-    text-align: left;
     caption {
         display: none;
-    }
-    .caption {
-        font-family: #fonts[system]; font-weight: normal; margin: 0;
-        text-transform: uppercase; white-space: nowrap;
     }
     table {
         border-collapse: collapse; display: block; margin: 0.25rem 0 0.5rem;
@@ -129,14 +123,14 @@ body {
             background: #colours[row-inactive];
         }
     }
-    .active-control-label {
-        font-family: #fonts[system];
+    .chart-container, .table-container {
+        display: inline-block; text-align: left; vertical-align: top;
     }
-    .active-control-label,
-    .download-link,
-    .page-control a,
-    .page-control li,
-    .page-size-control a {
+    .caption {
+        font-family: #fonts[system]; font-weight: normal; margin: 0;
+        text-transform: uppercase; white-space: nowrap;
+    }
+    .download-link, .page-control a, .page-control li, .page-size-control a {
         color: #colours[control-text]; cursor: pointer; font-size: small;
     }
     .page-control, .page-size-control {
@@ -192,7 +186,6 @@ body {
                     background-image: #grads[search-display];
                     border: 2px outset #colours[button-border];
                     border-radius: 50px 0 0 50px;
-                    box-shadow: inset 1px 1px 0 #colours[search-display-shadow];
                     color: #colours[control-text]; display: inline-block;
                     font-family: #fonts[system]; font-size: 0.8rem;
                     height: 1.6rem; padding: 0.25rem 1rem 0.25rem 0.5rem;
@@ -256,20 +249,20 @@ body {
     .active-control {
         display: inline;
     }
-    .bottom-control,
-    .top-control {
+    .active-control-label {
+        color: #colours[control-text]; cursor: pointer;
+        font-family: #fonts[system]; font-size: small;
+    }
+    .bottom-control, .top-control {
         display: none; position: relative;
     }
-    .bottom-control.visible,
-    .top-control.visible {
+    .bottom-control.visible, .top-control.visible {
         display: flex; justify-content: space-between;
     }
-    .bottom-left-control,
-    .bottom-right-control {
+    .bottom-left-control, .bottom-right-control {
         align-items: center; display: flex;
     }
-    .top-left-control,
-    .top-right-control {
+    .top-left-control, .top-right-control {
         align-items: center; display: inline-flex; justify-content: flex-start;
         margin-top: 0.25rem;
     }
@@ -447,9 +440,6 @@ body {
     .grab-handle-cell:hover {
         background: #colours[selected];
     }
-    .chart-container, .table-container {
-        display: inline-block; vertical-align: top;
-    }
     .table-form .credit-control {
         display: flex; justify-content: space-between;
     }
@@ -473,23 +463,27 @@ body {
             text-transform: uppercase; z-index: 3;
         }
     }
-    .table-form .table-button:hover, .table-form button:hover,
+    .table-form .table-button:hover,
+    .table-form button:hover,
     .dialog-form button:hover {
         border: 2px inset #colours[button-border]; color: #colours[button-text];
 
     }
-    .table-form .table-button::before, .table-form button::before,
+    .table-form .table-button::before,
+    .table-form button::before,
     .dialog-form button::before {
         background: #grads[button-border-bg]; content: ''; display: block;
         height: 3rem; left: var(--x); opacity: 0; position: absolute;
         top: var(--y); transform: translate(-50%, -50%);
         transition: opacity 0.5s; width: 3rem; z-index: 1;
     }
-    .table-form .table-button:hover::before, .table-form button:hover::before,
+    .table-form .table-button:hover::before,
+    .table-form button:hover::before,
     .dialog-form button:hover::before {
         opacity: 1;
     }
-    .table-form .table-button::after, .table-form button::after,
+    .table-form .table-button::after,
+    .table-form button::after,
     .dialog-form button::after {
         background: #grads[button-bg];
         border-radius: 50px; content: '';
