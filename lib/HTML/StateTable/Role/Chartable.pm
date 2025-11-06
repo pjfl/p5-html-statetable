@@ -76,7 +76,12 @@ has '_chartable_configs' => is => 'lazy', isa => HashRef, default => sub {
             type  => 'bar',
             backgroundColor => 'transparent',
          },
-         title    => { align => 'left', text => $self->chartable_title_text },
+         title    => {
+            align => 'left',
+            style => { fontWeight => 'normal' },
+            text  => $self->chartable_title_text,
+            y     => 9,
+         },
          subtitle => { align => 'left', text => $self->chartable_subtitle_text},
          xAxis    => { title => { text => $self->chartable_xaxis_title } },
          yAxis    => {
@@ -106,7 +111,12 @@ has '_chartable_configs' => is => 'lazy', isa => HashRef, default => sub {
             type  => 'line',
             backgroundColor => 'transparent',
          },
-         title    => { align => 'left', text => $self->chartable_title_text },
+         title    => {
+            align => 'left',
+            style => { fontWeight => 'normal' },
+            text  => $self->chartable_title_text,
+            y     => 9,
+         },
          subtitle => { align => 'left', text => $self->chartable_subtitle_text},
          yAxis    => { title => { text => $self->chartable_yaxis_title } },
          xAxis    => { title => { text => $self->chartable_xaxis_title } },
@@ -136,7 +146,12 @@ has '_chartable_configs' => is => 'lazy', isa => HashRef, default => sub {
             plotBorderWidth     => NUL,
             plotShadow          => json_bool FALSE,
          },
-         title    => { align => 'left', text => $self->chartable_title_text },
+         title    => {
+            align => 'left',
+            style => { fontWeight => 'normal' },
+            text  => $self->chartable_title_text,
+            y     => 9,
+         },
          subtitle => { align => 'left', text => $self->chartable_subtitle_text},
          accessibility => { enabled => json_bool FALSE },
          plotOptions   => {

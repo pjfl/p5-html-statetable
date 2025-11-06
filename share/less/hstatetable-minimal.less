@@ -1,3 +1,4 @@
+@lower-break: 480px;
 @upper-break: 680px;
 @checkbox-height: 1.25rem;
 @checkbox-knob-width: 20px;
@@ -64,6 +65,9 @@ body {
         position: relative; width: 100%;
         td {
             border-right: 1px solid transparent; font-family: #fonts[data];
+            svg.icon {
+                height: 20px; width: 20px; vertical-align: text-bottom;
+            }
         }
         td, th {
             box-sizing: border-box; color: #colours[text]; padding: 0 0.5rem;
@@ -80,11 +84,11 @@ body {
         td a:active, td a:hover {
             font-style: italic;
         }
-        td svg.icon {
-            height: 20px; width: 20px; vertical-align: text-bottom;
-        }
         td.boolean, td.checkbox, td:has(svg.icon) {
             text-align: center;
+        }
+        td.datetime {
+            white-space: nowrap;
         }
         td.number {
             text-align: right;
@@ -123,7 +127,7 @@ body {
             background: #colours[row-inactive];
         }
     }
-    .chart-container, .table-container {
+    .chart-container.inline, .table-container.inline {
         display: inline-block; text-align: left; vertical-align: top;
     }
     .caption {
@@ -258,13 +262,27 @@ body {
     }
     .bottom-control.visible, .top-control.visible {
         display: flex; justify-content: space-between;
+        @media (max-width: @lower-break) {
+            flex-direction: column;
+        }
     }
     .bottom-left-control, .bottom-right-control {
         align-items: center; display: flex;
+        @media (max-width: @lower-break) {
+            max-width: @lower-break - 10%;
+        }
     }
     .top-left-control, .top-right-control {
         align-items: center; display: inline-flex; justify-content: flex-start;
         margin-top: 0.25rem;
+        @media (max-width: @lower-break) {
+            max-width: @lower-break - 10%;
+        }
+    }
+    .credit-control, .title-control {
+        @media (max-width: @lower-break) {
+            max-width: @lower-break - 10%;
+        }
     }
     .cell-content-append {
         display: inline-block; list-style: none; margin-top: 0;

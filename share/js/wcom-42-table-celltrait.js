@@ -80,6 +80,7 @@ WCom.Table.CellTrait.Date = (function() {
       around: {
          getValue: function(orig, attr) {
             const result = orig(attr);
+            this.appendValue(attr, 'className', 'date');
             result.value = new Date(result.value).toLocaleDateString();
             return result;
          }
@@ -92,6 +93,7 @@ WCom.Table.CellTrait.DateTime = (function() {
       around: {
          getValue: function(orig, attr) {
             const result = orig(attr);
+            this.appendValue(attr, 'className', 'datetime');
             const datetime = new Date(result.value);
             const date = datetime.toLocaleDateString();
             if (date != 'Invalid Date') {
