@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Adds CSS style class to column headers
           - Date and DateTime cell traits add classes to td
           - Chartable title styling improvements
           - Form role adds form_classes. Display tables with form styling

@@ -98,7 +98,9 @@ WCom.Table.Renderer = (function() {
             if (this.rs.state('sortColumn') == this.name) {
                attr.className = 'active-sort-column';
             }
-            content = [this.h.a({ onclick: this.sortHandler }, content[0])];
+            content = [this.h.a({
+               className: 'column-header', onclick: this.sortHandler
+            }, content[0])];
          }
          else if (content[0].match(/[^ ]/)) {
             content = [this.h.span({ className: 'column-header' }, content[0])];
