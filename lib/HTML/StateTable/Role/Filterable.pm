@@ -186,7 +186,8 @@ sub filter_column_values {
 
    return [] unless $column && $column->filterable;
 
-   my $column_name = $column->filter_column;
+   $column_name = $column->filter_column;
+
    my $rs = $self->resultset->search(undef, { rows => MAX_FILTER_ROWS });
 
    delete $rs->{attrs}->{'+as'}; delete $rs->{attrs}->{'+select'};

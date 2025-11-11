@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Fixes variable redefinition in Filterable
           - Adds CSS style class to column headers
           - Date and DateTime cell traits add classes to td
           - Chartable title styling improvements
