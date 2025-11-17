@@ -135,6 +135,7 @@ WCom.Table.CellTrait.Modal = (function() {
             const icons = col.options['modal-icons'] || col.table.icons;
             const title = col.options['title'] || 'Modal Dialog';
             const trigger = col.options['trigger-modal'];
+            const constraints = col.options['constraints'];
             if (url.searchParams.get(trigger) != 'true') return result;
             delete result.link;
             const onclick = function(event) {
@@ -144,6 +145,7 @@ WCom.Table.CellTrait.Modal = (function() {
                      if (ok && data) console.log(data);
                   }.bind(this),
                   cancelCallback: function() {},
+                  dragConstraints: constraints,
                   formClass: 'classic',
                   icons,
                   initValue: null,

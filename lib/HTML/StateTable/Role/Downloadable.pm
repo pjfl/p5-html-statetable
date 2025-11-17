@@ -140,7 +140,7 @@ after 'BUILD' => sub {
 
    $self->context->stash(
       SERIALISE_TABLE_KEY() => {
-         filename => $self->download_filename,
+         filename => $self->download_filename . ".${format}",
          format   => $format,
          table    => $self,
       },

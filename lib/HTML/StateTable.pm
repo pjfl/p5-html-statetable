@@ -1,7 +1,7 @@
 package HTML::StateTable;
 
 use 5.010001;
-use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev: 17 $ =~ /\d+/gmx );
+use version; our $VERSION = qv( sprintf '0.2.%d', q$Rev: 18 $ =~ /\d+/gmx );
 
 use HTML::StateTable::Constants qw( EXCEPTION_CLASS FALSE NUL RENDERER_CLASS
                                     RENDERER_PREFIX TABLE_META TRUE );
@@ -391,7 +391,14 @@ The pager object on the prepared resultset. Lazy and immutable
 
 =cut
 
-has 'pager' => is => 'lazy', default => sub { shift->prepared_resultset->pager};
+has 'pager' =>
+   is      => 'lazy',
+   default => sub {
+      my $self = shift;
+
+      return unless $self->paging;
+      return $self->prepared_resultset->pager
+   };
 
 =item paging
 
@@ -1020,7 +1027,7 @@ sub _apply_column_sql {
 sub _apply_pageing {
    my ($self, $rs) = @_;
 
-   return $rs->search(undef, { page => $self->page }) unless $self->paging;
+   return $rs->search(undef, { page => 0 }) unless $self->paging;
 
    return $rs->search(undef, { page => $self->page, rows => $self->page_size });
 }

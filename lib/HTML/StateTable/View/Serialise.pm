@@ -10,7 +10,6 @@ use Ref::Util                   qw( is_coderef is_hashref is_globref is_ref
                                     is_scalarref );
 use Scalar::Util                qw( blessed weaken );
 use Unexpected::Functions       qw( Unspecified );
-
 use Moo;
 
 =pod
@@ -273,7 +272,7 @@ sub _set_response_headers {
 
    if ($filename) {
       push @headers, 'Content-Disposition',
-         'attachment; filename=' . dquote $filename;
+         "attachment; filename=\"${filename}\"; filename*=UTF-8''${filename}";
    }
 
    $context->response->header(@headers);

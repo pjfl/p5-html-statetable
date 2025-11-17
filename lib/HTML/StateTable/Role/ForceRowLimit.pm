@@ -40,6 +40,7 @@ the page, limits the rows in the resultset
 sub force_row_limit {
    my $self  = shift;
 
+   return unless $self->paging;
    return unless $self->page == 1;
 
    my $pager = $self->pager;
