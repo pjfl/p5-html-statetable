@@ -1,56 +1,61 @@
+/* Breaks */
 @lower-break: 480px;
 @upper-break: 680px;
+/* Font Sizes */
+@button-font-size: 0.7rem;
+@data-font-size: 0.85rem;
+@system-font-size: 0.8rem;
+@title-font-size: 1rem;
+/* Dimensions */
 @checkbox-height: 1.25rem;
 @checkbox-knob-width: 20px;
 @checkbox-width: 40px;
 @dialog-title-min-width: 6rem;
-#colours() {
-    active-column: bisque;
-    button-bg: bisque;
-    button-border: gainsboro;
-    button-disabled-bg: gainsboro;
-    button-hover: limegreen;
-    button-text: black;
-    checkbox-false-bg: firebrick;
-    checkbox-true-bg: seagreen;
-    close: firebrick;
-    contrast: whitesmoke;
-    control-text: gray;
-    error-bg: lightpink;
-    line-border: gray;
-    link: seagreen;
-    message-bg: khaki;
-    panel-bg: ivory;
-    panel-shadow: gray;
-    row-even: ivory;
-    row-highlight: lightpink;
-    row-inactive: gainsboro;
-    row-odd: linen;
-    search-display-bg: gainsboro;
-    selected: orange;
-    tag-bg: bisque;
-    text: black;
-    title-bg: linen;
-    title-border: orange;
-}
+/* Colours */
+@active-column: bisque;
+@alert-bg: lightpink;
+@button-bg: bisque;
+@button-bg-disabled: gainsboro;
+@button-bg-lighter: whitesmoke;
+@button-border: gainsboro;
+@button-border-hover: limegreen;
+@button-text: seagreen;
+@button-text-hover: black;
+@checkbox-bg-false: firebrick;
+@checkbox-bg-true: seagreen;
+@close-text: firebrick;
+@control-text: gray;
+@grab-handle-hover: bisque;
+@line-border: gray;
+@message-bg: khaki;
+@panel-bg: ivory;
+@panel-shadow: gray;
+@row-bg-even: ivory;
+@row-bg-highlight: lightpink;
+@row-bg-inactive: gainsboro;
+@row-bg-odd: linen;
+@search-bg-display: bisque;
+@tag-bg: bisque;
+@text: black;
+@title-bg: linen;
+@title-border: orange;
 #fonts() {
-    code: ui-monospace, 'Cascadia Code', Menlo, 'DejaVu Sans Mono', monospace;
-    cursive: 'Segoe Print', 'Bradley Hand', Chilanka, casual, cursive;
+    code: 'Cascadia Code', 'Menlo', 'DejaVu Sans Mono', ui-monospace, monospace;
+    cursive: 'Segoe Print', 'Bradley Hand', 'Chilanka', casual, cursive;
     data: 'Roboto Slab', 'DejaVu Serif', 'Sitka Small', serif;
     mono: 'Nimbus Mono PS', 'Courier New', monospace;
-    system: Roboto, system-ui, sans-serif;
+    system: 'Roboto', system-ui, sans-serif;
 }
 #grads() {
-    button-bg: linear-gradient(0deg, #colours[button-bg], whitesmoke);
-    button-disabled-bg: linear-gradient(
-        0deg, #colours[button-disabled-bg], whitesmoke
+    button-bg: linear-gradient(0deg, @button-bg, @button-bg-lighter);
+    button-bg-border: radial-gradient(
+        @button-border-hover, transparent, transparent
     );
-    button-border-bg: radial-gradient(
-        #colours[button-hover], transparent, transparent
+    button-bg-disabled: linear-gradient(
+        0deg, @button-bg-disabled, @button-bg-lighter
     );
-    error-fade: linear-gradient(to right, transparent, #colours[error-bg] 80%);
     search-display: linear-gradient(
-        0deg, #colours[search-display-bg], whitesmoke
+        0deg, @search-bg-display, @button-bg-lighter
     );
 }
 body {
@@ -61,8 +66,7 @@ body {
         display: none;
     }
     table {
-        border-collapse: collapse; display: block; margin: 0.25rem 0 0.5rem;
-        position: relative; width: 100%;
+        border-collapse: collapse; margin: 0.25rem 0 0.5rem; position: relative;
         td {
             border-right: 1px solid transparent; font-family: #fonts[data];
             svg.icon {
@@ -70,13 +74,13 @@ body {
             }
         }
         td, th {
-            color: #colours[text]; padding: 0 0.5rem;
+            color: @text; padding: 0 0.5rem;
         }
         td:last-child, th:last-child {
             border-right: 0;
         }
         td a {
-            color: #colours[link]; font-family: #fonts[data];
+            color: @button-text;
         }
         td a:link {
             text-decoration: none;
@@ -97,8 +101,8 @@ body {
             word-wrap: anywhere;
         }
         th {
-            background: #colours[panel-bg];
-            border-right: 1px solid; border-color: #colours[line-border];
+            background: @panel-bg;
+            border-right: 1px solid @line-border;
             font-family: #fonts[system]; font-weight: normal;
             position: relative; text-align: left; white-space: nowrap;
             .column-header {
@@ -106,29 +110,29 @@ body {
             }
         }
         th a {
-            color: #colours[text]; cursor: pointer;
+            color: @text; cursor: pointer;
         }
         th a.filter-control {
-            color: #colours[control-text]; opacity: 50%;
+            color: @control-text; opacity: 50%;
             position: absolute; right: 0;
         }
         th:has(a.filter-control) .column-header {
             padding-right: 20px;
         }
         th.active-sort-column {
-            background: #colours[active-column];
+            background: @active-column;
         }
         tr.even {
-            background: #colours[row-even];
+            background: @row-bg-even;
         }
         tr.odd {
-            background: #colours[row-odd];
+            background: @row-bg-odd;
         }
         tr.highlight {
-            background: #colours[row-highlight];
+            background: @row-bg-highlight;
         }
         tr.inactive {
-            background: #colours[row-inactive];
+            background: @row-bg-inactive;
         }
     }
     .chart-container.inline, .table-container.inline {
@@ -139,11 +143,11 @@ body {
         text-transform: uppercase; white-space: nowrap;
     }
     .download-link, .page-control a, .page-control li, .page-size-control a {
-        color: #colours[control-text]; cursor: pointer; font-size: small;
+        color: @control-text; cursor: pointer; font-size: @system-font-size;
     }
     .page-control, .page-size-control {
-        color: #colours[control-text]; font-family: #fonts[system];
-        font-size: small; margin: 0; padding-left: 0;
+        color: @control-text; font-family: #fonts[system];
+        font-size: @system-font-size; margin: 0; padding-left: 0;
     }
     .page-control, .page-control li, .page-size-control, .page-size-control li {
         display: inline-block;
@@ -178,25 +182,23 @@ body {
             align-items: stretch; display: flex; line-height: 1rem;
             .search-hidden {
                 display: inline-block; overflow: hidden; position: relative;
-                vertical-align: top;
                 select {
-                    cursor: pointer; left: 0; opacity: 0; position: absolute;
-                    top: 5px;
+                    cursor: pointer; height: 1.75rem; left: 0; opacity: 0;
+                    position: absolute;
                 }
                 .search-arrow {
                     border: 3px solid transparent; border-bottom-width: 0;
-                    border-top: 3px solid #colours[line-border];
+                    border-top: 3px solid @line-border;
                     font-size: 0; height: 0; line-height: 0; position: absolute;
                     right: 4px; top: 9px; width: 0;
                 }
                 .search-display {
-                    background: #colours[search-display-bg];
-                    background-image: #grads[search-display];
-                    border: 2px outset #colours[button-border];
+                    background: #grads[search-display];
+                    border: 2px outset @button-border;
                     border-radius: 50px 0 0 50px;
-                    color: #colours[control-text]; display: inline-block;
-                    font-family: #fonts[system]; font-size: 0.8rem;
-                    height: 1.6rem; padding: 0.25rem 1rem 0.25rem 0.5rem;
+                    color: @control-text; display: inline-block;
+                    font-family: #fonts[system]; font-size: @system-font-size;
+                    padding: 0.25rem 1rem 0.25rem 0.5rem;
                     vertical-align: top;
                 }
             }
@@ -205,17 +207,17 @@ body {
                 border-bottom-left-radius: 2px;
             }
             .search-button button {
-                padding: 1px 0.5rem 1px 0.25rem;
+                padding: 2px 0.5rem 0 0.25rem;
                 .icon-wrapper {
-                    height: 20px; width: 20px;
+                    display: inline-block; height: 20px; width: 20px;
                 }
             }
             input.search-field {
                 color: inherit; border: none; border-radius: 0 2px 2px 0;
-                border-bottom: 2px inset #colours[button-border];
-                border-top: 2px inset #colours[button-border];
+                border-bottom: 2px inset @button-border;
+                border-top: 2px inset @button-border;
                 font-family: #fonts[data]; line-height: 1rem;
-                margin: 0; outline: 0; padding: 0 0.25rem;
+                margin: 0; outline: 0; padding: 0 0.25rem 2px;
             }
             input.search-field:placeholder-shown {
                 font-style: italic;
@@ -223,8 +225,8 @@ body {
         }
     }
     .section-row {
-        background: #colours[row-inactive]; font-family: #fonts[system];
-        font-size: smaller;
+        background: @row-bg-inactive; font-family: #fonts[system];
+        font-size: @system-font-size;
         .section-check {
             text-align: center;
         }
@@ -241,25 +243,25 @@ body {
         }
     }
     .status-messages {
-        background: #colours[message-bg]; border-radius: 5px;
-        color: #colours[text]; font-family: #fonts[system]; font-size: 0.8rem;
+        background: @message-bg; border-radius: 5px;
+        color: @text; font-family: #fonts[system]; font-size: @system-font-size;
         margin-top: 0.25rem; padding: 0.25rem 0.5rem; text-align: center;
-    }
-    .status-messages a {
-        color: #colours[link]; cursor: pointer; margin-left: 0.5rem;
-    }
-    .status-messages a:hover {
-        font-style: italic;
-    }
-    .status-messages strong {
-        font-family: #fonts[data];
+        a {
+            color: @button-text; cursor: pointer; margin-left: 0.5rem;
+        }
+        a:hover {
+            font-style: italic;
+        }
+        strong {
+            font-family: #fonts[data];
+        }
     }
     .active-control {
         display: inline;
     }
     .active-control-label {
-        color: #colours[control-text]; cursor: pointer;
-        font-family: #fonts[system]; font-size: small;
+        color: @control-text; cursor: pointer;
+        font-family: #fonts[system]; font-size: @system-font-size;
     }
     .bottom-control, .top-control {
         display: none; position: relative;
@@ -301,13 +303,13 @@ body {
     .cell-tag .tag-arrow-left {
         border-top: 8px solid transparent;
         border-bottom: 8px solid transparent; border-right: 8px solid;
-        border-right-color: #colours[tag-bg];
+        border-right-color: @tag-bg;
         height: 0; width: 0;
     }
     .cell-tag .tag-arrow-right {
         border-top: 12px solid transparent;
         border-bottom: 12px solid transparent; border-left: 12px solid;
-        border-left-color: #colours[tag-bg];
+        border-left-color: @tag-bg;
         height: 0; width: 0;
     }
     .cell-tag .tag-arrow-left::after {
@@ -319,8 +321,8 @@ body {
         position: absolute; transform: translate(-0.75rem, -100%);
     }
     .cell-tag .tag-value {
-        background: #colours[tag-bg]; border-radius: 0 3px 3px 0;
-        color: #colours[link]; cursor: pointer; font-family: #fonts[data];
+        background: @tag-bg; border-radius: 0 3px 3px 0;
+        color: @button-text; cursor: pointer; font-family: #fonts[data];
         font-size: x-small; padding: 2px 0.25rem;
     }
     .cell-tag .tag-value.breadcrumbs {
@@ -328,8 +330,8 @@ body {
         padding-bottom: 0.45rem; padding-top: 0.3rem; text-decoration: none;
     }
     .filter-dialog, .preference-dialog {
-        background: #colours[panel-bg]; border: 1px solid; border-radius: 5px;
-        box-shadow: 3px 3px 3px #colours[panel-shadow];
+        background: @panel-bg; border: 1px solid; border-radius: 5px;
+        box-shadow: 3px 3px 3px @panel-shadow;
         position: absolute; z-index: 10;
     }
     .filter-dialog {
@@ -345,7 +347,7 @@ body {
         border: 2px transparent solid; user-select: none;
     }
     .dropzone.dragover {
-        border: 2px solid; border-color: #colours[link];
+        border: 2px solid; border-color: @button-text;
     }
     .dialog-button-download {
         order: 99;
@@ -356,24 +358,29 @@ body {
     }
     .dialog-close {
         background: #grads[button-bg]; border-radius: 3px;
-        box-shadow: 2px 2px 2px #colours[panel-shadow]; color: #colours[close];
-        cursor: pointer; font-family: #fonts[system]; font-size: smaller;
-        font-weight: bold;
+        box-shadow: 2px 2px 2px @panel-shadow; color: @close-text;
+        cursor: pointer; font-family: #fonts[system];
+        font-size: @system-font-size; font-weight: bold;
         .icon-wrapper {
             align-items: center; display: flex; padding: 0.125rem;
         }
         img, object {
             height: 16px; width: 16px; vertical-align: middle;
         }
-    }
-    .dialog-close:hover {
-        box-shadow: inset 0 0 3px #colours[panel-shadow];
-        color: #colours[text];
+        &:hover {
+            box-shadow: inset 0 0 3px @panel-shadow; color: @text;
+        }
     }
     .dialog-form {
         padding: 0 0.5rem;
-        td:first-child, th {
-            font-family: #fonts[system]; font-size: 0.8rem;
+        th {
+            font-size: @system-font-size; min-width: 4rem;
+        }
+        th:first-child {
+            min-width: 6rem;
+        }
+        td:first-child {
+            font-family: #fonts[system]; font-size: @system-font-size;
         }
         table td:first-child, table th:first-child {
             padding-left: 0;
@@ -385,51 +392,51 @@ body {
             isolation: isolate; padding-top: 0.25rem; position: relative;
             text-align: left;
             input[type=checkbox] {
-                height: @checkbox-height; left: -5px; margin: 0; opacity: 0;
+                height: @checkbox-height; left: 0; margin: 0; opacity: 0;
                 position: relative; width: @checkbox-width; z-index: 3;
             }
         }
         .checkbox::after {
             background: #grads[button-bg];
-            border: 2px inset #colours[button-border]; border-radius: 10px;
+            border: 2px inset @button-border; border-radius: 10px;
             content: ''; display: block; position: absolute;
-            height: @checkbox-height; left: 0; top: 0.25rem;
+            height: @checkbox-height; left: 0.5rem; top: 0.25rem;
             width: @checkbox-knob-width; z-index: 2;
         }
         .checkbox:has(input[type=checkbox]:checked)::after {
-            left: @checkbox-knob-width;
+            left: @checkbox-knob-width + 8px;
         }
         .checkbox::before {
-            background: #colours[checkbox-false-bg];
-            border: 2px inset #colours[button-border]; border-radius: 10px;
+            background: @checkbox-bg-false;
+            border: 2px inset @button-border; border-radius: 10px;
             content: ''; display: block; position: absolute;
-            height: @checkbox-height; left: 0; width: @checkbox-width;
+            height: @checkbox-height; left: 0.5rem; width: @checkbox-width;
             z-index: 1;
         }
         .checkbox:has(input[type=checkbox]:checked)::before {
-            background: #colours[checkbox-true-bg];
+            background: @checkbox-bg-true;
         }
     }
     .dialog-input {
         margin-bottom: 0.5rem; padding: 0.25rem 0;
+        button {
+            margin-right: 0.25rem; padding: 3px 0.75rem 5px;
+        }
         select {
             background: #grads[button-bg]; border-radius: 5px;
-            font-size: 0.85rem; font-family: #fonts[data];
+            font-family: #fonts[data]; font-size: @data-font-size;
         }
     }
-    .dialog-input button {
-        margin-right: 0.25rem;
-    }
     .dialog-input > span, .dialog-input label {
-        color: #colours[text];
-        font-family: #fonts[system]; font-size: 0.8rem; line-height: 1rem;
+        color: @text; font-family: #fonts[system]; font-size: @system-font-size;
+        line-height: 1rem;
     }
     .dialog-title {
-        align-items: center; background: #colours[title-bg];
-        border-bottom: 1px solid; border-color: #colours[title-border];
+        align-items: center; background: @title-bg;
+        border-bottom: 1px solid @title-border;
         border-top-left-radius: 5px; border-top-right-radius: 5px;
-        color: #colours[text]; display: flex; font-family: #fonts[system];
-        font-size: 1rem; justify-content: space-between;
+        color: @text; display: flex; font-family: #fonts[system];
+        font-size: @title-font-size; justify-content: space-between;
         min-width: @dialog-title-min-width; padding: 0.25rem 0.5rem;
     }
     .filter-label {
@@ -442,25 +449,24 @@ body {
         padding-left: 0.25rem;
     }
     .filter-values {
-        font-family: #fonts[data]; font-size: smaller; height: 6.5rem;
+        font-family: #fonts[data]; font-size: @data-font-size; height: 6.5rem;
         list-style: none; margin: 0.25rem 0; overflow: auto;
         padding: 0 0.5rem; text-align: left;
     }
     .filter-value {
-        color: #colours[link]; cursor: pointer;
-    }
-    .filter-value:hover {
-        font-style: italic;
+        color: @button-text; cursor: pointer;
+        &:hover {
+            font-style: italic;
+        }
     }
     .grab-handle {
-        display: inline-block; height: 20px; width: 20px;
-        vertical-align: top;
+        display: inline-block; height: 20px; width: 20px; vertical-align: top;
     }
     .grab-handle-cell {
-        cursor: grab; padding-top: 0.25rem; text-align: center;
-    }
-    .grab-handle-cell:hover {
-        background: #colours[selected];
+        cursor: grab; padding-top: 0.25rem;
+        &:hover {
+            background: @grab-handle-hover;
+        }
     }
     .table-form .credit-control {
         display: flex; justify-content: space-between;
@@ -473,28 +479,36 @@ body {
     }
     .table-form .table-button, .table-form button, .dialog-form button {
         background: #grads[button-bg];
-        border: 2px outset #colours[button-border]; border-radius: 50px;
-        color: #colours[link]; cursor: pointer; display: inline-block;
-        line-height: 0.8rem; overflow: hidden; padding: 0.25rem 0.75rem;
+        border: 2px outset @button-border; border-radius: 50px;
+        color: @button-text; cursor: pointer; display: inline-block;
+        overflow: hidden; padding: 0.25rem 0.75rem;
         position: relative; text-decoration: none;
         transition: border 0.5s, color 0.5s;
         span {
-            display: inline-block; font-family: #fonts[system];
-            font-size: 0.7rem; letter-spacing: 0.1rem;
-            position: relative; text-decoration: none;
-            text-transform: uppercase; z-index: 3;
+            font-family: #fonts[system]; font-size: @button-font-size;
+            letter-spacing: 0.1rem; position: relative; text-decoration: none;
+            text-transform: uppercase; white-space: nowrap; z-index: 3;
         }
+    }
+    .table-form a.table-button {
+        line-height: 0.875rem;
+    }
+    .table-form a.table-button[disabled=disabled] {
+        padding: 3px 0.75rem 5px;
+    }
+    .table-form button.table-button {
+        padding: 0.25rem 0.75rem;
     }
     .table-form .table-button:hover,
     .table-form button:hover,
     .dialog-form button:hover {
-        border: 2px inset #colours[button-border]; color: #colours[button-text];
+        border: 2px inset @button-border; color: @button-text-hover;
 
     }
     .table-form .table-button::before,
     .table-form button::before,
     .dialog-form button::before {
-        background: #grads[button-border-bg]; content: ''; display: block;
+        background: #grads[button-bg-border]; content: ''; display: block;
         height: 3rem; left: var(--x); opacity: 0; position: absolute;
         top: var(--y); transform: translate(-50%, -50%);
         transition: opacity 0.5s; width: 3rem; z-index: 1;
@@ -517,7 +531,7 @@ body {
     .table-form button[disabled=disabled]::after,
     .dialog-form button[disabled=disabled],
     .dialog-form button[disabled=disabled]::after {
-        background: #grads[button-disabled-bg];
+        background: #grads[button-bg-disabled];
     }
     .table-form .table-button.right {
         position: absolute; right: 0.5rem;
@@ -537,10 +551,11 @@ body {
                 justify-content: left; text-align: left !important;
             }
             td::before {
-                content: attr(data-cell) ': '; font-family: #fonts[system];
-                font-weight: bold; text-transform: capitalize;
+                color: @control-text; content: attr(data-cell) ': ';
+                font-family: #fonts[system]; font-size: @system-font-size;
+                text-transform: capitalize;
             }
-            th {
+            th, td.no-data::before {
                 display: none;
             }
         }
@@ -551,8 +566,12 @@ body {
 }
 .state-table.object-view {
     td:first-child {
-        border-right: 1px solid; font-family: #fonts[system]; font-size: 0.8rem;
-        font-weight: normal; padding-right: 0.5rem; white-space: nowrap;
+        border-right: 1px solid @line-border; font-family: #fonts[system];
+        font-size: @system-font-size; font-weight: normal;
+        padding-right: 0.5rem; white-space: nowrap;
+        @media (max-width: @upper-break) {
+            border: 0;
+        }
     }
     td.boolean {
         text-align: left;
@@ -568,18 +587,23 @@ body {
         position: relative;
     }
     .state-table td:first-child {
-        border: 0; font-family: #fonts[data]; font-size: 1rem;
+        border: 0; font-family: #fonts[data]; font-size: @title-font-size;
     }
     .state-table th:first-child a {
-        color: #colours[text];
+        color: @text;
     }
-    .table-form .table-button:first-child, .table-form button:first-child {
-        margin-left: 0.5rem;
+    .table-button.right {
+        position: absolute; right: 0;
+    }
+    @media (max-width: @upper-break) {
+        table td::before {
+            display: none;
+        }
     }
 }
 .state-table .state-table table {
     margin-bottom: 0;
 }
 .state-table-error {
-    background: #colours[error-bg]; margin: 0 16%;
+    background: @alert-bg; margin: 0 16%;
 }

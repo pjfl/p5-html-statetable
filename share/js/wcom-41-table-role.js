@@ -789,11 +789,12 @@ WCom.Table.Role.Downloadable = (function() {
          }.bind(this);
       }
       render(container) {
-         const control = this.displayLink ? this.h.a({
+         if (!this.displayLink) return;
+         const control = this.h.a({
             className: 'download-link', onclick: this.downloadHandler
          }, [
             this.h.span({ className: 'download-label' }), this.label
-         ]) : this.h.span();
+         ]);
          this.control = this.addReplace(container, 'control', control);
       }
    }
@@ -1518,7 +1519,7 @@ WCom.Table.Role.Searchable = (function() {
          const searchCol = rs.state('searchColumn');
          const column = this.table.columnIndex[searchCol];
          const value = rs.state('searchValue');
-         const messages = this.h.div();
+         const messages = this.h.div({ className: 'search-messages' });
          if (value) {
             const handler = function(event) {
                event.preventDefault();

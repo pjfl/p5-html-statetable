@@ -423,7 +423,9 @@ WCom.Table.Renderer = (function() {
       }
       renderNoData() {
          const message = this.properties['no-data-message'];
-         const cell    = this.h.td({ colSpan: this.columns.length }, message);
+         const cell    = this.h.td({
+            className: 'no-data', colSpan: this.columns.length
+         }, message);
          const tbody   = this.h.tbody(this.h.tr(cell));
          this.table.replaceChild(tbody, this.body);
          this.body = tbody;
