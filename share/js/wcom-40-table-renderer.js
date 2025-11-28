@@ -243,7 +243,8 @@ WCom.Table.Renderer = (function() {
          this.resultset     = new Resultset(this);
          this.titleLocation = this.properties['title-location'] || 'inner';
          this.topContent    = false;
-         this.table         = this.h.table({ id: this.name });
+         const tableAttr    = { id: this.name, className: this.name };
+         this.table         = this.h.table(tableAttr);
          if (this.properties['max-width']) this.table.style.setProperty(
             'max-width', this.properties['max-width']
          );

@@ -562,7 +562,7 @@ WCom.Table.Role.Configurable = (function() {
             this.h.div({ className: 'dialog-input' }, [
                this.h.label({ htmlFor: 'sortBy' }, 'Sort by\xA0'),
                this.sortBy,
-               this.h.label([this.sortDesc, 'Desc'])
+               this.h.label([this.sortDesc, this.h.span('Desc')])
             ]),
             this.table.resultset.enablePaging
                ? this.h.div({ className: 'dialog-input' }, [

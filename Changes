@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - More CSS refactoring
           - CSS colour refactoring
           - Fixes download filename and number of rows downloaded
           - Fixes variable redefinition in Filterable
