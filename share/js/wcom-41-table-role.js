@@ -178,6 +178,7 @@ WCom.Table.Role.Chartable = (function() {
          if (!loaded) return;
          const url = this.table.prepareURL({ disablePaging: true });
          const { object } = await this.bitch.sucks(url);
+         if (!object) return;
          const results = object['records'];
          const series = [];
          for (const colName of this.columnNames) {
@@ -187,7 +188,7 @@ WCom.Table.Role.Chartable = (function() {
                data.push([ name, parseInt(result[colName]) ]);
             }
             const column = this.table.columnIndex[colName];
-            series.push({ ...this.series, data: data, name: column.label });
+            series.push({ ...this.series, data, name: column.label });
          }
          const config = this.chartConfig;
          config['series'] = series;
@@ -423,12 +424,12 @@ WCom.Table.Role.Configurable = (function() {
          this.viewBoxes = [];
       }
       renderButtons () {
-         return this.h.div({ className: 'dialog-input dialog-buttons' }, [
-            this.downloadable ? this.h.button({
-               className: 'dialog-button-download',
-               onclick: this.handlers['downloadHandler']
-            }, this.h.span('Download')) : '',
+         return this.h.div({ className: 'dialog-buttons' }, [
             this.h.div({ className: 'dialog-button-group' }, [
+               this.downloadable ? this.h.button({
+                  className: 'dialog-button-download',
+                  onclick: this.handlers['downloadHandler']
+               }, this.h.span('Download')) : '',
                this.h.button({
                   className: 'dialog-button-clear',
                   onclick: this.handlers['clearHandler']

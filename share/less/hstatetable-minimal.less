@@ -36,11 +36,12 @@
 @dialog-title-min-width: 6rem;
 /* Font Sizes and Weights */
 @button-font-size: 0.7rem;
-@button-font-weight: 415;
+@button-font-weight: 410;
 @data-font-size: 0.9rem;
 @data-font-weight: normal;
 @dialog-font-size: 0.8rem;
 @header-font-size: 0.85rem;
+@header-font-weight: normal;
 @link-font-weight: normal;
 @search-font-size: 0.8rem;
 @system-font-size: 0.8rem;
@@ -51,7 +52,7 @@
     cursive: 'Segoe Print', 'Bradley Hand', 'Chilanka', casual, cursive;
     data: 'DejaVu Serif', 'Sitka Small', serif;
     mono: 'Nimbus Mono PS', 'Courier New', monospace;
-    system: 'Roboto', system-ui, sans-serif;
+    system: 'Segoe UI', 'Roboto', 'Helvetica', system-ui, sans-serif;
 }
 #grads() {
     button-bg: linear-gradient(0deg, @button-bg, @button-bg-lighter);
@@ -97,8 +98,8 @@ body {
         th {
             background: @panel-bg; border-right: 1px solid @line-border;
             font-family: #fonts[system]; font-size: @header-font-size;
-            font-weight: normal; position: relative; text-align: left;
-            white-space: nowrap;
+            font-weight: @header-font-weight; position: relative;
+            text-align: left; white-space: nowrap;
             a {
                 color: @text; cursor: pointer;
             }
@@ -146,20 +147,49 @@ body {
             }
         }
     }
+    table.preference-columns {
+        border: 2px transparent solid; border-collapse: collapse;
+        user-select: none;
+        th {
+            background: @panel-bg; border-right: 1px solid @line-border;
+            color: @text; font-family: #fonts[system];
+            font-size: @header-font-size; font-weight: normal;
+            padding: 0 0.5rem; position: relative; text-align: left;
+            white-space: nowrap;
+        }
+        th:last-child {
+            border-right: 0;
+        }
+        td:first-child, th:first-child {
+            padding-left: 0;
+        }
+        td:last-child, th:last-child {
+            padding-right: 0;
+        }
+    }
+    .chart-container, .table-container {
+        &.inline {
+            display: inline-block; text-align: left; vertical-align: top;
+        }
+    }
     .active-control {
         display: inline;
     }
     .active-control-label {
         color: @text-control; cursor: pointer;
         font-family: #fonts[system]; font-size: @system-font-size;
+        position: relative;
+        input[type=checkbox] {
+            margin: 0 0.25rem; position: relative; top: 2px;
+        }
     }
     .bottom-control, .top-control {
         display: none; position: relative;
-    }
-    .bottom-control.visible, .top-control.visible {
-        display: flex; justify-content: space-between;
-        @media (max-width: @lower-break) {
-            flex-direction: column;
+        &.visible {
+            display: flex; justify-content: space-between;
+            @media (max-width: @lower-break) {
+                flex-direction: column;
+            }
         }
     }
     .bottom-left-control, .bottom-right-control {
@@ -172,13 +202,11 @@ body {
         font-family: #fonts[system]; font-weight: normal; margin: 0;
         text-transform: uppercase; white-space: nowrap;
     }
-    .chart-container, .table-container {
-        margin-bottom: 1rem;
-        &.inline {
-            display: inline-block; text-align: left; vertical-align: top;
-        }
-    }
     .credit-control, .title-control {
+        display: flex; flex-direction: column;
+        &:empty {
+            display: none;
+        }
         @media (max-width: @lower-break) {
             max-width: @lower-break - 20%;
         }
@@ -195,8 +223,7 @@ body {
         .tag-arrow-left {
             border-top: 8px solid transparent;
             border-bottom: 8px solid transparent; border-right: 8px solid;
-            border-right-color: @tag-bg;
-            height: 0; width: 0;
+            border-right-color: @tag-bg; height: 0; width: 0;
             &::after {
                 content: '.'; display: inline-block; font-size: larger;
                 position: absolute; transform: translate(0.25rem, -100%);
@@ -205,8 +232,7 @@ body {
         .tag-arrow-right {
             border-top: 12px solid transparent;
             border-bottom: 12px solid transparent; border-left: 12px solid;
-            border-left-color: @tag-bg;
-            height: 0; width: 0;
+            border-left-color: @tag-bg; height: 0; width: 0;
             &::before {
                 content: '.'; display: inline-block; font-size: larger;
                 position: absolute; transform: translate(-0.75rem, -100%);
@@ -227,12 +253,12 @@ body {
     .download-link, .page-control a, .page-control li, .page-size-control a {
         color: @text-control; cursor: pointer; font-size: @system-font-size;
     }
-    .dialog-button-download {
-        order: 99;
-    }
     .dialog-buttons {
-        display: flex; flex-direction: row-reverse;
-        justify-content: space-between;
+        padding: 0.25rem 0;
+        .dialog-button-group {
+            align-items: baseline; display: flex; gap: 0.25rem;
+            justify-content: space-between; position: relative;
+        }
     }
     .dialog-close {
         background: #grads[button-bg]; border-radius: 3px;
@@ -250,7 +276,7 @@ body {
         }
     }
     .dialog-form {
-        padding: 0.5rem 1rem 0;
+        padding: 0.5rem 1rem;
         th {
             min-width: 4rem;
         }
@@ -377,6 +403,9 @@ body {
     .highcharts-legend.highcharts-no-tooltip {
         display: none;
     }
+    .highcharts-title {
+        font-size: 1rem !important; text-transform: uppercase;
+    }
     .page-control, .page-size-control {
         color: @text-control; font-family: #fonts[system];
         font-size: @system-font-size; margin: 0; padding-left: 0;
@@ -396,35 +425,6 @@ body {
     .page-size-control li.selected-page-size {
         text-decoration: underline;
     }
-    .preference-columns {
-        border: 2px transparent solid; border-collapse: collapse;
-        user-select: none;
-        th {
-            background: @panel-bg; border-right: 1px solid @line-border;
-            color: @text; font-family: #fonts[system];
-            font-size: @header-font-size; font-weight: normal;
-            padding: 0 0.5rem; position: relative; text-align: left;
-            white-space: nowrap;
-        }
-        th:last-child {
-            border-right: 0;
-        }
-        td:first-child, th:first-child {
-            padding-left: 0;
-        }
-        td:last-child, th:last-child {
-            padding-right: 0;
-        }
-    }
-    .preference-control {
-        display: inline-block;
-        img, svg {
-            height: 24px; width: 24px; vertical-align: middle;
-        }
-        &.text {
-            padding: 0 0.25rem;
-        }
-    }
     .preference-dialog {
         top: 2rem;
         &.control-right {
@@ -433,23 +433,49 @@ body {
     }
     .preference-link {
         cursor: pointer; display: inline-block;
+        .preference-control {
+            display: inline-block;
+            img, svg {
+                height: 24px; width: 24px; vertical-align: middle;
+            }
+            &.text {
+                padding: 0 0.25rem;
+            }
+        }
     }
     .search-box {
         display: inline-block;
         .search-wrapper {
-            align-items: stretch; display: flex; line-height: 1rem;
-            input.search-field {
+            align-items: stretch; display: flex; height: 1.75rem;
+            &:hover {
+                .search-display {
+                    background: #grads[search-display];
+                }
+                .search-field {
+                    max-width: 20rem; padding: 0 0.25rem;
+                }
+            }
+            &:has(.search-field:focus) .search-display,
+            &:has(.search-field:not(:placeholder-shown)) .search-display {
+                background: #grads[search-display];
+            }
+            .search-field {
                 color: inherit; border: none; border-radius: 0 2px 2px 0;
                 border-bottom: 2px inset @button-border;
                 border-top: 2px inset @button-border;
                 font-family: #fonts[data]; font-size: @search-font-size;
-                line-height: 1rem; margin: 0; outline: 0; padding: 0 0.25rem;
+                height: 1.75rem; line-height: 1rem; margin: 0; max-width: 0;
+                outline: 0; padding: 0; transition: max-width 0.5s;
                 &:placeholder-shown {
                     font-style: italic;
                 }
+                &:not(:placeholder-shown) {
+                    max-width: 20rem; padding: 0 0.25rem;
+                }
             }
             .search-hidden {
-                display: inline-block; overflow: hidden; position: relative;
+                display: inline-block; height: 1.75rem;
+                overflow: hidden; position: relative;
                 select {
                     cursor: pointer; height: 1.75rem; left: 0; opacity: 0;
                     position: absolute;
@@ -461,25 +487,31 @@ body {
                     right: 4px; top: 9px; width: 0;
                 }
                 .search-display {
-                    background: #grads[search-display];
+                    background: #grads[button-bg-disabled];
                     border: 2px outset @button-border;
                     border-radius: 50px 0 0 50px; color: @text-control;
                     display: inline-block; font-family: #fonts[system];
                     font-size: @system-font-size;
-                    padding: 0.3rem 1rem 0.2rem 0.5rem; vertical-align: top;
+                    padding: 0.15rem 1rem 0.15rem 0.5rem; vertical-align: top;
                 }
             }
-            .search-button button, .search-button button::after {
-                border-top-left-radius: 2px;
-                border-bottom-left-radius: 2px;
-            }
-            .search-button button {
-                padding: 2px 0.5rem 0 0.25rem;
-                .icon-wrapper {
-                    display: inline-block; height: 20px; width: 20px;
+            .search-button {
+                display: inline-block;
+                button, button::after {
+                    border-top-left-radius: 2px;
+                    border-bottom-left-radius: 2px;
+                }
+                button {
+                     height: 1.75rem; padding: 2px 0.5rem 0 0.25rem;
+                    .icon-wrapper {
+                        display: inline-block; height: 20px; width: 20px;
+                    }
                 }
             }
         }
+    }
+    .search-messages:empty {
+        display: none;
     }
     .section-row {
         background: @row-bg-inactive; font-family: #fonts[system];
@@ -499,6 +531,12 @@ body {
             }
         }
     }
+    .state-table .table-container {
+        margin-bottom: 0;
+        .credit-control {
+            padding-bottom: 0;
+        }
+    }
     .status-messages {
         background: @message-bg; border-radius: 5px;
         color: @text; font-family: #fonts[system]; font-size: @system-font-size;
@@ -514,10 +552,7 @@ body {
             font-weight: @data-font-weight;
         }
     }
-    .table-form .credit-control {
-        display: flex; justify-content: space-between;
-    }
-    .table-form .table-button, .table-form button {
+    .table-form .table-button {
         margin-right: 0.5rem;
         &:last-child {
             margin-right: 0;
@@ -586,21 +621,6 @@ body {
             border-collapse: collapse; margin: 0.25rem 0 0.5rem;
             position: relative;
         }
-        td {
-            font-family: #fonts[data]; font-size: @data-font-size;
-            font-weight: @data-font-weight; padding: 0 0.5rem;
-        }
-        td:first-child {
-            border-right: 1px solid @line-border; font-family: #fonts[system];
-            font-size: @system-font-size; font-weight: normal;
-            padding-right: 0.5rem; white-space: nowrap;
-            @media (max-width: @upper-break) {
-                border: 0;
-            }
-        }
-        td.boolean {
-            text-align: left;
-        }
         tr {
             line-height: 1.5rem;
             &.even {
@@ -610,22 +630,37 @@ body {
                 background: @row-bg-odd;
             }
         }
+        td {
+            font-family: #fonts[data]; font-size: @data-font-size;
+            font-weight: @data-font-weight; padding: 0 0.5rem;
+            &:first-child {
+                border-right: 1px solid @line-border;
+                font-family: #fonts[system]; font-size: @system-font-size;
+                font-weight: normal; padding-right: 0.5rem; white-space: nowrap;
+                @media (max-width: @upper-break) {
+                    border: 0;
+                }
+            }
+            &.boolean {
+                text-align: left;
+            }
+        }
         .caption {
             margin-left: 0.5rem;
         }
         .credit-control {
-            justify-content: flex-start; padding-bottom: 0.5rem;
-            position: relative;
+            flex-direction: row; justify-content: flex-start;
+            padding-bottom: 0.5rem; position: relative;
             .table-button.right {
                 position: absolute; right: 0;
             }
         }
+        .state-table th:first-child a {
+            color: @text;
+        }
         .state-table td:first-child {
             border: 0; font-family: #fonts[data]; font-size: @data-font-size;
             font-weight: @data-font-weight;
-        }
-        .state-table th:first-child a {
-            color: @text;
         }
         @media (max-width: @upper-break) {
             table td::before {
@@ -633,27 +668,21 @@ body {
             }
         }
     }
-    .state-table .table-container {
-        margin-bottom: 0;
-        .credit-control {
-            padding-bottom: 0;
-        }
-    }
     @media (max-width: @upper-break) {
         table {
+            th, td.no-data::before {
+                display: none;
+            }
             td {
                 display: grid; grid-template-columns: 15ch auto;
+                &::before {
+                    color: @text-control; content: attr(data-cell) ': ';
+                    font-family: #fonts[system]; font-size: @system-font-size;
+                    text-transform: capitalize;
+                }
             }
             td, td.checkbox {
                 justify-content: left; text-align: left !important;
-            }
-            td::before {
-                color: @text-control; content: attr(data-cell) ': ';
-                font-family: #fonts[system]; font-size: @system-font-size;
-                text-transform: capitalize;
-            }
-            th, td.no-data::before {
-                display: none;
             }
         }
         .chart-container {

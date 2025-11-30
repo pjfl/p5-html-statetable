@@ -57,18 +57,22 @@ configurable control displayed by the front end
 
 =cut
 
-has 'configurable_control_location' => is => 'ro', isa => Str,
+has 'configurable_control_location' =>
+   is      => 'ro',
+   isa     => Str,
    default => 'TopRight';
 
 =item configurable_dialog_title
 
-An immutable string which defaults to C<Defaults>. Displayed in the title bar
-of the preferences dialog
+An immutable string which defaults to C<Preferences>. Displayed in the title
+bar of the preferences dialog
 
 =cut
 
-has 'configurable_dialog_title' => is => 'ro', isa => Str,
-   default => 'Defaults';
+has 'configurable_dialog_title' =>
+   is      => 'ro',
+   isa     => Str,
+   default => 'Preferences';
 
 =item configurable_params
 
@@ -77,9 +81,14 @@ C<config> (if present) or the options persisted in the database
 
 =cut
 
-has 'configurable_params' => is => 'lazy', isa => HashRef, default => sub {
-   my $self = shift; return $self->param_value('config') || $self->_preference;
-};
+has 'configurable_params' =>
+   is      => 'lazy',
+   isa     => HashRef,
+   default => sub {
+      my $self = shift;
+
+      return $self->param_value('config') || $self->_preference;
+   };
 
 =back
 

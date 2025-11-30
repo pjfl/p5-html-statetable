@@ -250,7 +250,7 @@ column name
 has 'chartable_title_text' => is => 'lazy', isa => Str, default => sub {
    my $self = shift;
 
-   return ucfirst $self->name . 's by ' . $self->chartable_columns->[0];
+   return ucfirst $self->name . ' by ' . $self->chartable_columns->[0];
 };
 
 =item chartable_xaxis_title
