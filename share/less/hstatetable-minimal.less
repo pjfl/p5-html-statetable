@@ -2,18 +2,14 @@
 @lower-break: 480px;
 @upper-break: 680px;
 /* Colours */
-@active-column: bisque;
 @alert-bg: lightpink;
-@button-bg: bisque;
-@button-bg-disabled: gainsboro;
-@button-bg-lighter: whitesmoke;
+@button-bg-disabled: linear-gradient(0deg, gainsboro, whitesmoke);
+@button-bg-highlight: radial-gradient(limegreen, transparent, transparent);
 @button-border: gainsboro;
-@button-border-hover: limegreen;
 @button-text: seagreen;
 @button-text-hover: black;
 @checkbox-bg-false: firebrick;
 @checkbox-bg-true: seagreen;
-@grab-handle-hover: bisque;
 @line-border: gray;
 @message-bg: khaki;
 @panel-bg: ivory;
@@ -22,8 +18,6 @@
 @row-bg-highlight: lightpink;
 @row-bg-inactive: gainsboro;
 @row-bg-odd: linen;
-@search-bg-display: bisque;
-@tag-bg: bisque;
 @text: black;
 @text-close: firebrick;
 @text-control: gray;
@@ -48,28 +42,67 @@
 @tag-font-size: 0.8rem;
 @title-font-size: 1rem;
 #fonts() {
-    code: 'Cascadia Code', 'Menlo', 'DejaVu Sans Mono', ui-monospace, monospace;
     cursive: 'Segoe Print', 'Bradley Hand', 'Chilanka', casual, cursive;
-    data: 'DejaVu Serif', 'Sitka Small', serif;
-    mono: 'Nimbus Mono PS', 'Courier New', monospace;
-    system: 'Segoe UI', 'Roboto', 'Helvetica', system-ui, sans-serif;
-}
-#grads() {
-    button-bg: linear-gradient(0deg, @button-bg, @button-bg-lighter);
-    button-bg-border: radial-gradient(
-        @button-border-hover, transparent, transparent
-    );
-    button-bg-disabled: linear-gradient(
-        0deg, @button-bg-disabled, @button-bg-lighter
-    );
-    search-display: linear-gradient(
-        0deg, @search-bg-display, @button-bg-lighter
-    );
+    mono: 'Cascadia Code', 'Menlo', 'DejaVu Sans Mono', ui-monospace, monospace;
+    sans: 'Segoe UI', 'Roboto', 'Helvetica', system-ui, sans-serif;
+    serif: 'DejaVu Serif', 'Sitka Small', serif;
 }
 body {
     counter-reset: section;
 }
 .state-table {
+    &.object-view {
+        table {
+            border-collapse: collapse; margin: 0.25rem 0 0.5rem;
+            position: relative;
+        }
+        tr {
+            line-height: 1.5rem;
+            &.even {
+                background: @row-bg-even;
+            }
+            &.odd {
+                background: @row-bg-odd;
+            }
+        }
+        td {
+            font-family: #fonts[serif]; font-size: @data-font-size;
+            font-weight: @data-font-weight; padding: 0 0.5rem;
+            &:first-child {
+                border-right: 1px solid @line-border;
+                font-family: #fonts[sans]; font-size: @system-font-size;
+                font-weight: normal; white-space: nowrap;
+                @media (max-width: @upper-break) {
+                    border: 0;
+                }
+            }
+            &.boolean {
+                text-align: left;
+            }
+        }
+        .caption {
+            margin-left: 0.5rem;
+        }
+        .credit-control {
+            flex-direction: row; justify-content: flex-start;
+            padding-bottom: 0.5rem; position: relative;
+            .table-button.right {
+                position: absolute; right: 0;
+            }
+        }
+        .state-table th:first-child a {
+            color: @text;
+        }
+        .state-table td:first-child {
+            border: 0; font-family: #fonts[serif]; font-size: @data-font-size;
+            font-weight: @data-font-weight;
+        }
+        @media (max-width: @upper-break) {
+            table td::before {
+                display: none;
+            }
+        }
+    }
     caption {
         display: none;
     }
@@ -97,42 +130,32 @@ body {
         }
         th {
             background: @panel-bg; border-right: 1px solid @line-border;
-            font-family: #fonts[system]; font-size: @header-font-size;
+            font-family: #fonts[sans]; font-size: @header-font-size;
             font-weight: @header-font-weight; position: relative;
             text-align: left; white-space: nowrap;
+            &:has(a.filter-control) .column-header {
+                padding-right: 20px;
+            }
             a {
                 color: @text; cursor: pointer;
-            }
-            a:hover {
-                font-style: oblique;
-            }
-            a.filter-control {
-                color: @text-control; opacity: 50%;
-                position: absolute; right: 0;
+                &:hover {
+                    font-style: oblique;
+                }
+                &.filter-control {
+                    color: @text-control; opacity: 50%;
+                    position: absolute; right: 0;
+                }
             }
             .active-sort-column {
-                background: @active-column;
+                background: var(--base-colour);
             }
             .column-header {
                 display: inline-block;
             }
-            &:has(a.filter-control) .column-header {
-                padding-right: 20px;
-            }
         }
         td {
-            border-right: 1px solid transparent; font-family: #fonts[data];
+            border-right: 1px solid transparent; font-family: #fonts[serif];
             font-size: @data-font-size; font-weight: @data-font-weight;
-            svg.icon {
-                height: 20px; width: 20px; vertical-align: text-bottom;
-            }
-            a[href^='http'] {
-                color: @button-text; font-weight: @link-font-weight;
-                text-decoration: none;
-            }
-            a:active, a:focus, a:hover {
-                font-style: oblique;
-            }
             &.boolean, &.checkbox, &:has(svg.icon) {
                 text-align: center;
             }
@@ -145,6 +168,16 @@ body {
             &.remainder {
                 word-wrap: anywhere;
             }
+            a[href^='http'] {
+                color: @button-text; font-weight: @link-font-weight;
+                text-decoration: none;
+            }
+            a:active, a:focus, a:hover {
+                font-style: oblique;
+            }
+            svg.icon {
+                height: 20px; width: 20px; vertical-align: text-bottom;
+            }
         }
     }
     table.preference-columns {
@@ -152,7 +185,7 @@ body {
         user-select: none;
         th {
             background: @panel-bg; border-right: 1px solid @line-border;
-            color: @text; font-family: #fonts[system];
+            color: @text; font-family: #fonts[sans];
             font-size: @header-font-size; font-weight: normal;
             padding: 0 0.5rem; position: relative; text-align: left;
             white-space: nowrap;
@@ -177,7 +210,7 @@ body {
     }
     .active-control-label {
         color: @text-control; cursor: pointer;
-        font-family: #fonts[system]; font-size: @system-font-size;
+        font-family: #fonts[sans]; font-size: @system-font-size;
         position: relative;
         input[type=checkbox] {
             margin: 0 0.25rem; position: relative; top: 2px;
@@ -199,7 +232,7 @@ body {
         }
     }
     .caption {
-        font-family: #fonts[system]; font-weight: normal; margin: 0;
+        font-family: #fonts[sans]; font-weight: normal; margin: 0;
         text-transform: uppercase; white-space: nowrap;
     }
     .credit-control, .title-control {
@@ -223,7 +256,7 @@ body {
         .tag-arrow-left {
             border-top: 8px solid transparent;
             border-bottom: 8px solid transparent; border-right: 8px solid;
-            border-right-color: @tag-bg; height: 0; width: 0;
+            border-right-color: var(--base-colour); height: 0; width: 0;
             &::after {
                 content: '.'; display: inline-block; font-size: larger;
                 position: absolute; transform: translate(0.25rem, -100%);
@@ -232,15 +265,15 @@ body {
         .tag-arrow-right {
             border-top: 12px solid transparent;
             border-bottom: 12px solid transparent; border-left: 12px solid;
-            border-left-color: @tag-bg; height: 0; width: 0;
+            border-left-color: var(--base-colour); height: 0; width: 0;
             &::before {
                 content: '.'; display: inline-block; font-size: larger;
                 position: absolute; transform: translate(-0.75rem, -100%);
             }
         }
         .tag-value {
-            background: @tag-bg; border-radius: 0 3px 3px 0;
-            color: @button-text; cursor: pointer; font-family: #fonts[data];
+            background: var(--base-colour); border-radius: 0 3px 3px 0;
+            color: @button-text; cursor: pointer; font-family: #fonts[serif];
             font-size: @tag-font-size; font-weight: @link-font-weight;
             padding: 2px 0.25rem;
             &.breadcrumbs {
@@ -261,18 +294,18 @@ body {
         }
     }
     .dialog-close {
-        background: #grads[button-bg]; border-radius: 3px;
+        background: var(--button-bg); border-radius: 3px;
         box-shadow: 2px 2px 2px @panel-shadow; color: @text-close;
-        cursor: pointer; font-family: #fonts[system];
+        cursor: pointer; font-family: #fonts[sans];
         font-size: @system-font-size; font-weight: bold;
-        .icon-wrapper {
-            align-items: center; display: flex; padding: 0.125rem;
+        &:hover {
+            box-shadow: inset 0 0 3px @panel-shadow; color: @text;
         }
         img, object {
             height: 16px; width: 16px; vertical-align: middle;
         }
-        &:hover {
-            box-shadow: inset 0 0 3px @panel-shadow; color: @text;
+        .icon-wrapper {
+            align-items: center; display: flex; padding: 0.125rem;
         }
     }
     .dialog-form {
@@ -284,7 +317,7 @@ body {
             min-width: 6rem;
         }
         td:first-child {
-            font-family: #fonts[system]; font-size: @system-font-size;
+            font-family: #fonts[sans]; font-size: @system-font-size;
             font-weight: normal;
         }
         table td:first-child {
@@ -296,30 +329,32 @@ body {
         .checkbox {
             isolation: isolate; padding-top: 0.25rem; position: relative;
             text-align: left;
+            &::before {
+                background: @checkbox-bg-false;
+                border: 2px inset @button-border; border-radius: 10px;
+                content: ''; display: block; position: absolute;
+                height: @checkbox-height; left: 0.5rem; width: @checkbox-width;
+                z-index: 1;
+            }
+            &::after {
+                background: var(--button-bg);
+                border: 2px inset @button-border; border-radius: 10px;
+                content: ''; display: block; position: absolute;
+                height: @checkbox-height; left: 0.5rem; top: 0.25rem;
+                width: @checkbox-knob-width; z-index: 2;
+            }
+            &:has(input[type=checkbox]:checked) {
+                &::before {
+                    background: @checkbox-bg-true;
+                }
+                &::after {
+                    left: @checkbox-knob-width + 8px;
+                }
+            }
             input[type=checkbox] {
                 height: @checkbox-height; left: 0; margin: 0; opacity: 0;
                 position: relative; width: @checkbox-width; z-index: 3;
             }
-        }
-        .checkbox::after {
-            background: #grads[button-bg];
-            border: 2px inset @button-border; border-radius: 10px;
-            content: ''; display: block; position: absolute;
-            height: @checkbox-height; left: 0.5rem; top: 0.25rem;
-            width: @checkbox-knob-width; z-index: 2;
-        }
-        .checkbox:has(input[type=checkbox]:checked)::after {
-            left: @checkbox-knob-width + 8px;
-        }
-        .checkbox::before {
-            background: @checkbox-bg-false;
-            border: 2px inset @button-border; border-radius: 10px;
-            content: ''; display: block; position: absolute;
-            height: @checkbox-height; left: 0.5rem; width: @checkbox-width;
-            z-index: 1;
-        }
-        .checkbox:has(input[type=checkbox]:checked)::before {
-            background: @checkbox-bg-true;
         }
     }
     .dialog-input {
@@ -332,23 +367,23 @@ body {
             margin: 0 0.25rem 0 0; position: relative; top: 2px;
         }
         select {
-            background: #grads[button-bg]; border-radius: 5px;
-            font-family: #fonts[data]; font-size: @dialog-font-size;
+            background: var(--button-bg); border-radius: 5px;
+            font-family: #fonts[serif]; font-size: @dialog-font-size;
             font-weight: @data-font-weight;
             option {
-                font-family: #fonts[system]; font-size: @system-font-size;
+                font-family: #fonts[sans]; font-size: @system-font-size;
             }
         }
     }
     .dialog-input > span, .dialog-input label {
-        color: @text; font-family: #fonts[system]; font-size: @system-font-size;
+        color: @text; font-family: #fonts[sans]; font-size: @system-font-size;
         line-height: 1rem;
     }
     .dialog-title {
         align-items: center; background: @title-bg;
         border-bottom: 1px solid @title-border;
         border-top-left-radius: 5px; border-top-right-radius: 5px;
-        color: @text; display: flex; font-family: #fonts[system];
+        color: @text; display: flex; font-family: #fonts[sans];
         font-size: @title-font-size; justify-content: space-between;
         min-width: @dialog-title-min-width;
         padding: 0.25rem 0.5rem 0.25rem 1rem;
@@ -366,11 +401,11 @@ body {
     }
     .filter-label {
         display: inline-block; padding-right: 0.25rem;
-        img, svg {
-            height: 1rem; width: 1rem; vertical-align: text-bottom;
-        }
         &.text {
             padding-left: 0.25rem;
+        }
+        img, svg {
+            height: 1rem; width: 1rem; vertical-align: text-bottom;
         }
     }
     .filter-value {
@@ -380,7 +415,7 @@ body {
         }
     }
     .filter-values {
-        font-family: #fonts[data]; font-size: @data-font-size;
+        font-family: #fonts[serif]; font-size: @data-font-size;
         font-weight: @link-font-weight; height: 6.5rem;
         list-style: none; margin: 0.25rem 0; overflow: auto;
         padding: 0 0.5rem; text-align: left;
@@ -394,7 +429,7 @@ body {
     .grab-handle-cell {
         cursor: grab; padding-top: 0.25rem;
         &:hover {
-            background: @grab-handle-hover;
+            background: var(--base-colour);
         }
     }
     .highcharts-figure {
@@ -407,7 +442,7 @@ body {
         font-size: 1rem !important; text-transform: uppercase;
     }
     .page-control, .page-size-control {
-        color: @text-control; font-family: #fonts[system];
+        color: @text-control; font-family: #fonts[sans];
         font-size: @system-font-size; margin: 0; padding-left: 0;
     }
     .page-control, .page-control li, .page-size-control, .page-size-control li {
@@ -449,7 +484,7 @@ body {
             align-items: stretch; display: flex; height: 1.75rem;
             &:hover {
                 .search-display {
-                    background: #grads[search-display];
+                    background: var(--button-bg);
                 }
                 .search-field {
                     max-width: 20rem; padding: 0 0.25rem;
@@ -457,13 +492,13 @@ body {
             }
             &:has(.search-field:focus) .search-display,
             &:has(.search-field:not(:placeholder-shown)) .search-display {
-                background: #grads[search-display];
+                background: var(--button-bg);
             }
             .search-field {
                 color: inherit; border: none; border-radius: 0 2px 2px 0;
                 border-bottom: 2px inset @button-border;
                 border-top: 2px inset @button-border;
-                font-family: #fonts[data]; font-size: @search-font-size;
+                font-family: #fonts[serif]; font-size: @search-font-size;
                 height: 1.75rem; line-height: 1rem; margin: 0; max-width: 0;
                 outline: 0; padding: 0; transition: max-width 0.5s;
                 &:placeholder-shown {
@@ -487,10 +522,10 @@ body {
                     right: 4px; top: 9px; width: 0;
                 }
                 .search-display {
-                    background: #grads[button-bg-disabled];
+                    background: @button-bg-disabled;
                     border: 2px outset @button-border;
                     border-radius: 50px 0 0 50px; color: @text-control;
-                    display: inline-block; font-family: #fonts[system];
+                    display: inline-block; font-family: #fonts[sans];
                     font-size: @system-font-size;
                     padding: 0.15rem 1rem 0.15rem 0.5rem; vertical-align: top;
                 }
@@ -514,7 +549,7 @@ body {
         display: none;
     }
     .section-row {
-        background: @row-bg-inactive; font-family: #fonts[system];
+        background: @row-bg-inactive; font-family: #fonts[sans];
         font-size: @system-font-size;
         .section-check {
             text-align: center;
@@ -539,16 +574,16 @@ body {
     }
     .status-messages {
         background: @message-bg; border-radius: 5px;
-        color: @text; font-family: #fonts[system]; font-size: @system-font-size;
+        color: @text; font-family: #fonts[sans]; font-size: @system-font-size;
         margin-top: 0.25rem; padding: 0.25rem 0.5rem; text-align: center;
         a {
             color: @button-text; cursor: pointer; margin-left: 0.5rem;
-        }
-        a:hover {
-            font-style: oblique;
+            &:hover {
+                font-style: oblique;
+            }
         }
         strong {
-            font-family: #fonts[data]; font-size: @data-font-size;
+            font-family: #fonts[serif]; font-size: @data-font-size;
             font-weight: @data-font-weight;
         }
     }
@@ -559,25 +594,17 @@ body {
         }
     }
     .table-form .table-button, .table-form button, .dialog-form button {
-        background: #grads[button-bg];
-        border: 2px outset @button-border; border-radius: 50px;
-        color: @button-text; cursor: pointer; display: inline-block;
-        overflow: hidden; padding: 0.25rem 0.75rem;
+        background: var(--button-bg); border: 2px outset @button-border;
+        border-radius: 50px; color: @button-text; cursor: pointer;
+        display: inline-block; overflow: hidden; padding: 0.25rem 0.75rem;
         position: relative; text-decoration: none;
         transition: border 0.5s, color 0.5s;
-        span {
-            font-family: #fonts[system]; font-size: @button-font-size;
-            font-weight: @button-font-weight; letter-spacing: 0.1rem;
-            position: relative; text-decoration: none;
-            text-transform: uppercase; white-space: nowrap; z-index: 3;
-        }
         &::after {
-            background: #grads[button-bg];
-            border-radius: 50px; content: '';
+            background: var(--button-bg); border-radius: 50px; content: '';
             inset: 3px; position: absolute; z-index: 2;
         }
         &::before {
-            background: #grads[button-bg-border]; content: ''; display: block;
+            background: @button-bg-highlight; content: ''; display: block;
             height: 3rem; left: var(--x); opacity: 0; position: absolute;
             top: var(--y); transform: translate(-50%, -50%);
             transition: opacity 0.5s; width: 3rem; z-index: 1;
@@ -587,6 +614,12 @@ body {
             &::before {
                 opacity: 1;
             }
+        }
+        span {
+            font-family: #fonts[sans]; font-size: @button-font-size;
+            font-weight: @button-font-weight; letter-spacing: 0.1rem;
+            position: relative; text-decoration: none;
+            text-transform: uppercase; white-space: nowrap; z-index: 3;
         }
     }
     .table-form a.table-button {
@@ -604,7 +637,7 @@ body {
     .table-form button[disabled=disabled]::after,
     .dialog-form button[disabled=disabled],
     .dialog-form button[disabled=disabled]::after {
-        background: #grads[button-bg-disabled];
+        background: @button-bg-disabled;
     }
     .table-form .table-button.right {
         position: absolute; right: 0.5rem;
@@ -616,58 +649,6 @@ body {
             max-width: ((@lower-break - 10%) / 2);
         }
     }
-    &.object-view {
-        table {
-            border-collapse: collapse; margin: 0.25rem 0 0.5rem;
-            position: relative;
-        }
-        tr {
-            line-height: 1.5rem;
-            &.even {
-                background: @row-bg-even;
-            }
-            &.odd {
-                background: @row-bg-odd;
-            }
-        }
-        td {
-            font-family: #fonts[data]; font-size: @data-font-size;
-            font-weight: @data-font-weight; padding: 0 0.5rem;
-            &:first-child {
-                border-right: 1px solid @line-border;
-                font-family: #fonts[system]; font-size: @system-font-size;
-                font-weight: normal; padding-right: 0.5rem; white-space: nowrap;
-                @media (max-width: @upper-break) {
-                    border: 0;
-                }
-            }
-            &.boolean {
-                text-align: left;
-            }
-        }
-        .caption {
-            margin-left: 0.5rem;
-        }
-        .credit-control {
-            flex-direction: row; justify-content: flex-start;
-            padding-bottom: 0.5rem; position: relative;
-            .table-button.right {
-                position: absolute; right: 0;
-            }
-        }
-        .state-table th:first-child a {
-            color: @text;
-        }
-        .state-table td:first-child {
-            border: 0; font-family: #fonts[data]; font-size: @data-font-size;
-            font-weight: @data-font-weight;
-        }
-        @media (max-width: @upper-break) {
-            table td::before {
-                display: none;
-            }
-        }
-    }
     @media (max-width: @upper-break) {
         table {
             th, td.no-data::before {
@@ -677,7 +658,7 @@ body {
                 display: grid; grid-template-columns: 15ch auto;
                 &::before {
                     color: @text-control; content: attr(data-cell) ': ';
-                    font-family: #fonts[system]; font-size: @system-font-size;
+                    font-family: #fonts[sans]; font-size: @system-font-size;
                     text-transform: capitalize;
                 }
             }

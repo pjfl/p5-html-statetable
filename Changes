@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - CSS done for now
           - Refactored more CSS
           - More CSS refactoring
           - CSS colour refactoring
