@@ -625,7 +625,7 @@ WCom.Table.Role.Configurable = (function() {
          const dialog = this.h.div({ className: 'preference-dialog' }, [
             this.h.div({
                className: 'dialog-title',
-               onclick: this.control.dialogHandler
+               onclick: this.control.dialogHandler,
             }, [
                this.h.span({
                   className: 'dialog-title-text'
@@ -635,10 +635,33 @@ WCom.Table.Role.Configurable = (function() {
             this.form.render(this.getState())
          ]);
          const location = this.control.controlLocation;
-         if (location.match(/Right/)) dialog.classList.add('control-right');
          const container = location.match(/Top/)
                ? this.table.topControl : this.table.bottomControl;
          this.dialog = this.addReplace(container, 'dialog', dialog);
+         const windowHeight = document.documentElement.clientHeight;
+         const windowWidth = document.documentElement.clientWidth;
+         const tableLeft = this.h.getOffset(this.table.table).left;
+         const tableRight = this.h.getOffset(this.table.table).right;
+         let { top, right, left } = this.h.getOffset(this.control.control);
+         const { height, width } = this.h.getDimensions(this.dialog);
+         if (left - tableLeft < ((tableRight - tableLeft) / 2)) {
+            left = left - tableLeft + 32;
+            this.dialog.style.left = `${left}px`;
+         }
+         else {
+            right = tableRight - right + 32;
+            this.dialog.style.right = `${right}px`;
+         }
+         if (top + height > windowHeight) {
+            if (height > windowHeight - this.control.navHeight) {
+               top -= (this.control.navHeight + this.control.navPadding);
+               this.dialog.style.top = `-${top}px`;
+            }
+            else {
+               const bottom = windowHeight - top - this.control.lineHeight;
+               this.dialog.style.bottom = `-${bottom}px`;
+            }
+         }
       }
       _createCloseIcon() {
          const icons = this.table.icons;
@@ -657,6 +680,9 @@ WCom.Table.Role.Configurable = (function() {
          this.dialogTitle = config['dialog-title'] || '';
          this.location = config['location'];
          this.controlLocation = this.location['control'];
+         this.lineHeight = config['line-height'] || 28;
+         this.navHeight = config['nav-height'] || 48;
+         this.navPadding = config['nav-padding'] || 8;
          this.rs = table.resultset;
          this.table = table;
          this.url = new URL(config['url']);

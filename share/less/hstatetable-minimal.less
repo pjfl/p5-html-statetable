@@ -1,38 +1,42 @@
 /* Breaks */
 @lower-break: 480px;
 @upper-break: 680px;
+
 /* Colours */
-@alert-bg: lightpink;
-@button-bg-disabled: linear-gradient(0deg, gainsboro, whitesmoke);
-@button-bg-highlight: radial-gradient(limegreen, transparent, transparent);
 @button-border: gainsboro;
-@button-text: seagreen;
-@button-text-hover: black;
 @checkbox-bg-false: firebrick;
 @checkbox-bg-true: seagreen;
+@exception-bg: lightpink;
 @line-border: gray;
-@message-bg: khaki;
-@panel-bg: ivory;
 @panel-shadow: gray;
-@row-bg-even: ivory;
 @row-bg-highlight: lightpink;
 @row-bg-inactive: gainsboro;
-@row-bg-odd: linen;
-@text: black;
 @text-close: firebrick;
-@text-control: gray;
-@title-bg: linen;
 @title-border: orange;
+
+@text-dark: black;
+@text-disabled: gray;
+@text-link: seagreen;
+@text-watermark: gray;
+
+@text-light: whitesmoke;
+@text-disabled-light: gainsboro;
+@text-link-light: cornsilk;
+@text-watermark-light: ivory;
+
 /* Dimensions */
 @checkbox-height: 1.25rem;
 @checkbox-knob-width: 20px;
 @checkbox-width: 40px;
 @dialog-title-min-width: 6rem;
+@filter-values-height: 8rem;
+
 /* Font Sizes and Weights */
 @button-font-size: 0.7rem;
 @button-font-weight: 410;
 @data-font-size: 0.9rem;
 @data-font-weight: normal;
+@data-font-weight-strong: 410;
 @dialog-font-size: 0.8rem;
 @header-font-size: 0.85rem;
 @header-font-weight: normal;
@@ -41,28 +45,29 @@
 @system-font-size: 0.8rem;
 @tag-font-size: 0.8rem;
 @title-font-size: 1rem;
+
 #fonts() {
     cursive: 'Segoe Print', 'Bradley Hand', 'Chilanka', casual, cursive;
     mono: 'Cascadia Code', 'Menlo', 'DejaVu Sans Mono', ui-monospace, monospace;
     sans: 'Segoe UI', 'Roboto', 'Helvetica', system-ui, sans-serif;
     serif: 'DejaVu Serif', 'Sitka Small', serif;
 }
+
 body {
     counter-reset: section;
 }
 .state-table {
     &.object-view {
-        table {
-            border-collapse: collapse; margin: 0.25rem 0 0.5rem;
-            position: relative;
+        table.object-view {
+            border-collapse: collapse; margin-bottom: 0.5rem;
         }
         tr {
             line-height: 1.5rem;
             &.even {
-                background: @row-bg-even;
+                background: var(--bg-lighter);
             }
             &.odd {
-                background: @row-bg-odd;
+                background: var(--bg-light);
             }
         }
         td {
@@ -85,13 +90,13 @@ body {
         }
         .credit-control {
             flex-direction: row; justify-content: flex-start;
-            padding-bottom: 0.5rem; position: relative;
+            position: relative;
             .table-button.right {
                 position: absolute; right: 0;
             }
         }
         .state-table th:first-child a {
-            color: @text;
+            color: @text-dark;
         }
         .state-table td:first-child {
             border: 0; font-family: #fonts[serif]; font-size: @data-font-size;
@@ -107,13 +112,14 @@ body {
         display: none;
     }
     table:not(.object-view):not(.preference-columns) {
-        border-collapse: collapse; margin: 0.25rem 0 0.5rem; position: relative;
+        border-collapse: collapse; margin: 0.25rem auto 0.5rem;
+        position: relative;
         tr {
             &.even {
-                background: @row-bg-even;
+                background: var(--bg-lighter);
             }
             &.odd {
-                background: @row-bg-odd;
+                background: var(--bg-light);
             }
             &.highlight {
                 background: @row-bg-highlight;
@@ -123,13 +129,13 @@ body {
             }
         }
         th, td {
-            color: @text; padding: 0 0.5rem;
+            color: @text-dark; padding: 0 0.5rem;
             &:last-child {
                 border-right: 0;
             }
         }
         th {
-            background: @panel-bg; border-right: 1px solid @line-border;
+            background: var(--bg-lighter); border-right: 1px solid @line-border;
             font-family: #fonts[sans]; font-size: @header-font-size;
             font-weight: @header-font-weight; position: relative;
             text-align: left; white-space: nowrap;
@@ -137,17 +143,17 @@ body {
                 padding-right: 20px;
             }
             a {
-                color: @text; cursor: pointer;
+                color: @text-dark; cursor: pointer;
                 &:hover {
                     font-style: oblique;
                 }
                 &.filter-control {
-                    color: @text-control; opacity: 50%;
+                    color: @text-watermark; opacity: 50%;
                     position: absolute; right: 0;
                 }
             }
             .active-sort-column {
-                background: var(--base-colour);
+                background: var(--bg-base);
             }
             .column-header {
                 display: inline-block;
@@ -169,7 +175,7 @@ body {
                 word-wrap: anywhere;
             }
             a[href^='http'] {
-                color: @button-text; font-weight: @link-font-weight;
+                color: @text-link; font-weight: @link-font-weight;
                 text-decoration: none;
             }
             a:active, a:focus, a:hover {
@@ -184,14 +190,14 @@ body {
         border: 2px transparent solid; border-collapse: collapse;
         user-select: none;
         th {
-            background: @panel-bg; border-right: 1px solid @line-border;
-            color: @text; font-family: #fonts[sans];
+            background: var(--bg-lighter); border-right: 1px solid @line-border;
+            color: @text-dark; font-family: #fonts[sans];
             font-size: @header-font-size; font-weight: normal;
             padding: 0 0.5rem; position: relative; text-align: left;
             white-space: nowrap;
-        }
-        th:last-child {
-            border-right: 0;
+            &:last-child {
+                border-right: 0;
+            }
         }
         td:first-child, th:first-child {
             padding-left: 0;
@@ -209,9 +215,8 @@ body {
         display: inline;
     }
     .active-control-label {
-        color: @text-control; cursor: pointer;
-        font-family: #fonts[sans]; font-size: @system-font-size;
-        position: relative;
+        color: @text-watermark; cursor: pointer; font-family: #fonts[sans];
+        font-size: @system-font-size; position: relative;
         input[type=checkbox] {
             margin: 0 0.25rem; position: relative; top: 2px;
         }
@@ -256,7 +261,7 @@ body {
         .tag-arrow-left {
             border-top: 8px solid transparent;
             border-bottom: 8px solid transparent; border-right: 8px solid;
-            border-right-color: var(--base-colour); height: 0; width: 0;
+            border-right-color: var(--bg-base); height: 0; width: 0;
             &::after {
                 content: '.'; display: inline-block; font-size: larger;
                 position: absolute; transform: translate(0.25rem, -100%);
@@ -265,15 +270,15 @@ body {
         .tag-arrow-right {
             border-top: 12px solid transparent;
             border-bottom: 12px solid transparent; border-left: 12px solid;
-            border-left-color: var(--base-colour); height: 0; width: 0;
+            border-left-color: var(--bg-base); height: 0; width: 0;
             &::before {
                 content: '.'; display: inline-block; font-size: larger;
                 position: absolute; transform: translate(-0.75rem, -100%);
             }
         }
         .tag-value {
-            background: var(--base-colour); border-radius: 0 3px 3px 0;
-            color: @button-text; cursor: pointer; font-family: #fonts[serif];
+            background: var(--bg-base); border-radius: 0 3px 3px 0;
+            color: @text-link; cursor: pointer; font-family: #fonts[serif];
             font-size: @tag-font-size; font-weight: @link-font-weight;
             padding: 2px 0.25rem;
             &.breadcrumbs {
@@ -284,7 +289,7 @@ body {
         }
     }
     .download-link, .page-control a, .page-control li, .page-size-control a {
-        color: @text-control; cursor: pointer; font-size: @system-font-size;
+        color: @text-watermark; cursor: pointer; font-size: @system-font-size;
     }
     .dialog-buttons {
         padding: 0.25rem 0;
@@ -299,7 +304,7 @@ body {
         cursor: pointer; font-family: #fonts[sans];
         font-size: @system-font-size; font-weight: bold;
         &:hover {
-            box-shadow: inset 0 0 3px @panel-shadow; color: @text;
+            box-shadow: inset 0 0 3px @panel-shadow; color: @text-dark;
         }
         img, object {
             height: 16px; width: 16px; vertical-align: middle;
@@ -312,9 +317,9 @@ body {
         padding: 0.5rem 1rem;
         th {
             min-width: 4rem;
-        }
-        th:first-child {
-            min-width: 6rem;
+            &:first-child {
+                min-width: 6rem;
+            }
         }
         td:first-child {
             font-family: #fonts[sans]; font-size: @system-font-size;
@@ -360,6 +365,10 @@ body {
     .dialog-input {
         align-items: baseline; display: flex; gap: 0.25rem;
         margin-bottom: 0.5rem; padding: 0.25rem 0; position: relative;
+        & > span, & label {
+            color: @text-dark; font-family: #fonts[sans];
+            font-size: @system-font-size; line-height: 1rem;
+        }
         button {
             margin-right: 0.25rem; padding: 3px 0.75rem 5px;
         }
@@ -375,29 +384,25 @@ body {
             }
         }
     }
-    .dialog-input > span, .dialog-input label {
-        color: @text; font-family: #fonts[sans]; font-size: @system-font-size;
-        line-height: 1rem;
-    }
     .dialog-title {
-        align-items: center; background: @title-bg;
+        align-items: center; background: var(--bg-light);
         border-bottom: 1px solid @title-border;
         border-top-left-radius: 5px; border-top-right-radius: 5px;
-        color: @text; display: flex; font-family: #fonts[sans];
+        color: @text-dark; display: flex; font-family: #fonts[sans];
         font-size: @title-font-size; justify-content: space-between;
         min-width: @dialog-title-min-width;
         padding: 0.25rem 0.5rem 0.25rem 1rem;
     }
     .dropzone.dragover {
-        border: 2px solid; border-color: @button-text;
+        border: 2px solid @text-link;
     }
     .filter-dialog, .preference-dialog {
-        background: @panel-bg; border: 1px solid; border-radius: 5px;
+        background: var(--bg-lighter); border: 1px solid; border-radius: 5px;
         box-shadow: 3px 3px 3px @panel-shadow;
         position: absolute; z-index: 10;
     }
     .filter-dialog {
-        top: 25px;
+        top: 1.5rem;
     }
     .filter-label {
         display: inline-block; padding-right: 0.25rem;
@@ -409,16 +414,16 @@ body {
         }
     }
     .filter-value {
-        color: @button-text; cursor: pointer;
+        color: @text-link; cursor: pointer;
         &:hover {
             font-style: italic;
         }
     }
     .filter-values {
         font-family: #fonts[serif]; font-size: @data-font-size;
-        font-weight: @link-font-weight; height: 6.5rem;
-        list-style: none; margin: 0.25rem 0; overflow: auto;
-        padding: 0 0.5rem; text-align: left;
+        font-weight: @link-font-weight; height: @filter-values-height;
+        list-style: none; margin: 0.25rem 0; overflow: auto; padding: 0 1rem;
+        text-align: left;
     }
     .grab-handle {
         align-items: center; display: flex; justify-content: center;
@@ -429,20 +434,20 @@ body {
     .grab-handle-cell {
         cursor: grab; padding-top: 0.25rem;
         &:hover {
-            background: var(--base-colour);
+            background: var(--bg-base);
         }
     }
     .highcharts-figure {
         margin: 0;
-    }
-    .highcharts-legend.highcharts-no-tooltip {
-        display: none;
-    }
-    .highcharts-title {
-        font-size: 1rem !important; text-transform: uppercase;
+        .highcharts-legend.highcharts-no-tooltip {
+            display: none;
+        }
+        .highcharts-title {
+            font-size: 1rem !important; text-transform: uppercase;
+        }
     }
     .page-control, .page-size-control {
-        color: @text-control; font-family: #fonts[sans];
+        color: @text-watermark; font-family: #fonts[sans];
         font-size: @system-font-size; margin: 0; padding-left: 0;
     }
     .page-control, .page-control li, .page-size-control, .page-size-control li {
@@ -459,12 +464,6 @@ body {
     }
     .page-size-control li.selected-page-size {
         text-decoration: underline;
-    }
-    .preference-dialog {
-        top: 2rem;
-        &.control-right {
-            right: 0.5rem;
-        }
     }
     .preference-link {
         cursor: pointer; display: inline-block;
@@ -522,9 +521,9 @@ body {
                     right: 4px; top: 9px; width: 0;
                 }
                 .search-display {
-                    background: @button-bg-disabled;
+                    background: var(--button-bg-disabled);
                     border: 2px outset @button-border;
-                    border-radius: 50px 0 0 50px; color: @text-control;
+                    border-radius: 50px 0 0 50px; color: @text-watermark;
                     display: inline-block; font-family: #fonts[sans];
                     font-size: @system-font-size;
                     padding: 0.15rem 1rem 0.15rem 0.5rem; vertical-align: top;
@@ -553,49 +552,52 @@ body {
         font-size: @system-font-size;
         .section-check {
             text-align: center;
-        }
-        .section-check::before {
-            counter-increment: section; content: counter(section) '. ';
+            &::before {
+                counter-increment: section; content: counter(section) '. ';
+            }
         }
         .section-tag {
             .tag-value {
                 display: block;
-            }
-            .tag-value:hover {
-                cursor: pointer; font-style: italic;
+                &:hover {
+                    cursor: pointer; font-style: italic;
+                }
             }
         }
     }
-    .state-table .table-container {
-        margin-bottom: 0;
-        .credit-control {
-            padding-bottom: 0;
-        }
+    .state-table .table-container table {
+        margin: 0.25rem 0 0.5rem;
     }
     .status-messages {
-        background: @message-bg; border-radius: 5px;
-        color: @text; font-family: #fonts[sans]; font-size: @system-font-size;
-        margin-top: 0.25rem; padding: 0.25rem 0.5rem; text-align: center;
+        background: var(--bg-dark); border-radius: 5px;
+        color: @text-dark; font-family: #fonts[sans];
+        font-size: @system-font-size; margin-top: 0.25rem;
+        padding: 0.25rem 0.5rem; text-align: center;
         a {
-            color: @button-text; cursor: pointer; margin-left: 0.5rem;
+            color: @text-link; cursor: pointer; margin-left: 0.5rem;
             &:hover {
                 font-style: oblique;
             }
         }
         strong {
             font-family: #fonts[serif]; font-size: @data-font-size;
-            font-weight: @data-font-weight;
+            font-weight: @data-font-weight-strong;
         }
     }
-    .table-form .table-button {
-        margin-right: 0.5rem;
-        &:last-child {
-            margin-right: 0;
+    .table-form {
+        .form-wrapper {
+            padding-bottom: 0.75rem;
+        }
+        .table-button {
+            margin-right: 0.5rem;
+            &:last-child {
+                margin-right: 0;
+            }
         }
     }
     .table-form .table-button, .table-form button, .dialog-form button {
         background: var(--button-bg); border: 2px outset @button-border;
-        border-radius: 50px; color: @button-text; cursor: pointer;
+        border-radius: 50px; color: @text-link; cursor: pointer;
         display: inline-block; overflow: hidden; padding: 0.25rem 0.75rem;
         position: relative; text-decoration: none;
         transition: border 0.5s, color 0.5s;
@@ -604,13 +606,13 @@ body {
             inset: 3px; position: absolute; z-index: 2;
         }
         &::before {
-            background: @button-bg-highlight; content: ''; display: block;
+            background: var(--button-bg-highlight); content: ''; display: block;
             height: 3rem; left: var(--x); opacity: 0; position: absolute;
             top: var(--y); transform: translate(-50%, -50%);
             transition: opacity 0.5s; width: 3rem; z-index: 1;
         }
         &:hover {
-            border: 2px inset @button-border; color: @button-text-hover;
+            border: 2px inset @button-border; color: @text-dark;
             &::before {
                 opacity: 1;
             }
@@ -637,7 +639,7 @@ body {
     .table-form button[disabled=disabled]::after,
     .dialog-form button[disabled=disabled],
     .dialog-form button[disabled=disabled]::after {
-        background: @button-bg-disabled;
+        background: var(--button-bg-disabled);
     }
     .table-form .table-button.right {
         position: absolute; right: 0.5rem;
@@ -650,14 +652,14 @@ body {
         }
     }
     @media (max-width: @upper-break) {
-        table {
+        table:not(.preference-columns) {
             th, td.no-data::before {
                 display: none;
             }
             td {
                 display: grid; grid-template-columns: 15ch auto;
                 &::before {
-                    color: @text-control; content: attr(data-cell) ': ';
+                    color: @text-watermark; content: attr(data-cell) ': ';
                     font-family: #fonts[sans]; font-size: @system-font-size;
                     text-transform: capitalize;
                 }
@@ -672,5 +674,5 @@ body {
     }
 }
 .state-table-error {
-    background: @alert-bg; margin: 0 16%;
+    background: @exception-bg; margin: 0 16%;
 }
