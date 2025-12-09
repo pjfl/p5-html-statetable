@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - More CSS
           - Position prefernces dialog with gravity towards page centre
           - CSS done for now
           - Refactored more CSS

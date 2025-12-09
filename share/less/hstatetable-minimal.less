@@ -12,7 +12,7 @@
 @row-bg-highlight: lightpink;
 @row-bg-inactive: gainsboro;
 @text-close: firebrick;
-@title-border: orange;
+@title-border: darkorange;
 
 @text-dark: black;
 @text-disabled: gray;
@@ -49,7 +49,7 @@
 #fonts() {
     cursive: 'Segoe Print', 'Bradley Hand', 'Chilanka', casual, cursive;
     mono: 'Cascadia Code', 'Menlo', 'DejaVu Sans Mono', ui-monospace, monospace;
-    sans: 'Segoe UI', 'Roboto', 'Helvetica', system-ui, sans-serif;
+    sans: 'Roboto', 'Segoe UI', 'Helvetica', system-ui, sans-serif;
     serif: 'DejaVu Serif', 'Sitka Small', serif;
 }
 
@@ -91,8 +91,13 @@ body {
         .credit-control {
             flex-direction: row; justify-content: flex-start;
             position: relative;
-            .table-button.right {
-                position: absolute; right: 0;
+            .table-button {
+                &:last-child {
+                    margin-right: 0;
+                }
+                &.right {
+                    right: 0;
+                }
             }
         }
         .state-table th:first-child a {
@@ -115,6 +120,7 @@ body {
         border-collapse: collapse; margin: 0.25rem auto 0.5rem;
         position: relative;
         tr {
+            line-height: 1.5rem;
             &.even {
                 background: var(--bg-lighter);
             }
@@ -216,7 +222,7 @@ body {
     }
     .active-control-label {
         color: @text-watermark; cursor: pointer; font-family: #fonts[sans];
-        font-size: @system-font-size; position: relative;
+        font-size: @system-font-size; line-height: 1.5rem; position: relative;
         input[type=checkbox] {
             margin: 0 0.25rem; position: relative; top: 2px;
         }
@@ -237,8 +243,8 @@ body {
         }
     }
     .caption {
-        font-family: #fonts[sans]; font-weight: normal; margin: 0;
-        text-transform: uppercase; white-space: nowrap;
+        font-family: #fonts[sans]; font-weight: normal; line-height: 1.5rem;
+        margin: 0; text-transform: uppercase; white-space: nowrap;
     }
     .credit-control, .title-control {
         display: flex; flex-direction: column;
@@ -280,10 +286,10 @@ body {
             background: var(--bg-base); border-radius: 0 3px 3px 0;
             color: @text-link; cursor: pointer; font-family: #fonts[serif];
             font-size: @tag-font-size; font-weight: @link-font-weight;
-            padding: 2px 0.25rem;
+            padding: 0.1875rem 0.25rem;
             &.breadcrumbs {
                 border-radius: 3px 0 0 3px; font-size: medium;
-                padding-bottom: 0.45rem; padding-top: 0.3rem;
+                padding: 0.25rem;
                 text-decoration: none;
             }
         }
@@ -369,9 +375,6 @@ body {
             color: @text-dark; font-family: #fonts[sans];
             font-size: @system-font-size; line-height: 1rem;
         }
-        button {
-            margin-right: 0.25rem; padding: 3px 0.75rem 5px;
-        }
         input[type=checkbox] {
             margin: 0 0.25rem 0 0; position: relative; top: 2px;
         }
@@ -385,13 +388,15 @@ body {
         }
     }
     .dialog-title {
-        align-items: center; background: var(--bg-light);
-        border-bottom: 1px solid @title-border;
+        background: var(--bg-light); border-bottom: 1px solid @title-border;
         border-top-left-radius: 5px; border-top-right-radius: 5px;
         color: @text-dark; display: flex; font-family: #fonts[sans];
         font-size: @title-font-size; justify-content: space-between;
         min-width: @dialog-title-min-width;
         padding: 0.25rem 0.5rem 0.25rem 1rem;
+        .dialog-title-text {
+            line-height: 1.5rem;
+        }
     }
     .dropzone.dragover {
         border: 2px solid @text-link;
@@ -448,7 +453,8 @@ body {
     }
     .page-control, .page-size-control {
         color: @text-watermark; font-family: #fonts[sans];
-        font-size: @system-font-size; margin: 0; padding-left: 0;
+        font-size: @system-font-size; line-height: 1.5rem;
+        margin: 0; padding-left: 0;
     }
     .page-control, .page-control li, .page-size-control, .page-size-control li {
         display: inline-block;
@@ -498,7 +504,7 @@ body {
                 border-bottom: 2px inset @button-border;
                 border-top: 2px inset @button-border;
                 font-family: #fonts[serif]; font-size: @search-font-size;
-                height: 1.75rem; line-height: 1rem; margin: 0; max-width: 0;
+                height: 1.75rem; margin: 0; max-width: 0;
                 outline: 0; padding: 0; transition: max-width 0.5s;
                 &:placeholder-shown {
                     font-style: italic;
@@ -525,8 +531,8 @@ body {
                     border: 2px outset @button-border;
                     border-radius: 50px 0 0 50px; color: @text-watermark;
                     display: inline-block; font-family: #fonts[sans];
-                    font-size: @system-font-size;
-                    padding: 0.15rem 1rem 0.15rem 0.5rem; vertical-align: top;
+                    font-size: @system-font-size; line-height: 1.375rem;
+                    padding: 0.125rem 1rem 0 0.5rem;
                 }
             }
             .search-button {
@@ -584,23 +590,14 @@ body {
             font-weight: @data-font-weight-strong;
         }
     }
-    .table-form {
-        .form-wrapper {
-            padding-bottom: 0.75rem;
-        }
-        .table-button {
-            margin-right: 0.5rem;
-            &:last-child {
-                margin-right: 0;
-            }
-        }
+    .table-form .form-wrapper {
+        padding-bottom: 0.75rem;
     }
     .table-form .table-button, .table-form button, .dialog-form button {
         background: var(--button-bg); border: 2px outset @button-border;
         border-radius: 50px; color: @text-link; cursor: pointer;
-        display: inline-block; overflow: hidden; padding: 0.25rem 0.75rem;
-        position: relative; text-decoration: none;
-        transition: border 0.5s, color 0.5s;
+        display: inline-block; overflow: hidden; position: relative;
+        text-decoration: none; transition: border 0.5s, color 0.5s;
         &::after {
             background: var(--button-bg); border-radius: 50px; content: '';
             inset: 3px; position: absolute; z-index: 2;
@@ -624,14 +621,19 @@ body {
             text-transform: uppercase; white-space: nowrap; z-index: 3;
         }
     }
-    .table-form a.table-button {
-        line-height: 0.875rem;
-        &[disabled=disabled] {
-            padding: 0.25rem 0.75rem;
-        }
+    .table-form button, .dialog-form button {
+        margin-right: 0.5rem; padding: 0.25rem 0.75rem;
     }
-    .table-form button.table-button {
-        padding: 0.25rem 0.75rem;
+    .table-form a.table-button {
+        margin-right: 0.5rem; padding: 0.125rem 0.75rem 0.1875rem;
+    }
+    .table-form .table-button {
+        &.right {
+            position: absolute; right: 0.5rem;
+        }
+        &:last-child {
+            margin-right: 0;
+        }
     }
     .table-form .table-button[disabled=disabled],
     .table-form .table-button[disabled=disabled]::after,
@@ -641,12 +643,9 @@ body {
     .dialog-form button[disabled=disabled]::after {
         background: var(--button-bg-disabled);
     }
-    .table-form .table-button.right {
-        position: absolute; right: 0.5rem;
-    }
     .top-left-control, .top-right-control {
-        align-items: center; display: inline-flex; justify-content: flex-start;
-        margin-top: 0.25rem;
+        align-items: baseline; display: inline-flex;
+        justify-content: flex-start; margin-top: 0.25rem;
         @media (max-width: @lower-break) {
             max-width: ((@lower-break - 10%) / 2);
         }
