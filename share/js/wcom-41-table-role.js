@@ -1333,6 +1333,7 @@ WCom.Table.Role.PageSize = (function() {
          this.location = config['location'];
          this.rs = table.resultset;
          this.table = table;
+         if (!this.location['control'].length) return;
          this.table.setControlState(this.location['control']);
          const messages = 'render' + this.location['control'] + 'Control';
          methods[messages] = function(orig) {

@@ -148,6 +148,9 @@ body {
             &:has(a.filter-control) .column-header {
                 padding-right: 20px;
             }
+            &.active-sort-column {
+                background: var(--bg-base);
+            }
             a {
                 color: @text-dark; cursor: pointer;
                 &:hover {
@@ -157,9 +160,6 @@ body {
                     color: @text-watermark; opacity: 50%;
                     position: absolute; right: 0;
                 }
-            }
-            .active-sort-column {
-                background: var(--bg-base);
             }
             .column-header {
                 display: inline-block;
@@ -453,7 +453,7 @@ body {
     }
     .page-control, .page-size-control {
         color: @text-watermark; font-family: #fonts[sans];
-        font-size: @system-font-size; line-height: 1.5rem;
+        font-size: @system-font-size; line-height: 1.875rem;
         margin: 0; padding-left: 0;
     }
     .page-control, .page-control li, .page-size-control, .page-size-control li {
