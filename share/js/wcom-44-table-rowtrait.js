@@ -1,4 +1,9 @@
-// Package WCom.Table.RowTrait.Active
+/** -*- coding: utf-8; -*-
+    @file HTML StateTable - Row Traits
+    @classdesc Traits applied to the row object
+    @author pjfl@cpan.org (Peter Flanigan)
+    @version 0.2.25
+*/
 WCom.Table.RowTrait.Active = (function() {
    return {
       around: {
@@ -12,7 +17,6 @@ WCom.Table.RowTrait.Active = (function() {
       }
    };
 })();
-// Package WCom.Table.RowTrait.HighlightRow
 WCom.Table.RowTrait.HighlightRow = (function() {
    return {
       around: {

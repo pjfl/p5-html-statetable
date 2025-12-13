@@ -1,4 +1,9 @@
-// Package WCom.Table.Role.Active
+/** -*- coding: utf-8; -*-
+    @file HTML StateTable - Table Roles
+    @classdesc Roles applied to the table object
+    @author pjfl@cpan.org (Peter Flanigan)
+    @version 0.2.25
+*/
 WCom.Table.Role.Active = (function() {
    class Active {
       constructor(table, methods) {

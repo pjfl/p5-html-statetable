@@ -1,5 +1,9 @@
-// -*- coding: utf-8; -*-
-// Package WCom.Table.Renderer
+/** -*- coding: utf-8; -*-
+    @file HTML StateTable - Renderer
+    @classdesc Render tables
+    @author pjfl@cpan.org (Peter Flanigan)
+    @version 0.2.25
+*/
 if (!WCom.Table) WCom.Table = {};
 if (!WCom.Table.CellTrait) WCom.Table.CellTrait = {};
 if (!WCom.Table.ColumnTrait) WCom.Table.ColumnTrait = {};

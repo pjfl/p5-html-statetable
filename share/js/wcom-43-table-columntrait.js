@@ -1,4 +1,9 @@
-// -*- coding: utf-8; -*-
+/** -*- coding: utf-8; -*-
+    @file HTML StateTable - Column Traits
+    @classdesc Traits applied to the column object
+    @author pjfl@cpan.org (Peter Flanigan)
+    @version 0.2.25
+*/
 WCom.Table.ColumnTrait.CheckAll = (function() {
    class CheckAll {
       constructor(column, methods) {

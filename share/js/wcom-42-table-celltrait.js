@@ -1,5 +1,9 @@
-// -*- coding: utf-8; -*-
-// Package WCom.Table.CellTrait.Bool
+/** -*- coding: utf-8; -*-
+    @file HTML StateTable - Cell Traits
+    @classdesc Traits applied to the cell object
+    @author pjfl@cpan.org (Peter Flanigan)
+    @version 0.2.25
+*/
 WCom.Table.CellTrait.Bool = (function() {
    let bool_colours = ['firebrick', 'seagreen'];
    let bool_false = '✗';

@@ -1,4 +1,6 @@
-/* Breaks */
+/* @author  pjfl@cpan.org (Peter Flanigan)
+ * @version 0.2.25
+ * Breaks */
 @lower-break: 480px;
 @upper-break: 680px;
 
@@ -77,9 +79,6 @@ body {
                 border-right: 1px solid @line-border;
                 font-family: #fonts[sans]; font-size: @system-font-size;
                 font-weight: normal; white-space: nowrap;
-                @media (max-width: @upper-break) {
-                    border: 0;
-                }
             }
             &.boolean {
                 text-align: left;
@@ -223,6 +222,7 @@ body {
     .active-control-label {
         color: @text-watermark; cursor: pointer; font-family: #fonts[sans];
         font-size: @system-font-size; line-height: 1.5rem; position: relative;
+        white-space: nowrap;
         input[type=checkbox] {
             margin: 0 0.25rem; position: relative; top: 2px;
         }
@@ -651,7 +651,7 @@ body {
         }
     }
     @media (max-width: @upper-break) {
-        table:not(.preference-columns) {
+        table:not(.object-view, .preference-columns) {
             th, td.no-data::before {
                 display: none;
             }
