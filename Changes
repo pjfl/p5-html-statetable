@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Removes use of innerHTML
           - Added version numbers to LESS and JS
           - Fixes non display of page size control
           - More CSS

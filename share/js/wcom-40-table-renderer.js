@@ -2,7 +2,7 @@
     @file HTML StateTable - Renderer
     @classdesc Render tables
     @author pjfl@cpan.org (Peter Flanigan)
-    @version 0.2.25
+    @version 0.2.27
 */
 if (!WCom.Table) WCom.Table = {};
 if (!WCom.Table.CellTrait) WCom.Table.CellTrait = {};
@@ -12,6 +12,7 @@ if (!WCom.Table.Role) WCom.Table.Role = {};
 WCom.Table.Renderer = (function() {
    const dsName       = 'tableConfig';
    const triggerClass = 'state-table';
+   const PageManager  = WCom.Navigation.manager;
    const CellTraits   = WCom.Table.CellTrait;
    const ColumnTraits = WCom.Table.ColumnTrait;
    const RowTraits    = WCom.Table.RowTrait;
@@ -32,8 +33,7 @@ WCom.Table.Renderer = (function() {
          const { append, link, value } = this.getValue(attr);
          let cell;
          if (this.isHTML(value)) {
-            cell = this.h.td(attr);
-            cell.innerHTML = value;
+            cell = this.h.td(attr, this.h.frag(value));
             if (this.isHTMLOfClass(value, triggerClass))
                WCom.Table.Renderer.manager.scan(cell);
          }
@@ -240,7 +240,7 @@ WCom.Table.Renderer = (function() {
          this.header        = this.h.thead();
          this.icons         = this.properties['icons'];
          this.modal         = {};
-         this.pageManager   = eval(this.properties['page-manager'] || '');
+         this.pageManager   = this._getPageManager(this.properties);
          this.renderStyle   = this.properties['render-style'];
          this.rows          = [];
          this.rowCount      = 0;
@@ -459,6 +459,10 @@ WCom.Table.Renderer = (function() {
       setControlState(control) {
          if (control.match(/Bottom/)) this.bottomContent = true;
          if (control.match(/Top/)) this.topContent = true;
+      }
+      _getPageManager(properties) {
+         const manager = this.objectLookup(properties['page-manager']);
+         return manager ? manager : PageManager;
       }
    };
    Object.assign(Table.prototype, Utils.Markup);

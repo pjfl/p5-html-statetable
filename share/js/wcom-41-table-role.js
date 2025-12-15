@@ -2,7 +2,7 @@
     @file HTML StateTable - Table Roles
     @classdesc Roles applied to the table object
     @author pjfl@cpan.org (Peter Flanigan)
-    @version 0.2.25
+    @version 0.2.27
 */
 WCom.Table.Role.Active = (function() {
    class Active {
@@ -53,7 +53,8 @@ WCom.Table.Role.Active = (function() {
          }, this.h.label({
             className: 'active-control-label', htmlFor: 'showInactive'
          }, content));
-         this.activeForm = this.addReplace(container, 'activeForm', activeForm);
+         this.activeForm
+            = this.addOrReplace(container, activeForm, this.activeForm);
       }
    }
    Object.assign(Active.prototype, WCom.Util.Markup);
@@ -642,7 +643,7 @@ WCom.Table.Role.Configurable = (function() {
          const location = this.control.controlLocation;
          const container = location.match(/Top/)
                ? this.table.topControl : this.table.bottomControl;
-         this.dialog = this.addReplace(container, 'dialog', dialog);
+         this.dialog = this.addOrReplace(container, dialog, this.dialog);
          const windowHeight = document.documentElement.clientHeight;
          const windowWidth = document.documentElement.clientWidth;
          const tableLeft = this.h.getOffset(this.table.table).left;
@@ -722,7 +723,7 @@ WCom.Table.Role.Configurable = (function() {
             onclick: this.dialogHandler,
             title: this.dialogTitle
          }, this._createControlIcon());
-         this.control = this.addReplace(container, 'control', control);
+         this.control = this.addOrReplace(container, control, this.control);
       }
       _createControlIcon() {
          const icons = this.table.icons;
@@ -827,7 +828,7 @@ WCom.Table.Role.Downloadable = (function() {
          }, [
             this.h.span({ className: 'download-label' }), this.label
          ]);
-         this.control = this.addReplace(container, 'control', control);
+         this.control = this.addOrReplace(container, control, this.control);
       }
    }
    Object.assign(DownloadControl.prototype, WCom.Util.Markup);
@@ -923,7 +924,7 @@ WCom.Table.Role.Filterable = (function() {
                this.h.a({ onclick: handler }, this.removeLabel)
             ]));
          }
-         this.messages = this.addReplace(container, 'messages', messages);
+         this.messages = this.addOrReplace(container, messages, this.messages);
       }
    }
    Object.assign(FilterControl.prototype, WCom.Util.Markup);
@@ -1289,7 +1290,7 @@ WCom.Table.Role.Pageable = (function() {
             list.append(item);
             list.append(document.createTextNode('\xA0'));
          }
-         this.list = this.addReplace(container, 'list', list);
+         this.list = this.addOrReplace(container, list, this.list);
       }
       renderPageControlNoCount(container) {
          const currentPage = this.rs.state('page');
@@ -1313,7 +1314,7 @@ WCom.Table.Role.Pageable = (function() {
             list.append(item);
             list.append(document.createTextNode('\xA0'));
          }
-         this.list = this.addReplace(container, 'list', list);
+         this.list = this.addOrReplace(container, list, this.list);
       }
    }
    Object.assign(PageControl.prototype, WCom.Util.Markup);
@@ -1370,7 +1371,7 @@ WCom.Table.Role.PageSize = (function() {
                list.append(document.createTextNode(',\xA0'));
          }
          list.append(this.h.li('\xA0rows'));
-         this.list = this.addReplace(container, 'list', list);
+         this.list = this.addOrReplace(container, list, this.list);
       }
    }
    Object.assign(PageSizeControl.prototype, WCom.Util.Markup);
@@ -1544,7 +1545,7 @@ WCom.Table.Role.Searchable = (function() {
             className: 'search-box', method: 'get', onsubmit: handler
          }, wrapper);
          control.setAttribute('submitlistener', true);
-         this.control = this.addReplace(container, 'control', control);
+         this.control = this.addOrReplace(container, control, this.control);
          this.table.animateButtons(wrapper);
       }
       renderMessages(container) {
@@ -1568,7 +1569,7 @@ WCom.Table.Role.Searchable = (function() {
                this.h.a({ onclick: handler }, this.removeLabel)
             ]));
          }
-         this.messages = this.addReplace(container, 'messages', messages);
+         this.messages = this.addOrReplace(container, messages, this.messages);
       }
    }
    Object.assign(SearchControl.prototype, WCom.Util.Markup);
@@ -1623,7 +1624,7 @@ WCom.Table.Role.Tagable = (function() {
          methods[location] = function(orig) {
             const container = orig();
             const control = this.h.div({ className: 'tag-control' }, content);
-            this.control = this.addReplace(container, 'control', control);
+            this.control = this.addOrReplace(container, control, this.control);
             return container;
          }.bind(this);
       }
