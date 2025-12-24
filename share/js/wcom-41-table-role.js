@@ -2,7 +2,7 @@
     @file HTML StateTable - Table Roles
     @classdesc Roles applied to the table object
     @author pjfl@cpan.org (Peter Flanigan)
-    @version 0.2.27
+    @version 0.2.28
 */
 WCom.Table.Role.Active = (function() {
    class Active {
@@ -43,7 +43,9 @@ WCom.Table.Role.Active = (function() {
       render(container) {
          const content = [ this.label ];
          const box = this.h.checkbox({
-            checked: this.showInactive, name: 'showInactive',
+            checked: this.showInactive,
+            id: 'showInactive',
+            name: 'showInactive',
             onclick: this.handler
          });
          if (this.controlLocation.match(/Right/)) content.push(box);

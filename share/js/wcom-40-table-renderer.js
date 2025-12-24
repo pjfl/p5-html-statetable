@@ -2,7 +2,7 @@
     @file HTML StateTable - Renderer
     @classdesc Render tables
     @author pjfl@cpan.org (Peter Flanigan)
-    @version 0.2.27
+    @version 0.2.28
 */
 if (!WCom.Table) WCom.Table = {};
 if (!WCom.Table.CellTrait) WCom.Table.CellTrait = {};
@@ -12,7 +12,7 @@ if (!WCom.Table.Role) WCom.Table.Role = {};
 WCom.Table.Renderer = (function() {
    const dsName       = 'tableConfig';
    const triggerClass = 'state-table';
-   const PageManager  = WCom.Navigation.manager;
+   const Navigation   = WCom.Navigation;
    const CellTraits   = WCom.Table.CellTrait;
    const ColumnTraits = WCom.Table.ColumnTrait;
    const RowTraits    = WCom.Table.RowTrait;
@@ -35,7 +35,7 @@ WCom.Table.Renderer = (function() {
          if (this.isHTML(value)) {
             cell = this.h.td(attr, this.h.frag(value));
             if (this.isHTMLOfClass(value, triggerClass))
-               WCom.Table.Renderer.manager.scan(cell);
+               WCom.Table.Renderer.scan(cell);
          }
          else {
             let content;
@@ -461,8 +461,8 @@ WCom.Table.Renderer = (function() {
          if (control.match(/Top/)) this.topContent = true;
       }
       _getPageManager(properties) {
-         const manager = this.objectLookup(properties['page-manager']);
-         return manager ? manager : PageManager;
+         const manager = this.lookupStatic(properties['page-manager']);
+         return manager ? manager : Navigation;
       }
    };
    Object.assign(Table.prototype, Utils.Markup);
@@ -492,7 +492,10 @@ WCom.Table.Renderer = (function() {
          this._isConstructing = false;
       }
    }
+   const manager = new Manager();
    return {
-      manager: new Manager()
+      isConstructing: manager.isConstructing.bind(manager),
+      scan: manager.scan.bind(manager),
+      tables: manager.tables
    };
 })();

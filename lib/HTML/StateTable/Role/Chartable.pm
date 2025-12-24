@@ -152,7 +152,11 @@ has '_chartable_configs' => is => 'lazy', isa => HashRef, default => sub {
             text  => $self->chartable_title_text,
             y     => 9,
          },
-         subtitle => { align => 'left', text => $self->chartable_subtitle_text},
+         subtitle => {
+            align => 'left',
+            text  => $self->chartable_subtitle_text,
+            y     => 37,
+         },
          accessibility => { enabled => json_bool FALSE },
          plotOptions   => {
             pie => {

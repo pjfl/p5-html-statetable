@@ -1,5 +1,5 @@
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.2.25
+ * @version 0.2.28
  * Breaks */
 @lower-break: 480px;
 @upper-break: 680px;
@@ -83,6 +83,12 @@ body {
             &.boolean {
                 text-align: left;
             }
+            a {
+                color: @text-link; text-decoration: none;
+                &:hover {
+                    font-style: italic;
+                }
+            }
         }
         .caption {
             margin-left: 0.5rem;
@@ -95,7 +101,7 @@ body {
                     margin-right: 0;
                 }
                 &.right {
-                    right: 0;
+                    margin-right: 0; right: 0;
                 }
             }
         }
@@ -311,6 +317,10 @@ body {
         font-size: @system-font-size; font-weight: bold;
         &:hover {
             box-shadow: inset 0 0 3px @panel-shadow; color: @text-dark;
+        }
+        &.text {
+            align-items: center; display: flex; justify-content: center;
+            min-width: 1rem;
         }
         img, object {
             height: 16px; width: 16px; vertical-align: middle;
@@ -532,7 +542,7 @@ body {
                     border-radius: 50px 0 0 50px; color: @text-watermark;
                     display: inline-block; font-family: #fonts[sans];
                     font-size: @system-font-size; line-height: 1.375rem;
-                    padding: 0.125rem 1rem 0 0.5rem;
+                    padding: 0.0625rem 1rem 0.0625rem 0.5rem;
                 }
             }
             .search-button {
@@ -542,7 +552,10 @@ body {
                     border-bottom-left-radius: 2px;
                 }
                 button {
-                     height: 1.75rem; padding: 2px 0.5rem 0 0.25rem;
+                    height: 1.75rem;
+                    &:has(.icon-wrapper) {
+                        padding: 2px 0.5rem 0 0.25rem;
+                    }
                     .icon-wrapper {
                         display: inline-block; height: 20px; width: 20px;
                     }
@@ -622,10 +635,10 @@ body {
         }
     }
     .table-form button, .dialog-form button {
-        margin-right: 0.5rem; padding: 0.25rem 0.75rem;
+        margin-right: 0.5rem; padding: 0.1875rem 0.75rem 0.3125rem;
     }
     .table-form a.table-button {
-        margin-right: 0.5rem; padding: 0.125rem 0.75rem 0.1875rem;
+        margin-right: 0.5rem; padding: 0.0625rem 0.75rem 0.25rem;
     }
     .table-form .table-button {
         &.right {

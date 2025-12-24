@@ -2,7 +2,7 @@
     @file HTML StateTable - Column Traits
     @classdesc Traits applied to the column object
     @author pjfl@cpan.org (Peter Flanigan)
-    @version 0.2.25
+    @version 0.2.28
 */
 WCom.Table.ColumnTrait.CheckAll = (function() {
    class CheckAll {
@@ -24,7 +24,10 @@ WCom.Table.ColumnTrait.CheckAll = (function() {
          if (col.title) attr.title = col.title;
          if (col.width) attr.style = col.width;
          col.checkAll = this.h.checkbox({
-            className: 'check-all', onclick: this.handler
+            className: 'check-all',
+            id: '_checkall',
+            name: '_checkall',
+            onclick: this.handler
          });
          return this.h.th(
             attr, this.h.span({ className: 'checkall-control' }, col.checkAll)

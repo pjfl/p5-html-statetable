@@ -113,7 +113,7 @@ is $data->{properties}->{'max-page-size'}, 100, 'Page size';
 is $data->{properties}->{'no-data-message'}, 'No data to display',
    'No data message';
 
-is $data->{properties}->{'page-size'}, 50, 'Page size';
+is $data->{properties}->{'page-size'}, 20, 'Page size';
 
 is $data->{roles}->{downloadable}->{location}->{control}, 'BottomRight',
    'Default downloadable location';

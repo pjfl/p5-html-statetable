@@ -148,7 +148,7 @@ sub import {
 
    install_sub { as => 'has_filter', into => $target, code => $has_filter };
 
-   my $defaults = sub ($) { $meta->_set_default_options(shift) };
+   my $defaults = sub ($) { $meta->set_default(@_) };
 
    $info->{$rt_info_key}{$defaults} = $defaults if $info;
 
