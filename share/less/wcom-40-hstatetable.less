@@ -1,60 +1,7 @@
 /* @author  pjfl@cpan.org (Peter Flanigan)
  * @version 0.2.28
- * Breaks */
-@lower-break: 480px;
-@upper-break: 680px;
-
-/* Colours */
-@button-border: gainsboro;
-@checkbox-bg-false: firebrick;
-@checkbox-bg-true: seagreen;
-@exception-bg: lightpink;
-@line-border: gray;
-@panel-shadow: gray;
-@row-bg-highlight: lightpink;
-@row-bg-inactive: gainsboro;
-@text-close: firebrick;
-@title-border: darkorange;
-
-@text-dark: black;
-@text-disabled: gray;
-@text-link: seagreen;
-@text-watermark: gray;
-
-@text-light: whitesmoke;
-@text-disabled-light: gainsboro;
-@text-link-light: cornsilk;
-@text-watermark-light: ivory;
-
-/* Dimensions */
-@checkbox-height: 1.25rem;
-@checkbox-knob-width: 20px;
-@checkbox-width: 40px;
-@dialog-title-min-width: 6rem;
-@filter-values-height: 8rem;
-
-/* Font Sizes and Weights */
-@button-font-size: 0.7rem;
-@button-font-weight: 410;
-@data-font-size: 0.9rem;
-@data-font-weight: normal;
-@data-font-weight-strong: 410;
-@dialog-font-size: 0.8rem;
-@header-font-size: 0.85rem;
-@header-font-weight: normal;
-@link-font-weight: normal;
-@search-font-size: 0.8rem;
-@system-font-size: 0.8rem;
-@tag-font-size: 0.8rem;
-@title-font-size: 1rem;
-
-#fonts() {
-    cursive: 'Segoe Print', 'Bradley Hand', 'Chilanka', casual, cursive;
-    mono: 'Cascadia Code', 'Menlo', 'DejaVu Sans Mono', ui-monospace, monospace;
-    sans: 'Roboto', 'Segoe UI', 'Helvetica', system-ui, sans-serif;
-    serif: 'DejaVu Serif', 'Sitka Small', serif;
-}
-
+ */
+@import "wcom-05-constants";
 body {
     counter-reset: section;
 }
@@ -94,7 +41,7 @@ body {
             margin-left: 0.5rem;
         }
         .credit-control {
-            flex-direction: row; justify-content: flex-start;
+            flex-direction: row; gap: 0.5rem; justify-content: flex-start;
             position: relative;
             .table-button {
                 &:last-child {
@@ -121,7 +68,7 @@ body {
     caption {
         display: none;
     }
-    table:not(.object-view):not(.preference-columns) {
+    table:not(.object-view, .preference-columns) {
         border-collapse: collapse; margin: 0.25rem auto 0.5rem;
         position: relative;
         tr {
@@ -234,7 +181,7 @@ body {
         }
     }
     .bottom-control, .top-control {
-        display: none; position: relative;
+        display: none; padding-bottom: 0.25rem; position: relative;
         &.visible {
             display: flex; justify-content: space-between;
             @media (max-width: @lower-break) {
@@ -243,17 +190,16 @@ body {
         }
     }
     .bottom-left-control, .bottom-right-control {
-        align-items: center; display: flex;
-        @media (max-width: @lower-break) {
-            max-width: ((@lower-break - 10%) / 2);
-        }
+        align-items: center; display: flex; gap: 0.5rem;
     }
     .caption {
         font-family: #fonts[sans]; font-weight: normal; line-height: 1.5rem;
-        margin: 0; text-transform: uppercase; white-space: nowrap;
+        margin: 0; padding-bottom: 0.25rem; text-transform: uppercase;
+        white-space: nowrap;
     }
     .credit-control, .title-control {
-        display: flex; flex-direction: column;
+        display: flex; flex-direction: column; gap: 0.25rem;
+        padding-bottom: 0.25rem;
         &:empty {
             display: none;
         }
@@ -294,9 +240,8 @@ body {
             font-size: @tag-font-size; font-weight: @link-font-weight;
             padding: 0.1875rem 0.25rem;
             &.breadcrumbs {
-                border-radius: 3px 0 0 3px; font-size: medium;
-                padding: 0.25rem;
-                text-decoration: none;
+                border-radius: 3px 0 0 3px; font-size: @data-font-size;
+                padding: 0.25rem; text-decoration: none;
             }
         }
     }
@@ -306,7 +251,7 @@ body {
     .dialog-buttons {
         padding: 0.25rem 0;
         .dialog-button-group {
-            align-items: baseline; display: flex; gap: 0.25rem;
+            align-items: baseline; display: flex; gap: 0.5rem;
             justify-content: space-between; position: relative;
         }
     }
@@ -352,24 +297,24 @@ body {
             text-align: left;
             &::before {
                 background: @checkbox-bg-false;
-                border: 2px inset @button-border; border-radius: 10px;
+                border: 2px inset @btn-border; border-radius: 10px;
                 content: ''; display: block; position: absolute;
                 height: @checkbox-height; left: 0.5rem; width: @checkbox-width;
                 z-index: 1;
             }
             &::after {
                 background: var(--button-bg);
-                border: 2px inset @button-border; border-radius: 10px;
+                border: 2px inset @btn-border; border-radius: 10px;
                 content: ''; display: block; position: absolute;
                 height: @checkbox-height; left: 0.5rem; top: 0.25rem;
-                width: @checkbox-knob-width; z-index: 2;
+                width: @checkbox-width-knob; z-index: 2;
             }
             &:has(input[type=checkbox]:checked) {
                 &::before {
                     background: @checkbox-bg-true;
                 }
                 &::after {
-                    left: @checkbox-knob-width + 8px;
+                    left: @checkbox-width-knob + 8px;
                 }
             }
             input[type=checkbox] {
@@ -511,8 +456,8 @@ body {
             }
             .search-field {
                 color: inherit; border: none; border-radius: 0 2px 2px 0;
-                border-bottom: 2px inset @button-border;
-                border-top: 2px inset @button-border;
+                border-bottom: 2px inset @btn-border;
+                border-top: 2px inset @btn-border;
                 font-family: #fonts[serif]; font-size: @search-font-size;
                 height: 1.75rem; margin: 0; max-width: 0;
                 outline: 0; padding: 0; transition: max-width 0.5s;
@@ -538,7 +483,7 @@ body {
                 }
                 .search-display {
                     background: var(--button-bg-disabled);
-                    border: 2px outset @button-border;
+                    border: 2px outset @btn-border;
                     border-radius: 50px 0 0 50px; color: @text-watermark;
                     display: inline-block; font-family: #fonts[sans];
                     font-size: @system-font-size; line-height: 1.375rem;
@@ -590,8 +535,8 @@ body {
     .status-messages {
         background: var(--bg-dark); border-radius: 5px;
         color: @text-dark; font-family: #fonts[sans];
-        font-size: @system-font-size; margin-top: 0.25rem;
-        padding: 0.25rem 0.5rem; text-align: center;
+        font-size: @system-font-size; padding: 0.25rem 0.5rem;
+        text-align: center;
         a {
             color: @text-link; cursor: pointer; margin-left: 0.5rem;
             &:hover {
@@ -607,7 +552,7 @@ body {
         padding-bottom: 0.75rem;
     }
     .table-form .table-button, .table-form button, .dialog-form button {
-        background: var(--button-bg); border: 2px outset @button-border;
+        background: var(--button-bg); border: 2px outset @btn-border;
         border-radius: 50px; color: @text-link; cursor: pointer;
         display: inline-block; overflow: hidden; position: relative;
         text-decoration: none; transition: border 0.5s, color 0.5s;
@@ -622,23 +567,23 @@ body {
             transition: opacity 0.5s; width: 3rem; z-index: 1;
         }
         &:hover {
-            border: 2px inset @button-border; color: @text-dark;
+            border: 2px inset @btn-border; color: @text-dark;
             &::before {
                 opacity: 1;
             }
         }
         span {
-            font-family: #fonts[sans]; font-size: @button-font-size;
-            font-weight: @button-font-weight; letter-spacing: 0.1rem;
+            font-family: #fonts[sans]; font-size: @btn-font-size;
+            font-weight: @btn-font-weight; letter-spacing: 0.1rem;
             position: relative; text-decoration: none;
             text-transform: uppercase; white-space: nowrap; z-index: 3;
         }
     }
     .table-form button, .dialog-form button {
-        margin-right: 0.5rem; padding: 0.1875rem 0.75rem 0.3125rem;
+        padding: 0.1875rem 0.75rem 0.3125rem;
     }
     .table-form a.table-button {
-        margin-right: 0.5rem; padding: 0.0625rem 0.75rem 0.25rem;
+        padding: 0.0625rem 0.75rem 0.25rem;
     }
     .table-form .table-button {
         &.right {
@@ -657,11 +602,8 @@ body {
         background: var(--button-bg-disabled);
     }
     .top-left-control, .top-right-control {
-        align-items: baseline; display: inline-flex;
-        justify-content: flex-start; margin-top: 0.25rem;
-        @media (max-width: @lower-break) {
-            max-width: ((@lower-break - 10%) / 2);
-        }
+        align-items: baseline; display: inline-flex; gap: 0.5rem;
+        justify-content: flex-start;
     }
     @media (max-width: @upper-break) {
         table:not(.object-view, .preference-columns) {

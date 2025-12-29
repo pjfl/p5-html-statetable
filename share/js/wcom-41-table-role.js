@@ -2,7 +2,7 @@
     @file HTML StateTable - Table Roles
     @classdesc Roles applied to the table object
     @author pjfl@cpan.org (Peter Flanigan)
-    @version 0.2.28
+    @version 0.2.29
 */
 WCom.Table.Role.Active = (function() {
    class Active {
@@ -911,9 +911,9 @@ WCom.Table.Role.Filterable = (function() {
          }.bind(this);
       }
       renderMessages(container) {
-         const messages = this.h.div();
          const column = this.rs.state('filterColumn');
          if (column && this.rs.state('filterValue')) {
+            const messages = this.h.div();
             const handler = function(event) {
                event.preventDefault();
                this.rs.search({ filterColumn: '', filterValue: '' }).redraw();
@@ -925,8 +925,12 @@ WCom.Table.Role.Filterable = (function() {
                '\xA0',
                this.h.a({ onclick: handler }, this.removeLabel)
             ]));
+            this.messages
+               = this.addOrReplace(container, messages, this.messages);
          }
-         this.messages = this.addOrReplace(container, messages, this.messages);
+         else if (this.messages) {
+            container.removeChild(this.messages);
+         }
       }
    }
    Object.assign(FilterControl.prototype, WCom.Util.Markup);
@@ -964,10 +968,12 @@ WCom.Table.Role.Form = (function() {
             this.buttonConfig[this.location[0]] = config['buttons'];
          }
          else this.buttonConfig = config['buttons'];
-         for (const key of Object.keys(this.buttonConfig))
+         for (const key of Object.keys(this.buttonConfig)) {
             this._actionHandlers(this.buttonConfig[key]);
-         for (const location of this.location)
+         }
+         for (const location of this.location) {
             this._controlBinding(location, methods);
+         }
          const className = 'table-form ' + this.classes.join(' ');
          this.withFieldset = this.classes.includes('fieldset') ? true : false;
          methods['orderedContent'] = function(orig) {
