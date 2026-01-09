@@ -37,7 +37,7 @@ An immutable action path string. Then endpoint to send the form to
 
 =cut
 
-has 'form_action' => is => 'ro', isa => Str, default => 'api/table_action';
+has 'form_action' => is => 'ro', isa => Str, default => 'api/action';
 
 =item form_buttons
 

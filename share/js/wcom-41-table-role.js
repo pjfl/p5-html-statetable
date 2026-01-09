@@ -2,7 +2,7 @@
     @file HTML StateTable - Table Roles
     @classdesc Roles applied to the table object
     @author pjfl@cpan.org (Peter Flanigan)
-    @version 0.2.29
+    @version 0.2.30
 */
 WCom.Table.Role.Active = (function() {
    class Active {
@@ -929,7 +929,8 @@ WCom.Table.Role.Filterable = (function() {
                = this.addOrReplace(container, messages, this.messages);
          }
          else if (this.messages) {
-            container.removeChild(this.messages);
+            try { container.removeChild(this.messages); }
+            catch(e) {}
          }
       }
    }

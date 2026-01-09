@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Default API endpoint changed
           - Moved LESS constant to wcom-05-constants.less
           - Stops exposing JS manager objects
           - Removes use of innerHTML
