@@ -2,7 +2,7 @@
     @file HTML StateTable - Table Roles
     @classdesc Roles applied to the table object
     @author pjfl@cpan.org (Peter Flanigan)
-    @version 0.2.30
+    @version 0.2.31
 */
 WCom.Table.Role.Active = (function() {
    class Active {
@@ -1562,7 +1562,6 @@ WCom.Table.Role.Searchable = (function() {
          const searchCol = rs.state('searchColumn');
          const column = this.table.columnIndex[searchCol];
          const value = rs.state('searchValue');
-         const messages = this.h.div({ className: 'search-messages' });
          if (value) {
             const handler = function(event) {
                event.preventDefault();
@@ -1570,15 +1569,20 @@ WCom.Table.Role.Searchable = (function() {
             }.bind(this);
             const label = column ? column.label
                    : ( searchCol ? this.ucfirst(searchCol) : this.messageAll);
-            messages.className = 'status-messages';
+            const messages = this.h.div({ className: 'status-messages' });
             messages.append(this.h.span({ className: 'search-message' }, [
                this.messageLabel + '\xA0',
                this.h.strong('"' + value + '"'), '\xA0in\xA0',
                this.h.strong('"' + label + '"'),
                this.h.a({ onclick: handler }, this.removeLabel)
             ]));
+            this.messages
+               = this.addOrReplace(container, messages, this.messages);
          }
-         this.messages = this.addOrReplace(container, messages, this.messages);
+         else if (this.messages) {
+            container.removeChild(this.messages);
+            this.messages = false;
+         }
       }
    }
    Object.assign(SearchControl.prototype, WCom.Util.Markup);

@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Remove search message div when empty
           - Default API endpoint changed
           - Moved LESS constant to wcom-05-constants.less
           - Stops exposing JS manager objects
