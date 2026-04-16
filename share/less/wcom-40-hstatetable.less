@@ -1,5 +1,5 @@
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.2.31
+ * @version 0.2.32
  */
 @import "wcom-05-constants";
 body {
@@ -39,18 +39,6 @@ body {
         }
         .caption {
             margin-left: 0.5rem;
-        }
-        .credit-control {
-            flex-direction: row; gap: 0.5rem; justify-content: flex-start;
-            position: relative;
-            .table-button {
-                &:last-child {
-                    margin-right: 0;
-                }
-                &.right {
-                    margin-right: 0; right: 0;
-                }
-            }
         }
         .state-table th:first-child a {
             color: @text-dark;
@@ -124,7 +112,7 @@ body {
                 text-align: center;
             }
             &.checkbox {
-                width: 1rem;
+                accent-color: @checkbox-bg-true; width: 1rem;
             }
             &.datetime {
                 text-align: right; white-space: nowrap;
@@ -180,7 +168,8 @@ body {
         font-size: @system-font-size; line-height: 1.5rem; position: relative;
         white-space: nowrap;
         input[type=checkbox] {
-            margin: 0 0.25rem; position: relative; top: 2px;
+            accent-color: @checkbox-bg-true; margin: 0 0.25rem;
+            position: relative; top: 2px;
         }
     }
     .bottom-control, .top-control {
@@ -334,7 +323,8 @@ body {
             font-size: @system-font-size; line-height: 1rem;
         }
         input[type=checkbox] {
-            margin: 0 0.25rem 0 0; position: relative; top: 2px;
+            accent-color: @checkbox-bg-true; margin: 0 0.25rem 0 0;
+            position: relative; top: 2px;
         }
         select {
             background: var(--btn-bg); border-radius: 5px;
@@ -588,14 +578,6 @@ body {
     .table-form a.table-button {
         padding: 0.0625rem 0.75rem 0.25rem;
     }
-    .table-form .table-button {
-        &.right {
-            position: absolute; right: 0.5rem;
-        }
-        &:last-child {
-            margin-right: 0;
-        }
-    }
     .table-form .table-button[disabled=disabled],
     .table-form .table-button[disabled=disabled]::after,
     .table-form button[disabled=disabled],
@@ -625,8 +607,13 @@ body {
                 justify-content: left; text-align: left !important;
             }
         }
-        .chart-container {
-            display: none !important;
+        .chart-container, .table-container {
+            display: block !important;
+        }
+    }
+    @media (max-width: @lower-break) {
+        .chart-container, .table-container {
+            padding-left: 0.5rem; width: @lower-break;
         }
     }
 }

@@ -2,7 +2,8 @@
     @file HTML StateTable - Renderer
     @classdesc Render tables
     @author pjfl@cpan.org (Peter Flanigan)
-    @version 0.2.28
+    @version 0.2.32
+    @alias WCom/Table
 */
 if (!WCom.Table) WCom.Table = {};
 if (!WCom.Table.CellTrait) WCom.Table.CellTrait = {};
@@ -18,6 +19,10 @@ WCom.Table.Renderer = (function() {
    const RowTraits    = WCom.Table.RowTrait;
    const TableRoles   = WCom.Table.Role;
    const Utils        = WCom.Util;
+   /** @class
+       @classdesc Cell object
+       @alias Table/Cell
+   */
    class Cell {
       constructor(column, row) {
          this.column = column;
@@ -50,6 +55,10 @@ WCom.Table.Renderer = (function() {
    Object.assign(Cell.prototype, Utils.Markup); // Apply role
    Object.assign(Cell.prototype, Utils.Modifiers); // Apply another role
    Object.assign(Cell.prototype, Utils.String); // Apply another role
+   /** @class
+       @classdesc Column object
+       @alias Table/Column
+   */
    class Column {
       constructor(table, config) {
          this.table        = table;
@@ -116,6 +125,10 @@ WCom.Table.Renderer = (function() {
    Object.assign(Column.prototype, Utils.Markup);
    Object.assign(Column.prototype, Utils.Modifiers);
    Object.assign(Column.prototype, Utils.String);
+   /** @class
+       @classdesc Row object
+       @alias Table/Row
+   */
    class Row {
       constructor(table, result, index) {
          this.table   = table;
@@ -139,6 +152,10 @@ WCom.Table.Renderer = (function() {
    };
    Object.assign(Row.prototype, Utils.Markup);
    Object.assign(Row.prototype, Utils.Modifiers);
+   /** @class
+       @classdesc State object
+       @alias Table/State
+   */
    class State {
       constructor(table) {
          this.page       = 1;
@@ -148,6 +165,10 @@ WCom.Table.Renderer = (function() {
          this.sortDesc   = table.properties['sort-desc'];
       }
    }
+   /** @class
+       @classdesc Resultset object
+       @alias Table/Resultset
+   */
    class Resultset {
       constructor(table) {
          this.table        = table;
@@ -223,6 +244,10 @@ WCom.Table.Renderer = (function() {
    };
    Object.assign(Resultset.prototype, Utils.Bitch);
    Object.assign(Resultset.prototype, Utils.Markup);
+   /** @class
+       @classdesc Table object
+       @alias Table/Table
+   */
    class Table {
       constructor(container, config) {
          this.container  = container;
@@ -468,7 +493,11 @@ WCom.Table.Renderer = (function() {
    Object.assign(Table.prototype, Utils.Markup);
    Object.assign(Table.prototype, Utils.Modifiers);
    Object.assign(Table.prototype, Utils.String);
-   class Manager {
+   /** @class
+       @classdesc Factory object
+       @alias Table/Factory
+   */
+   class Factory {
       constructor() {
          this.tables = {};
          WCom.Util.Event.registerOnload(this.scan.bind(this));
@@ -492,10 +521,21 @@ WCom.Table.Renderer = (function() {
          this._isConstructing = false;
       }
    }
-   const manager = new Manager();
+   const factory = new Factory();
+   /** @module Table
+    */
    return {
-      isConstructing: manager.isConstructing.bind(manager),
-      scan: manager.scan.bind(manager),
-      tables: manager.tables
+      /** @function
+          @desc True if the factory is constructing tables
+      */
+      isConstructing: factory.isConstructing.bind(factory),
+      /** @function
+          @desc Scan the content for elements with the trigger class
+      */
+      scan: factory.scan.bind(factory),
+      /** @object
+          @desc An object containing the current tables
+      */
+      tables: factory.tables
    };
 })();
