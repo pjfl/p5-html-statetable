@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - More JSDoc
           - Started JSDoc
           - Remove search message div when empty
           - Default API endpoint changed

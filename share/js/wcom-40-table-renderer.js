@@ -2,7 +2,7 @@
     @file HTML StateTable - Renderer
     @classdesc Render tables
     @author pjfl@cpan.org (Peter Flanigan)
-    @version 0.2.32
+    @version 0.2.33
     @alias WCom/Table
 */
 if (!WCom.Table) WCom.Table = {};
@@ -24,15 +24,29 @@ WCom.Table.Renderer = (function() {
        @alias Table/Cell
    */
    class Cell {
+      /** @constructs
+          @desc Construct the cell object
+          @param {object} column
+          @param {object} row
+      */
       constructor(column, row) {
          this.column = column;
          this.row    = row;
       }
+      /** @function
+          @desc Returns the cells value from the result object provided by
+             the row
+          @return {object} Key of 'value'
+      */
       getValue(attr) {
          const value = this.row.result[this.column.name];
          if (typeof value == 'object') return value;
          return { value: value };
       }
+      /** @function
+          @desc Renders the cell object
+          @return {element} The rendered table cell element
+      */
       render() {
          const attr = {};
          const { append, link, value } = this.getValue(attr);
@@ -60,6 +74,11 @@ WCom.Table.Renderer = (function() {
        @alias Table/Column
    */
    class Column {
+      /** @constructs
+          @desc Construct the column object
+          @param {object} table
+          @param {object} config
+      */
       constructor(table, config) {
          this.table        = table;
          this.rs           = table.resultset;
@@ -90,6 +109,11 @@ WCom.Table.Renderer = (function() {
             }).redraw();
          }.bind(this);
       }
+      /** @function
+          @desc Creates the {@link Table/Cell cell} object
+          @param {object} row
+          @return {element} The rendered table cell element
+      */
       createCell(row) {
          const cell = new Cell(this, row);
          this.applyTraits(cell, CellTraits, this.cellTraits);
@@ -99,6 +123,10 @@ WCom.Table.Renderer = (function() {
          }
          return cell;
       }
+      /** @function
+          @desc Renders the column object
+          @return {element} The rendered table header element
+      */
       render() {
          this.rowSelector = {};
          const attr = { style: '' };
@@ -130,6 +158,12 @@ WCom.Table.Renderer = (function() {
        @alias Table/Row
    */
    class Row {
+      /** @constructs
+          @desc Construct the row object
+          @param {object} table
+          @param {object} result
+          @param {integer} index
+      */
       constructor(table, result, index) {
          this.table   = table;
          this.result  = result;
@@ -141,6 +175,11 @@ WCom.Table.Renderer = (function() {
             this.cells.push(column.createCell(this));
          }
       }
+      /** @function
+          @desc Renders the row object
+          @param {object} attr
+          @return {element} The rendered table row element
+      */
       render(attr) {
          attr ||= {};
          const row = this.h.tr(attr);
@@ -157,6 +196,10 @@ WCom.Table.Renderer = (function() {
        @alias Table/State
    */
    class State {
+      /** @constructs
+          @desc Construct the state object
+          @param {object} table
+      */
       constructor(table) {
          this.page       = 1;
          this.pageSize   = table.properties['page-size'];
@@ -170,6 +213,10 @@ WCom.Table.Renderer = (function() {
        @alias Table/Resultset
    */
    class Resultset {
+      /** @constructs
+          @desc Construct the resultset object
+          @param {object} table
+      */
       constructor(table) {
          this.table        = table;
          this.dataURL      = table.properties['data-url'];
@@ -187,19 +234,42 @@ WCom.Table.Renderer = (function() {
          };
          this._state = new State(table);
       }
+      /** @function
+          @desc Extends the {@link Table/State state} object by adding the
+             key/value to it
+          @param {string} key
+          @param {string} value
+      */
       extendState(key, value) {
          this._state[key] = value;
       }
+      /** @function
+          @desc Returns the current state values for the supplied keys
+          @param {array} attrs List of state object keys
+          @return {object} Selected state object key/value pairs
+      */
       getState(attrs) {
          const state = {};
          for (const attr of attrs) { state[attr] = this.state(attr) || '' }
          return state;
       }
+      /** @function
+          @desc Accessor/mutator for the 'this.parameterMap'. If 'key' is
+             undefined return the whole map
+          @param {string} key
+          @param {string} value
+          @return {string}
+      */
       nameMap(key, value) {
          if (typeof key == 'undefined') return this.parameterMap;
          if (typeof value != 'undefined') this.parameterMap[key] = value;
          return this.parameterMap[key];
       }
+      /** @function
+          @desc Iterator which returns the next object from the array of
+             object returned by the server
+          @return {object}
+      */
       async next() {
          if (this.index > 0) return this.records[this.index++];
          const { object } = await this.bitch.sucks(this.table.prepareURL());
@@ -212,19 +282,40 @@ WCom.Table.Renderer = (function() {
          this.rowCount = 0;
          return this.records[0];
       }
+      /** @function
+          @desc Calls {@link Table/Resultset#reset reset} and
+             {@link Table/Table#redraw redraws} the table
+          @return {object} Self referential object. Allows method chaining
+      */
       redraw() {
          this.reset();
          this.table.redraw();
          return this;
       }
+      /** @function
+          @desc Resets the iterator index to zero
+          @return {object} Self referential object. Allows method chaining
+      */
       reset() {
          this.index = 0;
          return this;
       }
+      /** @function
+          @desc Applies the key/value pairs provided to the
+             {@link Table/State state} object
+          @param {object} options
+          @return {object} Self referential object. Allows method chaining
+      */
       search(options) {
          for (const [k, v] of Object.entries(options)) { this.state(k, v) }
          return this.reset();
       }
+      /** @function
+          @desc Accessor/mutator for the {@link Table/State state} object
+          @param {string} key
+          @param {string} value
+          @return {string}
+      */
       state(key, value) {
          if (typeof value !== 'undefined') {
             if (key == 'page' || key == 'pageSize')
@@ -234,6 +325,12 @@ WCom.Table.Renderer = (function() {
          }
          return this._state[key];
       }
+      /** @function
+          @desc Returns true if any of the state attribute values have
+             changed
+          @param {object} previousState
+          @return {boolean}
+      */
       stateChanged(previousState) {
          for (const [key, previous] of Object.entries(previousState)) {
             const current = this.state(key) || '';
@@ -249,6 +346,24 @@ WCom.Table.Renderer = (function() {
        @alias Table/Table
    */
    class Table {
+      /** @constructs
+          @desc Creates a new {@link Table/Resultset resultset}.
+             Applies roles the table object both before and after
+             the {@link Table/Columns columns} are created
+          @param {element} container The element containing the table
+          @param {object} config
+          @property {array} config.columns
+          @property {string} config.name
+          @property {object} config.properties
+          @property {object} config.roles
+          @property {object} config.row-traits
+          @property {string} properties.caption
+          @property {string} properties.icons
+          @property {string} properties.max-width
+          @property {string} properties.min-width
+          @property {string} properties.render-style
+          @property {string} properties.title-location
+      */
       constructor(container, config) {
          this.container  = container;
          this.columnConf = config['columns'] || [];
@@ -319,9 +434,19 @@ WCom.Table.Renderer = (function() {
 
          this.appendContainer(container, [this.tableContainer]);
       }
+      /** @function
+          @desc Appends the content to the container
+          @param {element} container
+          @param {array} content
+      */
       appendContainer(container, content) {
          for (const el of content) { container.append(el); }
       }
+      /** @function
+          @desc Applies the table roles
+          @param {boolean} before If true only apply the before column
+             creation roles
+      */
       applyRoles(before) {
          const roleIndex = [];
          for (const roleName of Object.keys(this.roles)) {
@@ -337,12 +462,29 @@ WCom.Table.Renderer = (function() {
             this.applyTraits(this, TableRoles, [name]);
          }
       }
+      /** @function
+          @desc Creates a new {@link Table/Column column} object from the
+             provided configuration
+          @param {object} config
+          @return {object} A new column object
+      */
       createColumn(config) {
          return new Column(this, config);
       }
+      /** @function
+          @async
+          @desc Returns the @{link Table/Resultset#next next} result object
+          @return {object}
+      */
       async nextResult() {
          return await this.resultset.next();
       }
+      /** @function
+          @async
+          @desc Returns the next {@link Table/Row row} object
+          @param {integer} index
+          @return {object} A new row object
+      */
       async nextRow(index) {
          const result = await this.nextResult();
          if (!result) return undefined;
@@ -353,6 +495,13 @@ WCom.Table.Renderer = (function() {
          }
          return row;
       }
+      /** @function
+          @desc Orders the content. If the 'titleLocation' attribute is set to
+             'outer' the title element is rendered before the top element.
+             Setting it to 'inner' reverses this. Also applies to the credit
+             and bottom elements
+          @return {array}
+      */
       orderedContent() {
          let content;
          if (this.titleLocation == 'outer') {
@@ -373,6 +522,11 @@ WCom.Table.Renderer = (function() {
          if (caption) content.unshift(caption);
          return content;
       }
+      /** @function
+          @desc Prepares the data request URL
+          @param {object} args
+          @return {object} A URL object
+      */
       prepareURL(args) {
          args ||= {};
          const rs = this.resultset;
@@ -398,15 +552,26 @@ WCom.Table.Renderer = (function() {
          else params.delete(rs.nameMap('sortDesc'));
          return url;
       }
+      /** @function
+          @async
+          @desc Reads all the rows
+      */
       async readRows() {
          this.rows = [];
          let index = 0;
          let row;
          while (row = await this.nextRow(index++)) { this.rows.push(row) }
       }
+      /** @function
+          @desc Redraws the table
+      */
       redraw() {
          this.render();
       }
+      /** @function
+          @async
+          @desc Renders the table
+      */
       async render() {
          this.renderHeader();
          await this.renderRows();
@@ -418,6 +583,9 @@ WCom.Table.Renderer = (function() {
          this.renderBottomRightControl();
          this.animateButtons(this.container);
       }
+      /** @function
+          @desc Renders the body of the table
+      */
       renderBody() {
          const newBody = this.h.tbody();
          let className = 'odd';
@@ -429,19 +597,38 @@ WCom.Table.Renderer = (function() {
          this.table.replaceChild(newBody, this.body);
          this.body = newBody;
       }
+      /** @function
+          @desc Renders the bottom left control element
+          @return {element}
+      */
       renderBottomLeftControl() {
          return this.bottomLeftControl;
       }
+      /** @function
+          @desc Renders the bottom right control element
+          @return {element}
+      */
       renderBottomRightControl() {
          return this.bottomRightControl;
       }
+      /** @function
+          @desc Renders the caption if it has some length
+          @return {element}
+      */
       renderCaption() {
          if (!this.caption.length) return;
          return this.h.div({ className: 'caption' }, this.caption);
       }
+      /** @function
+          @desc Renders the control element after the table
+          @return {element}
+      */
       renderCreditControl() {
          return this.creditControl;
       }
+      /** @function
+          @desc Renders the header element
+      */
       renderHeader() {
          const row = this.h.tr();
          for (const column of this.columns) {
@@ -451,6 +638,9 @@ WCom.Table.Renderer = (function() {
          this.table.replaceChild(thead, this.header);
          this.header = thead;
       }
+      /** @function
+          @desc Renders nothing
+      */
       renderNoData() {
          const message = this.properties['no-data-message'];
          const cell    = this.h.td({
@@ -460,11 +650,22 @@ WCom.Table.Renderer = (function() {
          this.table.replaceChild(tbody, this.body);
          this.body = tbody;
       }
+      /** @function
+          @desc Renders one row
+          @param {element} container
+          @param {object} row
+          @param {string} className
+          @return {element}
+      */
       renderRow(container, row, className) {
          const rendered = row.render({ className: className });
          container.append(rendered);
          return rendered;
       }
+      /** @function
+          @async
+          @desc Renders all rows
+      */
       async renderRows() {
          await this.readRows();
          if (!this.rows.length) return this.renderNoData();
@@ -472,15 +673,31 @@ WCom.Table.Renderer = (function() {
          this.rowCount = this.rows.length;
          if (this.pageManager) this.pageManager.onContentLoad();
       }
+      /** @function
+          @desc Renders the control element before the table
+          @return {element}
+      */
       renderTitleControl() {
          return this.titleControl;
       }
+      /** @function
+          @desc Renders the top left control element
+          @return {element}
+      */
       renderTopLeftControl() {
          return this.topLeftControl;
       }
+      /** @function
+          @desc Renders the top right control element
+          @return {element}
+      */
       renderTopRightControl() {
          return this.topRightControl;
       }
+      /** @function
+          @param {string} control
+          @desc Sets the control state
+      */
       setControlState(control) {
          if (control.match(/Bottom/)) this.bottomContent = true;
          if (control.match(/Top/)) this.topContent = true;
@@ -498,10 +715,19 @@ WCom.Table.Renderer = (function() {
        @alias Table/Factory
    */
    class Factory {
+      /** @construct
+          @desc An instance of the Factory is created when the code loads.
+             It registers the scan method to execute on page load
+      */
       constructor() {
          this.tables = {};
          WCom.Util.Event.registerOnload(this.scan.bind(this));
       }
+      /** @function
+          @async
+          @desc Resolves when this factory has finished creating tables
+          @return {promise}
+      */
       isConstructing() {
          return new Promise(function(resolve) {
             setTimeout(() => {
@@ -509,6 +735,14 @@ WCom.Table.Renderer = (function() {
             }, 250);
          }.bind(this));
       }
+      /** @function
+          @async
+          @desc Scan the content for elements with the trigger class. Creates
+             {@link Table/Table tables} and calls their
+             {@link Table/Table#render render} method
+          @param {element} content The element to scan
+          @param {object} options Currently unused
+      */
       async scan(content = document, options = {}) {
          this._isConstructing = true;
          const promises = [];
@@ -523,18 +757,21 @@ WCom.Table.Renderer = (function() {
    }
    const factory = new Factory();
    /** @module Table
-    */
+   */
    return {
       /** @function
-          @desc True if the factory is constructing tables
+          @desc Calls {@link Table/Factory#isConstructing method} on
+             the {@link Table/Factory Factory} object
       */
       isConstructing: factory.isConstructing.bind(factory),
       /** @function
-          @desc Scan the content for elements with the trigger class
+          @desc Calls {@link Table/Factory#scan method} on
+             the {@link Table/Factory Factory} object
       */
       scan: factory.scan.bind(factory),
       /** @object
           @desc An object containing the current tables
+          @return {object}
       */
       tables: factory.tables
    };
