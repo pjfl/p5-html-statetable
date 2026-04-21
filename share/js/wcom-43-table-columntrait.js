@@ -2,9 +2,13 @@
     @file HTML StateTable - Column Traits
     @classdesc Traits applied to the column object
     @author pjfl@cpan.org (Peter Flanigan)
-    @version 0.2.28
+    @version 0.2.34
 */
 WCom.Table.ColumnTrait.CheckAll = (function() {
+   /** @class
+       @classdesc CheckAll
+       @alias TableColumn/CheckAll
+   */
    class CheckAll {
       constructor(column, methods) {
          this.column = column;
@@ -36,6 +40,9 @@ WCom.Table.ColumnTrait.CheckAll = (function() {
    }
    Object.assign(CheckAll.prototype, WCom.Util.Markup);
    const modifiedMethods = {};
+   /** @module TableColumnTrait/CheckAll
+       @desc Check all boxes column trait
+   */
    return {
       initialise: function() {
          this.checkAll = new CheckAll(this, modifiedMethods);
@@ -45,6 +52,10 @@ WCom.Table.ColumnTrait.CheckAll = (function() {
 })();
 // Package WCom.Table.ColumnTrait.Filterable
 WCom.Table.ColumnTrait.Filterable = (function() {
+   /** @class
+       @classdesc Filterable
+       @alias TableColumn/Filterable
+   */
    class Filterable {
       constructor(column, methods, args) {
          args ||= {};
@@ -143,6 +154,9 @@ WCom.Table.ColumnTrait.Filterable = (function() {
    Object.assign(Filterable.prototype, WCom.Util.Bitch);
    Object.assign(Filterable.prototype, WCom.Util.Markup);
    const modifiedMethods = {};
+   /** @module TableColumnTrait/Filterable
+       @desc Filterable column trait
+   */
    return {
       initialise: function(args) {
          this.filter = new Filterable(this, modifiedMethods, args);

@@ -163,8 +163,9 @@ sub _serialise_columns {
    for my $column ($table->all_visible_columns) {
       next if $column->append_to;
 
-      my $displayed  = $table->is_displayable_column($column->name);
-      my %attributes = ( displayed => json_bool $displayed );
+      my $name      = $column->name;
+      my $displayed = $table->is_displayable_column($name);
+      my %attrs     = ( displayed => json_bool $displayed );
 
       for my $attribute (SERIALISE_COLUMN_ATTR()) {
          next unless $column->can($attribute);
@@ -174,22 +175,33 @@ sub _serialise_columns {
 
          next unless defined $value;
 
-         $attributes{$attribute}
+         $attrs{$attribute}
             = $self->_boolify($column, $attribute, $value);
       }
 
-      $attributes{cell_traits} = [
+      $attrs{'cell-traits'} = [
          map { @{ _trait_names $dummy_row, $column, $_ } }
-               @{ delete $attributes{cell_traits} }
+               @{ delete $attrs{cell_traits} }
       ];
 
-      $attributes{downloadable} = json_bool
-         ($table->serialisable_columns->{$column->name} ? TRUE : FALSE);
+      $attrs{'downloadable'} = json_bool
+         ($table->serialisable_columns->{$name} ? TRUE : FALSE);
 
-      $attributes{has_tags} = json_bool TRUE
-         if exists $self->_tags->{$column->name};
+      $attrs{'has-tags'} = json_bool TRUE if exists $self->_tags->{$name};
 
-      push @columns, \%attributes;
+      $attrs{'max-width'} = 'max-width: ' . (delete $attrs{max_width}) . ';'
+         if exists $attrs{max_width};
+
+      $attrs{'min-width'} = 'min-width: ' . (delete $attrs{min_width}) . ';'
+         if exists $attrs{min_width};
+
+      $attrs{'sort-column'} = delete $attrs{sort_column}
+         if exists $attrs{sort_column};
+
+      $attrs{'width'} = 'width: ' . (delete $attrs{width}) . ';'
+         if exists $attrs{width};
+
+      push @columns, \%attrs;
    }
 
    return \@columns;

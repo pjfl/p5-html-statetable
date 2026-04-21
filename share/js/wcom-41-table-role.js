@@ -2,9 +2,13 @@
     @file HTML StateTable - Table Roles
     @classdesc Roles applied to the table object
     @author pjfl@cpan.org (Peter Flanigan)
-    @version 0.2.31
+    @version 0.2.34
 */
 WCom.Table.Role.Active = (function() {
+   /** @class
+       @classdesc Active
+       @alias TableRole/Active
+   */
    class Active {
       constructor(table, methods) {
          this.table = table;
@@ -143,6 +147,10 @@ WCom.Table.Role.Animation = (function() { // TODO: Finish this
 })();
 // Package WCom.Table.Role.Chartable
 WCom.Table.Role.Chartable = (function() {
+   /** @class
+       @classdesc Chartable
+       @alias TableRole/Chartable
+   */
    class Chartable {
       constructor(table, methods) {
          const config = table.roles['chartable'];
@@ -216,6 +224,10 @@ WCom.Table.Role.Chartable = (function() {
 })();
 // Package WCom.Table.Role.CheckAll
 WCom.Table.Role.CheckAll = (function() {
+   /** @class
+       @classdesc CheckAllControl
+       @alias TableRole/CheckAllControl
+   */
    class CheckAllControl {
       constructor(table, methods) {
          methods['createColumn'] = function(orig, table, config) {
@@ -238,7 +250,11 @@ WCom.Table.Role.CheckAll = (function() {
 })();
 // Package WCom.Table.Role.Configurable
 WCom.Table.Role.Configurable = (function() {
-   class PreferenceHandlers{
+   /** @class
+       @classdesc PreferenceHandlers
+       @alias TableRole/PreferenceHandlers
+   */
+   class PreferenceHandlers {
       constructor(preference) {
          this.preference = preference;
          this.control = preference.control;
@@ -413,6 +429,10 @@ WCom.Table.Role.Configurable = (function() {
    }
    Object.assign(PreferenceHandlers.prototype, WCom.Util.Bitch);
    Object.assign(PreferenceHandlers.prototype, WCom.Util.Markup);
+   /** @class
+       @classdesc PreferenceForm
+       @alias TableRole/PreferenceForm
+   */
    class PreferenceForm {
       constructor(preference) {
          this.preference = preference;
@@ -593,6 +613,10 @@ WCom.Table.Role.Configurable = (function() {
    }
    Object.assign(PreferenceForm.prototype, WCom.Util.Markup);
    Object.assign(PreferenceForm.prototype, WCom.Util.String);
+   /** @class
+       @classdesc Preference
+       @alias TableRole/Preference
+   */
    class Preference {
       constructor(table, control) {
          this.table = table;
@@ -680,6 +704,10 @@ WCom.Table.Role.Configurable = (function() {
       }
    }
    Object.assign(Preference.prototype, WCom.Util.Markup);
+   /** @class
+       @classdesc ConfigControl
+       @alias TableRole/ConfigControl
+   */
    class ConfigControl {
       constructor(table, methods) {
          const config = table.roles['configurable'];
@@ -749,6 +777,10 @@ WCom.Table.Role.Configurable = (function() {
 })();
 // Package WCom.Table.Role.Downloadable
 WCom.Table.Role.Downloadable = (function() {
+   /** @class
+       @classdesc Downloader
+       @alias TableRole/Downloader
+   */
    class Downloader {
       constructor(label) {
          this.label = label || '';
@@ -781,6 +813,10 @@ WCom.Table.Role.Downloadable = (function() {
    }
    Object.assign(Downloader.prototype, WCom.Util.Bitch);
    Object.assign(Downloader.prototype, WCom.Util.Markup); // Apply role
+   /** @class
+       @classdesc DownloadControl
+       @alias TableRole/DownloadControl
+   */
    class DownloadControl {
       constructor(table, methods) {
          this.table       = table;
@@ -849,6 +885,10 @@ WCom.Table.Role.Downloadable = (function() {
 })();
 // Package WCom.Table.Role.Filterable
 WCom.Table.Role.Filterable = (function() {
+   /** @class
+       @classdesc FilterControl
+       @alias TableRole/FilterControl
+   */
    class FilterControl {
       constructor(table, methods) {
          const config = table.roles['filterable'];
@@ -947,6 +987,10 @@ WCom.Table.Role.Filterable = (function() {
 })();
 // Package WCom.Table.Role.Form
 WCom.Table.Role.Form = (function() {
+   /** @class
+       @classdesc FormControl
+       @alias TableRole/FormControl
+   */
    class FormControl {
       constructor(table, methods) {
          this.table        = table;
@@ -1204,6 +1248,10 @@ WCom.Table.Role.Form = (function() {
 })();
 // Package WCom.Table.Role.HighlightRow
 WCom.Table.Role.HighlightRow = (function() {
+   /** @class
+       @classdesc HighlightRow
+       @alias TableRole/HighlightRow
+   */
    class HighlightRow {
       constructor(table, methods) {
          this.table = table;
@@ -1222,6 +1270,10 @@ WCom.Table.Role.HighlightRow = (function() {
 })();
 // Package WCom.Table.Role.Pageable
 WCom.Table.Role.Pageable = (function() {
+   /** @class
+       @classdesc PageControl
+       @alias TableRole/PageControl
+   */
    class PageControl {
       constructor(table, methods) {
          const config = table.roles['pageable'];
@@ -1338,6 +1390,10 @@ WCom.Table.Role.Pageable = (function() {
 })();
 // Package WCom.Table.Role.PageSize
 WCom.Table.Role.PageSize = (function() {
+   /** @class
+       @classdesc PageSizeControl
+       @alias TableRole/PageSizeControl
+   */
    class PageSizeControl {
       constructor(table, methods) {
          const config = table.roles['pagesize'];
@@ -1395,6 +1451,10 @@ WCom.Table.Role.PageSize = (function() {
 })();
 // Package WCom.Table.Role.Reorderable
 WCom.Table.Role.Reorderable = (function() {
+   /** @class
+       @classdesc OrderControl
+       @alias TableRole/OrderControl
+   */
    class OrderControl {
       constructor(table, methods) {
          const config = table.roles['reorderable'];
@@ -1413,6 +1473,10 @@ WCom.Table.Role.Reorderable = (function() {
 })();
 // Package WCom.Table.Role.Searchable
 WCom.Table.Role.Searchable = (function() {
+   /** @class
+       @classdesc SearchControl
+       @alias TableRole/SearchControl
+   */
    class SearchControl {
       constructor(table, methods) {
          const config = table.roles['searchable'];
@@ -1598,6 +1662,10 @@ WCom.Table.Role.Searchable = (function() {
 })();
 // Package WCom.Table.Role.Tagable
 WCom.Table.Role.Tagable = (function() {
+   /** @class
+       @classdesc TagControl
+       @alias TableRole/TagControl
+   */
    class TagControl {
       constructor(table, methods) {
          this.table         = table;

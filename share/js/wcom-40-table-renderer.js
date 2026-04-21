@@ -2,7 +2,7 @@
     @file HTML StateTable - Renderer
     @classdesc Render tables
     @author pjfl@cpan.org (Peter Flanigan)
-    @version 0.2.33
+    @version 0.2.34
     @alias WCom/Table
 */
 if (!WCom.Table) WCom.Table = {};
@@ -46,6 +46,7 @@ WCom.Table.Renderer = (function() {
       /** @function
           @desc Renders the cell object
           @return {element} The rendered table cell element
+          @see {@link Table/Cell#getValue|Get value}
       */
       render() {
          const attr = {};
@@ -78,26 +79,36 @@ WCom.Table.Renderer = (function() {
           @desc Construct the column object
           @param {object} table
           @param {object} config
+          @property {array}   config.cell-traits
+          @property {boolean} config.displayed
+          @property {boolean} config.downloadable
+          @property {boolean} config.filterable
+          @property {string}  config.label
+          @property {string}  config.max-width
+          @property {string}  config.min-width
+          @property {string}  config.name
+          @property {object}  config.options
+          @property {boolean} config.sortable
+          @property {string}  config.title
+          @property {array}   config.traits
+          @property {string}  config.width
       */
       constructor(table, config) {
          this.table        = table;
          this.rs           = table.resultset;
-         this.cellTraits   = config['cell_traits'] || [];
+         this.cellTraits   = config['cell-traits'] || [];
          this.displayed    = config['displayed'];
          this.downloadable = config['downloadable'];
          this.filterable   = config['filterable'];
          this.label        = config['label'];
-         this.maxWidth     = config['max_width']
-            ? ('max-width:' + config['max_width'] + ';') : '';
-         this.minWidth     = config['min_width']
-            ? ('min-width:' + config['min_width'] + ';') : '';
+         this.maxWidth     = config['max-width'] || '';
+         this.minWidth     = config['min-width'] || '';
          this.name         = config['name'];
          this.options      = config['options'] || {};
          this.sortable     = config['sortable'];
          this.title        = config['title'];
          this.traits       = config['traits'] || [];
-         this.width        = config['width']
-            ? ('width:' + config['width'] + ';') : '';
+         this.width        = config['width'] || '';
          this.header;
          this.rowSelector  = {};
          this.sortDesc     = this.rs.state('sortDesc');
@@ -163,6 +174,7 @@ WCom.Table.Renderer = (function() {
           @param {object} table
           @param {object} result
           @param {integer} index
+          @see {@link Table/Column#createCell|Create cell}
       */
       constructor(table, result, index) {
          this.table   = table;
@@ -179,6 +191,7 @@ WCom.Table.Renderer = (function() {
           @desc Renders the row object
           @param {object} attr
           @return {element} The rendered table row element
+          @see {@link Table/Cell#render|Cell render}
       */
       render(attr) {
          attr ||= {};
@@ -198,7 +211,8 @@ WCom.Table.Renderer = (function() {
    class State {
       /** @constructs
           @desc Construct the state object
-          @param {object} table
+          @param {object} table Uses table properties to initialise the
+             object
       */
       constructor(table) {
          this.page       = 1;
@@ -214,8 +228,9 @@ WCom.Table.Renderer = (function() {
    */
    class Resultset {
       /** @constructs
-          @desc Construct the resultset object
-          @param {object} table
+          @desc Construct the resultset object. Creates the
+             {@link Table/State|state} object
+          @param {object} table Uses table properties to initialise object
       */
       constructor(table) {
          this.table        = table;
@@ -226,6 +241,9 @@ WCom.Table.Renderer = (function() {
          this.token        = table.properties['verify-token'];
          this.index        = 0;
          this.records      = [];
+         /** @member
+             @desc Maps JS attribute names to URI query string names
+         */
          this.parameterMap = {
             page: 'page',
             pageSize: 'page_size',
@@ -254,11 +272,12 @@ WCom.Table.Renderer = (function() {
          return state;
       }
       /** @function
-          @desc Accessor/mutator for the 'this.parameterMap'. If 'key' is
+          @desc Accessor/mutator for the parameter map. If 'key' is
              undefined return the whole map
           @param {string} key
           @param {string} value
           @return {string}
+          @see {@link Table/Resultset#parameterMap|Parameter map}
       */
       nameMap(key, value) {
          if (typeof key == 'undefined') return this.parameterMap;
@@ -267,8 +286,9 @@ WCom.Table.Renderer = (function() {
       }
       /** @function
           @desc Iterator which returns the next object from the array of
-             object returned by the server
+             row data returned by the server
           @return {object}
+          @see {@link Util/Bitch#sucks|Getting row data}
       */
       async next() {
          if (this.index > 0) return this.records[this.index++];
@@ -305,6 +325,7 @@ WCom.Table.Renderer = (function() {
              {@link Table/State state} object
           @param {object} options
           @return {object} Self referential object. Allows method chaining
+          @see {@link Table/Resultset#state|Retrieving state}
       */
       search(options) {
          for (const [k, v] of Object.entries(options)) { this.state(k, v) }
@@ -330,6 +351,7 @@ WCom.Table.Renderer = (function() {
              changed
           @param {object} previousState
           @return {boolean}
+          @see {@link Table/Resultset#state|Retrieving state}
       */
       stateChanged(previousState) {
          for (const [key, previous] of Object.entries(previousState)) {
@@ -348,21 +370,48 @@ WCom.Table.Renderer = (function() {
    class Table {
       /** @constructs
           @desc Creates a new {@link Table/Resultset resultset}.
-             Applies roles the table object both before and after
+             Applies roles to the table object both before and after
              the {@link Table/Columns columns} are created
           @param {element} container The element containing the table
           @param {object} config
-          @property {array} config.columns
-          @property {string} config.name
-          @property {object} config.properties
-          @property {object} config.roles
-          @property {object} config.row-traits
-          @property {string} properties.caption
-          @property {string} properties.icons
-          @property {string} properties.max-width
-          @property {string} properties.min-width
-          @property {string} properties.render-style
-          @property {string} properties.title-location
+          @property {array}   config.columns Column configuration
+          @property {string}  config.name The table name
+          @property {object}  config.properties
+          @property {object}  config.roles Configuration for each of the
+             applied roles
+          @property {object}  config.row-traits Traits applied to rows
+          @property {string}  properties.caption The table caption
+          @property {string}  properties.data-url Server endpoint for the row
+             data
+          @property {boolean} properties.enable-paging Is paging enabled
+          @property {string}  properties.icons URI for the icons SVG file
+          @property {integer} properties.max-page-size Maximum number of rows
+             per page
+          @property {string}  properties.max-width Maximum table width including
+             CSS dimensions
+          @property {string}  properties.min-width Minimum table width including
+             CSS dimensions
+          @property {string}  properties.no-data-message Message displayed
+             when there is no data
+          @property {string}  properties.page-manager Reference to the
+             {@link Navigation/Navigation|Navigation} object
+          @property {integer} properties.page-size Number of rows per page
+          @property {string}  properties.render-style Unused
+          @property {integer} properties.row-count Number of rows on the
+             current page
+          @property {string}  properties.sort-column By which column are we
+             sorting
+          @property {boolean} properties.sort-desc Are we ascending or
+             descending
+          @property {string}  properties.title-location Can be either 'inner'
+             or 'outer'. Causes the title/credit control display elements to
+             render inside/outside the top/bottom control displays
+          @property {string}  properties.verify-token A CSRF verification
+             token for form posts
+          @see {@link Table/Table#applyRoles|Applied roles}
+          @see {@link Table/Table#createColumn|Create column}
+          @see {@link Table/Table#orderedContent|Ordered content}
+          @see {@link Table/Table#appendContainer|Append container}
       */
       constructor(container, config) {
          this.container  = container;
@@ -388,6 +437,9 @@ WCom.Table.Renderer = (function() {
          this.titleLocation = this.properties['title-location'] || 'inner';
          this.topContent    = false;
          const tableAttr    = { id: this.name, className: this.name };
+         /** @member
+             @desc The DOM table element
+        */
          this.table         = this.h.table(tableAttr);
          if (this.properties['max-width']) this.table.style.setProperty(
             'max-width', this.properties['max-width']
@@ -410,6 +462,9 @@ WCom.Table.Renderer = (function() {
 
          let className = 'top-control';
          if (this.topContent) className += ' visible';
+         /** @member
+             @desc The DOM top control element
+        */
          this.topControl = this.h.div({ className });
          this.topLeftControl = this.h.div({ className: 'top-left-control' });
          this.topControl.append(this.topLeftControl);
@@ -418,6 +473,9 @@ WCom.Table.Renderer = (function() {
 
          className = 'bottom-control';
          if (this.bottomContent) className += ' visible';
+         /** @member
+             @desc The DOM bottom control element
+        */
          this.bottomControl = this.h.div({ className });
          this.bottomLeftControl
             = this.h.div({ className: 'bottom-left-control' });
@@ -473,7 +531,7 @@ WCom.Table.Renderer = (function() {
       }
       /** @function
           @async
-          @desc Returns the @{link Table/Resultset#next next} result object
+          @desc Returns the {@link Table/Resultset#next next} result object
           @return {object}
       */
       async nextResult() {
@@ -484,6 +542,8 @@ WCom.Table.Renderer = (function() {
           @desc Returns the next {@link Table/Row row} object
           @param {integer} index
           @return {object} A new row object
+          @see {@link Table/Table#nextResult|Next result}
+          @see {@link WCom.Util/Modifiers|Apply traits}
       */
       async nextRow(index) {
          const result = await this.nextResult();
@@ -501,6 +561,12 @@ WCom.Table.Renderer = (function() {
              Setting it to 'inner' reverses this. Also applies to the credit
              and bottom elements
           @return {array}
+          @see {@link Table/Table#renderCaption|Render caption}
+          @see {@link Table/Table#renderTitleControl|Render title control}
+          @see {@link Table/Table#topControl|Top control}
+          @see {@link Table/Table#table|Table}
+          @see {@link Table/Table#bottomControl|Bottom control}
+          @see {@link Table/Table#renderCreditControl|Render credit control}
       */
       orderedContent() {
          let content;
@@ -526,6 +592,7 @@ WCom.Table.Renderer = (function() {
           @desc Prepares the data request URL
           @param {object} args
           @return {object} A URL object
+          @see {@link Table/Resultset#nameMap|Name map}
       */
       prepareURL(args) {
          args ||= {};
@@ -555,6 +622,7 @@ WCom.Table.Renderer = (function() {
       /** @function
           @async
           @desc Reads all the rows
+          @see {@link Table/Table#nextRow|Next row}
       */
       async readRows() {
          this.rows = [];
@@ -564,6 +632,7 @@ WCom.Table.Renderer = (function() {
       }
       /** @function
           @desc Redraws the table
+          @see {@link Table/Table#render|Table Render}
       */
       redraw() {
          this.render();
@@ -571,6 +640,14 @@ WCom.Table.Renderer = (function() {
       /** @function
           @async
           @desc Renders the table
+          @see {@link Table/Table#renderTopLeftControl|Render top left}
+          @see {@link Table/Table#renderTopRightControl|Render top right}
+          @see {@link Table/Table#renderTitleControl|Render title}
+          @see {@link Table/Table#renderHeader|Render header}
+          @see {@link Table/Table#renderRows|Render rows}
+          @see {@link Table/Table#renderCreditControl|Render credits}
+          @see {@link Table/Table#renderBottomLeftControl|Render bottom left}
+          @see {@link Table/Table#renderBottomRightControl|Render bottom right}
       */
       async render() {
          this.renderHeader();
@@ -585,6 +662,7 @@ WCom.Table.Renderer = (function() {
       }
       /** @function
           @desc Renders the body of the table
+          @see {@link Table/Table#renderRow|Render row}
       */
       renderBody() {
          const newBody = this.h.tbody();
@@ -628,6 +706,7 @@ WCom.Table.Renderer = (function() {
       }
       /** @function
           @desc Renders the header element
+          @see {@link Table/Column#render|Column render}
       */
       renderHeader() {
          const row = this.h.tr();
@@ -656,6 +735,7 @@ WCom.Table.Renderer = (function() {
           @param {object} row
           @param {string} className
           @return {element}
+          @see {@link Table/Row#render|Row render}
       */
       renderRow(container, row, className) {
          const rendered = row.render({ className: className });
@@ -665,6 +745,9 @@ WCom.Table.Renderer = (function() {
       /** @function
           @async
           @desc Renders all rows
+          @see {@link Table/Table#readRows|Read rows}
+          @see {@link Table/Table#renderNoData|Render no data}
+          @see {@link Table/Table#renderBody|Render body}
       */
       async renderRows() {
          await this.readRows();
@@ -711,7 +794,7 @@ WCom.Table.Renderer = (function() {
    Object.assign(Table.prototype, Utils.Modifiers);
    Object.assign(Table.prototype, Utils.String);
    /** @class
-       @classdesc Factory object
+       @classdesc Creates {@link Table/Table Table} objects
        @alias Table/Factory
    */
    class Factory {
@@ -738,8 +821,9 @@ WCom.Table.Renderer = (function() {
       /** @function
           @async
           @desc Scan the content for elements with the trigger class. Creates
-             {@link Table/Table tables} and calls their
-             {@link Table/Table#render render} method
+             {@link Table/Table tables} and renders them
+          @see {@link Table/Table#render|Table render}
+
           @param {element} content The element to scan
           @param {object} options Currently unused
       */
@@ -757,16 +841,16 @@ WCom.Table.Renderer = (function() {
    }
    const factory = new Factory();
    /** @module Table
+       @desc Displays tabular data
+       @see {@link Table/Factory|Table factory}
    */
    return {
       /** @function
-          @desc Calls {@link Table/Factory#isConstructing method} on
-             the {@link Table/Factory Factory} object
+          @see {@link Table/Factory#isConstructing|Factory is constructing}
       */
       isConstructing: factory.isConstructing.bind(factory),
       /** @function
-          @desc Calls {@link Table/Factory#scan method} on
-             the {@link Table/Factory Factory} object
+          @see {@link Table/Factory#scan|Factory scan}
       */
       scan: factory.scan.bind(factory),
       /** @object

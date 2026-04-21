@@ -290,7 +290,7 @@ has '_boolean_options' =>
    handles_via => 'Hash',
    handles     => { is_boolean_option => 'exists' },
    default     => sub {
-      return { checkall => TRUE, notraits => TRUE, select_one => TRUE };
+      return { checkall => TRUE, notraits => TRUE, 'select-one' => TRUE };
    };
 
 =back

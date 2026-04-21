@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Replaces some underscores with dashes in serialised output
           - More JSDoc
           - Started JSDoc
           - Remove search message div when empty
