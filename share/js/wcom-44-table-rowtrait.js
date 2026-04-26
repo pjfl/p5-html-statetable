@@ -2,10 +2,10 @@
     @file HTML StateTable - Row Traits
     @classdesc Traits applied to the row object
     @author pjfl@cpan.org (Peter Flanigan)
-    @version 0.2.34
+    @version 0.2.35
 */
 WCom.Table.RowTrait.Active = (function() {
-   /** @module TableRowTrait/Active
+   /** @mixin TableRowTrait/Active
        @desc Active row trait
    */
    return {
@@ -21,7 +21,7 @@ WCom.Table.RowTrait.Active = (function() {
    };
 })();
 WCom.Table.RowTrait.HighlightRow = (function() {
-   /** @module TableRowTrait/HighlightRow
+   /** @mixin TableRowTrait/HighlightRow
        @desc Highlight row trait
    */
    return {

@@ -2,7 +2,7 @@
     @file HTML StateTable - Table Roles
     @classdesc Roles applied to the table object
     @author pjfl@cpan.org (Peter Flanigan)
-    @version 0.2.34
+    @version 0.2.35
 */
 WCom.Table.Role.Active = (function() {
    /** @class
@@ -751,8 +751,8 @@ WCom.Table.Role.Configurable = (function() {
          const control = this.h.a({
             className: 'preference-link',
             onclick: this.dialogHandler,
-            title: this.dialogTitle
          }, this._createControlIcon());
+         this.tooltip(control, 'control', this.dialogTitle);
          this.control = this.addOrReplace(container, control, this.control);
       }
       _createControlIcon() {

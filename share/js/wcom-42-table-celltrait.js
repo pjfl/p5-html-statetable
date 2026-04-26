@@ -2,15 +2,15 @@
     @file HTML StateTable - Cell Traits
     @classdesc Traits applied to the cell object
     @author pjfl@cpan.org (Peter Flanigan)
-    @version 0.2.34
+    @version 0.2.35
 */
 WCom.Table.CellTrait.Bool = (function() {
    let boolColours = ['firebrick', 'seagreen'];
    let boolFalse = '✗';
    let boolTrue = '✓';
-   /** @module TableCellTrait/Bool
-       @desc Boolean cell trait
-    */
+   /** @mixin TableCellTrait/Bool
+       @classdesc Boolean cell trait
+   */
    return {
       initialise: function() {
          const options = this.column.options;
@@ -38,7 +38,7 @@ WCom.Table.CellTrait.Bool = (function() {
 })();
 // Package WCom.Table.CellTrait.Capitalise
 WCom.Table.CellTrait.Capitalise = (function() {
-   /** @module TableCellTrait/Capitalise
+   /** @mixin TableCellTrait/Capitalise
        @desc Capitalise cell trait
    */
    return {
@@ -53,7 +53,7 @@ WCom.Table.CellTrait.Capitalise = (function() {
 })();
 // Package WCom.Table.CellTrait.Checkbox
 WCom.Table.CellTrait.Checkbox = (function() {
-   /** @module TableCellTrait/Checkbox
+   /** @mixin TableCellTrait/Checkbox
        @desc Checkbox cell trait
    */
    return {
@@ -86,7 +86,7 @@ WCom.Table.CellTrait.Checkbox = (function() {
 })();
 // Package WCom.Table.CellTrait.Date
 WCom.Table.CellTrait.Date = (function() {
-   /** @module TableCellTrait/Date
+   /** @mixin TableCellTrait/Date
        @desc Date cell trait
    */
    return {
@@ -102,7 +102,7 @@ WCom.Table.CellTrait.Date = (function() {
 })();
 // Package WCom.Table.CellTrait.DateTime
 WCom.Table.CellTrait.DateTime = (function() {
-   /** @module TableCellTrait/DateTime
+   /** @mixin TableCellTrait/DateTime
        @desc Date/time cell trait
    */
    return {
@@ -124,7 +124,7 @@ WCom.Table.CellTrait.DateTime = (function() {
 })();
 // Package WCom.Table.CellTrait.Icon
 WCom.Table.CellTrait.Icon = (function() {
-   /** @module TableCellTrait/Icon
+   /** @mixin TableCellTrait/Icon
        @desc Icon cell trait
    */
    return {
@@ -144,7 +144,7 @@ WCom.Table.CellTrait.Icon = (function() {
 })();
 // Package WCom.Table.CellTrait.Modal
 WCom.Table.CellTrait.Modal = (function() {
-   /** @module TableCellTrait/Modal
+   /** @mixin TableCellTrait/Modal
        @desc Modal cell trait
    */
    return {
@@ -186,7 +186,7 @@ WCom.Table.CellTrait.Modal = (function() {
 })();
 // Package WCom.Table.CellTrait.Numeric
 WCom.Table.CellTrait.Numeric = (function() {
-   /** @module TableCellTrait/Numeric
+   /** @mixin TableCellTrait/Numeric
        @desc Numeric cell trait
    */
    return {
@@ -201,7 +201,7 @@ WCom.Table.CellTrait.Numeric = (function() {
 })();
 // Package WCom.Table.CellTrait.Remainder
 WCom.Table.CellTrait.Remainder = (function() {
-   /** @module TableCellTrait/Remainder
+   /** @mixin TableCellTrait/Remainder
        @desc Remainder cell trait
    */
    return {
@@ -216,7 +216,7 @@ WCom.Table.CellTrait.Remainder = (function() {
 })();
 // Package WCom.Table.CellTrait.Tagable
 WCom.Table.CellTrait.Tagable = (function() {
-   /** @module TableCellTrait/Tagable
+   /** @mixin TableCellTrait/Tagable
        @desc Tagable cell trait
    */
    return {
@@ -253,7 +253,7 @@ WCom.Table.CellTrait.Tagable = (function() {
 })();
 // Package WCom.Table.CellTrait.Time
 WCom.Table.CellTrait.Time = (function() {
-   /** @module TableCellTrait/Time
+   /** @mixin TableCellTrait/Time
        @desc Time cell trait
    */
    return {

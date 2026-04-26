@@ -1,5 +1,6 @@
 Revision history for HTML::StateTable
 
+          - Adds tooltips to table roles
           - Replaces some underscores with dashes in serialised output
           - More JSDoc
           - Started JSDoc

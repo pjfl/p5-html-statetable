@@ -2,7 +2,7 @@
     @file HTML StateTable - Column Traits
     @classdesc Traits applied to the column object
     @author pjfl@cpan.org (Peter Flanigan)
-    @version 0.2.34
+    @version 0.2.35
 */
 WCom.Table.ColumnTrait.CheckAll = (function() {
    /** @class
@@ -40,7 +40,7 @@ WCom.Table.ColumnTrait.CheckAll = (function() {
    }
    Object.assign(CheckAll.prototype, WCom.Util.Markup);
    const modifiedMethods = {};
-   /** @module TableColumnTrait/CheckAll
+   /** @mixin TableColumnTrait/CheckAll
        @desc Check all boxes column trait
    */
    return {
@@ -93,12 +93,13 @@ WCom.Table.ColumnTrait.Filterable = (function() {
          return this.h.icon(attr);
       }
       renderAnchor() {
-         const attr  = { className: 'filter-label' };
-         return this.h.a({
+         const attr = { className: 'filter-label' };
+         const link = this.h.a({
             className: 'filter-control',
             onclick: this.dialogHandler,
-            title: this.dialogTitle
          }, this.h.span(attr, this._createFilterIcon(attr)));
+         this.tooltip(link, 'filter', this.dialogTitle);
+         return link;
       }
       async renderValues() {
          const url = this.table.prepareURL({
@@ -154,7 +155,7 @@ WCom.Table.ColumnTrait.Filterable = (function() {
    Object.assign(Filterable.prototype, WCom.Util.Bitch);
    Object.assign(Filterable.prototype, WCom.Util.Markup);
    const modifiedMethods = {};
-   /** @module TableColumnTrait/Filterable
+   /** @mixin TableColumnTrait/Filterable
        @desc Filterable column trait
    */
    return {

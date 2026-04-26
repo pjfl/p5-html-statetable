@@ -1,5 +1,5 @@
 /* @author  pjfl@cpan.org (Peter Flanigan)
- * @version 0.2.32
+ * @version 0.2.35
  */
 @import "wcom-05-constants";
 body {
@@ -97,8 +97,7 @@ body {
                     font-style: oblique;
                 }
                 &.filter-control {
-                    color: @text-watermark; opacity: 50%;
-                    position: absolute; right: 0;
+                    color: @text-watermark; position: absolute; right: 0;
                 }
             }
             .column-header {
@@ -358,7 +357,7 @@ body {
         top: 1.5rem;
     }
     .filter-label {
-        display: inline-block; padding-right: 0.25rem;
+        display: inline-block; opacity: 50%; padding-right: 0.25rem;
         &.text {
             padding-left: 0.25rem;
         }
@@ -420,7 +419,7 @@ body {
         text-decoration: underline;
     }
     .preference-link {
-        cursor: pointer; display: inline-block;
+        cursor: pointer; display: inline-block; position: relative;
         .preference-control {
             display: inline-block;
             img, svg {
@@ -589,6 +588,24 @@ body {
     .top-left-control, .top-right-control {
         align-items: baseline; display: inline-flex; gap: 0.5rem;
         justify-content: flex-start;
+    }
+    .tooltip {
+        background: var(--bg-darker); border: 1px solid @line-border;
+        border-radius: 5px; box-shadow: 3px 3px 3px @panel-shadow;
+        color: @text-light; font-family: #fonts[sans];
+        font-size: @tips-font-size; font-style: normal; left: 0;
+        min-width: 5rem; padding: 0.25rem 0.5rem; pointer-events: none;
+        position: absolute; top: 0; text-align: center;
+        transform: translate(-100%, -100%); z-index: 10;
+        &.hide {
+            display: none;
+        }
+        p {
+            margin: 0;
+            a {
+                color: @text-light; text-decoration: none;
+            }
+        }
     }
     @media (max-width: @upper-break) {
         table:not(.object-view, .preference-columns) {
